@@ -1,5 +1,36 @@
+"use client";
+
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import Container from "./Container";
+
+function CampoBusca({ className }: { className: string }) {
+  const router = useRouter();
+  const params = useSearchParams();
+  const [texto, setTexto] = useState(params.get("busca") ?? "");
+
+  function aoBuscar(evento: React.FormEvent) {
+    evento.preventDefault();
+    const query = texto.trim();
+    router.push(query ? `/?busca=${encodeURIComponent(query)}` : "/");
+  }
+
+  return (
+    <form onSubmit={aoBuscar} className={className}>
+      <span aria-hidden="true" className="text-text-muted">
+        🔎
+      </span>
+      <input
+        type="search"
+        value={texto}
+        onChange={(e) => setTexto(e.target.value)}
+        placeholder="Buscar produtos, lojas, cupons..."
+        className="w-full bg-transparent text-sm outline-none placeholder:text-text-muted"
+      />
+    </form>
+  );
+}
 
 export default function Header() {
   return (
@@ -18,16 +49,9 @@ export default function Header() {
             </span>
           </Link>
 
-          <label className="hidden flex-1 items-center gap-2 rounded-xl2 bg-card px-4 py-2.5 text-text md:flex md:max-w-md">
-            <span aria-hidden="true" className="text-text-muted">
-              🔎
-            </span>
-            <input
-              type="search"
-              placeholder="Buscar produtos, lojas, cupons..."
-              className="w-full bg-transparent text-sm outline-none placeholder:text-text-muted"
-            />
-          </label>
+          <Suspense fallback={<div className="hidden flex-1 md:block" />}>
+            <CampoBusca className="hidden flex-1 items-center gap-2 rounded-xl2 bg-card px-4 py-2.5 text-text md:flex md:max-w-md" />
+          </Suspense>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-text-muted md:flex">
             <Link href="/" className="hover:text-gold">
@@ -50,16 +74,9 @@ export default function Header() {
           </nav>
         </div>
 
-        <label className="mt-3 flex items-center gap-2 rounded-xl2 bg-card px-4 py-2.5 text-text md:hidden">
-          <span aria-hidden="true" className="text-text-muted">
-            🔎
-          </span>
-          <input
-            type="search"
-            placeholder="Buscar produtos, lojas, cupons..."
-            className="w-full bg-transparent text-sm outline-none placeholder:text-text-muted"
-          />
-        </label>
+        <Suspense fallback={<div className="mt-3 h-11 md:hidden" />}>
+          <CampoBusca className="mt-3 flex items-center gap-2 rounded-xl2 bg-card px-4 py-2.5 text-text md:hidden" />
+        </Suspense>
       </Container>
     </header>
   );
