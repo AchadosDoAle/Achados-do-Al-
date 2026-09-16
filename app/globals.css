@@ -11,24 +11,32 @@
 html, body { margin: 0; min-height: 100%; }
 body {
   background: #07111f;
-  color: #000000 !important; /* <--- Mude a cor da fonte geral aqui */
+  color: #f8fafc;
   font-family: var(--font-body);
 }
 
-main { display: block; color: #000000 !important; }
-main h1, main h2, main h3, main h4, main p, main span, main strong { color: #000000 !important; }
-main .text-ink, main .text-purple-950, main .text-purple-900, main .text-gray-900, main .text-gray-800, main .text-gray-700, main .text-slate-700, main .text-slate-600 { color: #000000 !important; }
-main h1, main h2, main h3, main h4, main .font-bold, main .font-semibold, main strong { color: #000000 !important; }
+main { display: block; color: #f8fafc; }
+main h1, main h2, main h3, main h4, main p, main span, main strong { color: inherit; }
+main .text-ink, main .text-purple-950, main .text-purple-900, main .text-gray-900, main .text-gray-800, main .text-gray-700, main .text-slate-700, main .text-slate-600 { color: #dbe5ef !important; }
+main h1, main h2, main h3, main h4, main .font-bold, main .font-semibold, main strong { color: #ffffff !important; }
 main .text-brand, main .text-pink-600, main .text-pink-500 { color: #f5b942 !important; }
 main del, main s, main .line-through { color: #94a3b8 !important; }
 
-/* Corrige a cor do texto dentro dos cards/publicações */
-.offer-card, .offer-card * { color: #000000 !important; }
-.offer-card h1, .offer-card h2, .offer-card h3, .offer-card strong, .offer-card .font-bold { color: #000000 !important; }
+/* Corrige o contraste do texto geral das ofertas */
+.offer-card, .offer-card * { color: #f8fafc; }
+.offer-card h1, .offer-card h2, .offer-card h3, .offer-card strong, .offer-card .font-bold { color: #ffffff !important; }
 .offer-card .text-brand, .offer-card .text-pink-600, .offer-card .text-pink-500 { color: #f5b942 !important; }
 .offer-card .line-through { color: #94a3b8 !important; }
 
-.bg-white { background-color: #10243a !important; }
+/* Regra específica para alterar APENAS o texto do bloco da descrição/publicação */
+.bg-white, 
+.bg-white p, 
+.bg-white span, 
+.bg-white div {
+  color: #000000 !important; /* <--- Mude para a cor desejada aqui */
+}
+
+.bg-white { background-color: #ffffff !important; }
 .bg-gray-50, .bg-gray-100, .bg-purple-50 { background-color: #0d1b2d !important; }
 .border-gray-200, .border-gray-300 { border-color: rgba(245,185,66,.28) !important; }
 a { color: inherit; text-decoration: none; }
