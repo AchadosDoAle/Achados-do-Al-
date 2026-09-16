@@ -28,12 +28,22 @@ main del, main s, main .line-through { color: #94a3b8 !important; }
 .offer-card .text-brand, .offer-card .text-pink-600, .offer-card .text-pink-500 { color: #f5b942 !important; }
 .offer-card .line-through { color: #94a3b8 !important; }
 
-/* Regra específica para alterar APENAS o texto do bloco da descrição/publicação */
-.bg-white, 
-.bg-white p, 
-.bg-white span, 
-.bg-white div {
-  color: #000000 !important; /* <--- Mude para a cor desejada aqui */
+/* FIX: Sobrescreve as regras globais do main para a caixa da descrição */
+main .bg-white,
+main .bg-white *,
+main .bg-white p,
+main .bg-white span,
+main .bg-white div,
+main .bg-white strong,
+main .bg-white h1,
+main .bg-white h2,
+main .bg-white h3 {
+  color: #1e293b !important; /* Cor escura (grafite) para leitura perfeita no fundo claro */
+}
+
+/* Opcional: mantém links ou destaques coloridos se houver dentro do texto */
+main .bg-white a {
+  color: #2563eb !important; 
 }
 
 .bg-white { background-color: #ffffff !important; }
