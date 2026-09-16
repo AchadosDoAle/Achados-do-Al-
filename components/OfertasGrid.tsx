@@ -1,41 +1,62 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Oferta } from "@/lib/types";
 import { CATEGORIAS } from "@/lib/mock-data";
 import CategoryChips from "./CategoryChips";
 import OfferCard from "./OfferCard";
+import Container from "./Container";
 
-type Props = { ofertas: Oferta[] };
+function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
+  const params = useSearchParams();
+  const categoriaInicial = params.get("categoria") ?? "Todos";
+  const [selecionada, setSelecionada] = useState(categoriaInicial);
 
-export default function OfertasGrid({ ofertas }: Props) {
-  const [selecionada, setSelecionada] = useState("Todos");
-
-  const ofertasFiltradas = useMemo(() => {
-    if (selecionada === "Todos") return ofertas;
-    return ofertas.filter((oferta) => oferta.categoria === selecionada);
-  }, [ofertas, selecionada]);
+  const ofertasFiltradas = useMemo(
+    () =>
+      selecionada === "Todos"
+        ? ofertas
+        : ofertas.filter((o) => o.categoria === selecionada),
+    [ofertas, selecionada]
+  );
 
   return (
-    <section id="ofertas" className="site-shell pb-bottom-nav pb-24">
-      <div className="mb-5">
-        <p className="mb-1 text-sm font-bold uppercase tracking-[.2em] text-[#f5b942]">Ofertas selecionadas</p>
-        <h2 className="text-3xl font-black text-white md:text-4xl">Ofertas mais recentes</h2>
-      </div>
+    <>
+      <Container>
+        <CategoryChips
+          categorias={CATEGORIAS}
+          selecionada={selecionada}
+          onSelecionar={setSelecionada}
+        />
+      </Container>
 
-      <div className="mb-6">
-        <CategoryChips categorias={CATEGORIAS} selecionada={selecionada} onSelecionar={setSelecionada} />
-      </div>
+      <Container className="px-4">
+        <h2 className="mb-3 mt-2 flex items-center gap-1.5 font-display text-lg font-bold text-text">
+          <span aria-hidden="true">🔥</span> Ofertas fresquinhas
+        </h2>
+        {ofertasFiltradas.length === 0 ? (
+          <p className="text-sm text-text-muted">
+            {ofertas.length === 0
+              ? "Nenhuma oferta publicada ainda. Volte em breve!"
+              : "Nenhuma oferta nessa categoria por enquanto."}
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {ofertasFiltradas.map((oferta) => (
+              <OfferCard key={oferta.id} oferta={oferta} />
+            ))}
+          </div>
+        )}
+      </Container>
+    </>
+  );
+}
 
-      {ofertasFiltradas.length === 0 ? (
-        <div className="rounded-2xl border border-[#f5b942]/25 bg-[#10243a] p-10 text-center text-slate-200">
-          {ofertas.length === 0 ? "Nenhuma oferta publicada ainda. Volte em breve!" : "Nenhuma oferta nessa categoria por enquanto."}
-        </div>
-      ) : (
-        <div className="offer-grid">
-          {ofertasFiltradas.map((oferta) => <OfferCard key={oferta.id} oferta={oferta} />)}
-        </div>
-      )}
-    </section>
+export default function OfertasGrid({ ofertas }: { ofertas: Oferta[] }) {
+  return (
+    <Suspense fallback={null}>
+      <GradeComFiltro ofertas={ofertas} />
+    </Suspense>
   );
 }

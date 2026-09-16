@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Achado do Alê — Achadinhos e ofertas todo dia",
   description:
     "Ofertas e cupons selecionados de Mercado Livre, Amazon, Magalu, Shopee e muito mais.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

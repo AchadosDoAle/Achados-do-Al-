@@ -11,34 +11,79 @@ function formatarPreco(valor: number) {
 
 export default function OfferCard({ oferta }: { oferta: Oferta }) {
   const [favorito, setFavorito] = useState(false);
-  useEffect(() => setFavorito(ehFavorito(oferta.id)), [oferta.id]);
 
-  const desconto = oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual
-    ? Math.round(((oferta.precoAntigo - oferta.precoAtual) / oferta.precoAntigo) * 100)
-    : null;
-
-  function alternar() {
-    alternarFavorito(oferta.id);
+  useEffect(() => {
     setFavorito(ehFavorito(oferta.id));
-  }
+  }, [oferta.id]);
+
+  const desconto =
+    oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual
+      ? Math.round(
+          ((oferta.precoAntigo - oferta.precoAtual) / oferta.precoAntigo) * 100
+        )
+      : null;
 
   return (
-    <article className="offer-card group flex h-full flex-col">
-      <Link href={`/oferta/${oferta.slug}`} className="relative block">
-        {desconto ? <div className="absolute right-3 top-3 z-10 rounded-full bg-[#f5b942] px-2.5 py-1 text-xs font-black text-[#07111f]">-{desconto}%</div> : null}
-        <div className="offer-card-image" />
-      </Link>
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <Link href={`/oferta/${oferta.slug}`} className="line-clamp-2 min-h-11 font-bold text-white hover:text-[#f5b942]">{oferta.titulo}</Link>
-        {oferta.precoAntigo ? <span className="text-xs text-slate-400 line-through">{formatarPreco(oferta.precoAntigo)}</span> : null}
-        <strong className="text-2xl font-black text-[#f5b942]">{formatarPreco(oferta.precoAtual)}</strong>
-        {oferta.cupom ? <span className="w-fit rounded-md border border-[#f5b942]/40 bg-[#f5b942]/10 px-2 py-1 text-xs font-bold text-[#ffd66b]">Cupom: {oferta.cupom}</span> : null}
-        <span className="mt-auto text-xs text-slate-400">{oferta.loja}</span>
-        <div className="flex items-center gap-2 pt-2">
-          <Link href={`/oferta/${oferta.slug}`} className="flex-1 rounded-xl bg-[#f5b942] px-3 py-3 text-center text-sm font-black text-[#07111f]">Ver oferta</Link>
-          <button type="button" aria-label="Favoritar" onClick={alternar} className="grid h-11 w-11 place-items-center rounded-xl border border-[#f5b942]/30 text-xl text-[#f5b942]">{favorito ? "★" : "☆"}</button>
+    <div className="relative mx-auto w-full max-w-[220px] overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5">
+      <button
+        aria-label="Favoritar oferta"
+        onClick={(e) => {
+          e.preventDefault();
+          setFavorito(alternarFavorito(oferta.id).includes(oferta.id));
+        }}
+        className={`absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm backdrop-blur ${
+          favorito ? "bg-gold text-bg" : "bg-bg/60 text-text"
+        }`}
+      >
+        {favorito ? "♥" : "♡"}
+      </button>
+
+      <Link href={`/oferta/${oferta.slug}`} className="block">
+        <div className="relative aspect-[4/5] bg-bg-secondary">
+          {oferta.imagemPrincipal && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={oferta.imagemPrincipal}
+              alt={oferta.titulo}
+              className="h-full w-full object-cover"
+            />
+          )}
+          {desconto && (
+            <span className="absolute right-2 top-2 rounded-full bg-gold px-2 py-1 text-xs font-bold text-bg">
+              -{desconto}%
+            </span>
+          )}
         </div>
-      </div>
-    </article>
+
+        <div className="flex flex-col gap-1 p-3">
+          <span className="line-clamp-2 text-sm font-medium text-text">
+            {oferta.titulo}
+          </span>
+
+          <div>
+            {oferta.precoAntigo && (
+              <span className="block text-xs text-text-muted line-through">
+                {formatarPreco(oferta.precoAntigo)}
+              </span>
+            )}
+            <span className="text-lg font-bold text-gold">
+              {formatarPreco(oferta.precoAtual)}
+            </span>
+          </div>
+
+          {oferta.cupom && (
+            <span className="inline-block w-fit rounded-md bg-trust/15 px-2 py-0.5 text-xs font-semibold text-trust">
+              Cupom {oferta.cupom}
+            </span>
+          )}
+
+          <span className="text-xs text-text-muted">🏪 {oferta.loja}</span>
+
+          <span className="mt-2 block rounded-lg bg-gold py-2 text-center text-xs font-semibold text-bg">
+            Acessar promoção
+          </span>
+        </div>
+      </Link>
+    </div>
   );
 }

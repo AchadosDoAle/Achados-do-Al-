@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
+import Footer from "@/components/Footer";
+import Container from "@/components/Container";
 import OfferCard from "@/components/OfferCard";
 import { Oferta } from "@/lib/types";
 import { criarClientePublico } from "@/lib/supabase/public";
@@ -47,27 +49,28 @@ export default function FavoritosPage() {
   }, []);
 
   return (
-    <main className="pb-bottom-nav">
+    <main className="min-h-screen bg-bg pb-bottom-nav">
       <Header />
-      <section className="p-4">
-        <h1 className="mb-4 font-display text-xl font-bold text-ink">
+      <Container className="p-4">
+        <h1 className="mb-4 font-display text-xl font-bold text-text">
           Seus favoritos
         </h1>
         {carregando ? (
-          <p className="text-sm text-ink/60">Carregando...</p>
+          <p className="text-sm text-text-muted">Carregando...</p>
         ) : ofertas.length === 0 ? (
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-text-muted">
             Toque no coração ♡ de uma oferta para guardá-la aqui. Os
             favoritos ficam salvos só neste navegador.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {ofertas.map((oferta) => (
               <OfferCard key={oferta.id} oferta={oferta} />
             ))}
           </div>
         )}
-      </section>
+      </Container>
+      <Footer />
       <BottomNav />
     </main>
   );
