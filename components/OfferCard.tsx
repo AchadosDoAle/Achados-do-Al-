@@ -11,90 +11,33 @@ function formatarPreco(valor: number) {
 
 export default function OfferCard({ oferta }: { oferta: Oferta }) {
   const [favorito, setFavorito] = useState(false);
-
-  useEffect(() => {
-    setFavorito(ehFavorito(oferta.id));
-  }, [oferta.id]);
-
-  const desconto =
-    oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual
-      ? Math.round(
-          ((oferta.precoAntigo - oferta.precoAtual) / oferta.precoAntigo) * 100
-        )
-      : null;
+  useEffect(() => setFavorito(ehFavorito(oferta.id)), [oferta.id]);
+  const desconto = oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual ? Math.round(((oferta.precoAntigo - oferta.precoAtual) / oferta.precoAntigo) * 100) : null;
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl2 bg-white ring-1 ring-ink/10">
-      <Link href={`/oferta/${oferta.slug}`} className="block">
-        <div className="relative aspect-square bg-ink/5">
-          {oferta.imagemPrincipal && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={oferta.imagemPrincipal}
-              alt={oferta.titulo}
-              className="h-full w-full object-cover"
-            />
-          )}
-          {desconto && (
-            <span className="absolute left-2 top-2 flex items-center gap-0.5 rounded-full bg-discount px-2 py-1 text-xs font-semibold text-[#5B4300]">
-              ↓ {desconto}%
-            </span>
-          )}
+    <article className="offer-card group flex h-full flex-col">
+      <Link href={`/oferta/${oferta.slug}`} className="relative block">
+        <div className="absolute right-3 top-3 z-10 rounded-full bg-[#f5b942] px-2.5 py-1 text-xs font-black text-[#07111f]">
+          {desconto ? `-${desconto}%` : "Oferta"}
         </div>
-
-        <div className="flex flex-col gap-1 p-3 pb-1">
-          <span className="flex items-center gap-1 text-xs font-medium text-ink/50">
-            🏪 {oferta.loja}
-          </span>
-          <span className="line-clamp-2 text-sm font-medium text-ink">
-            {oferta.titulo}
-          </span>
-
-          <div className="mt-1">
-            {oferta.precoAntigo && (
-              <span className="block text-xs text-ink/40 line-through">
-                {formatarPreco(oferta.precoAntigo)}
-              </span>
-            )}
-            <span className="text-lg font-bold text-brand">
-              {formatarPreco(oferta.precoAtual)}
-            </span>
-            {oferta.precoPix && (
-              <span className="block text-xs text-trust">
-                {formatarPreco(oferta.precoPix)} à vista no Pix
-              </span>
-            )}
-            {oferta.parcelas && oferta.valorParcela && (
-              <span className="block text-xs text-ink/50">
-                ou {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}
-              </span>
-            )}
-            {oferta.cupom && (
-              <span className="mt-1 inline-block rounded-md bg-trust/10 px-2 py-0.5 text-xs font-semibold text-trust">
-                Cupom {oferta.cupom}
-              </span>
-            )}
-          </div>
+        <div className="offer-card-image transition duration-300 group-hover:brightness-95">
+          {/* Use a imagem cadastrada pelo projeto */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={oferta.imagemUrl} alt={oferta.titulo} />
         </div>
       </Link>
-
-      <div className="flex items-center gap-2 p-3 pt-2">
-        <Link
-          href={`/oferta/${oferta.slug}`}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand py-2 text-xs font-semibold text-white"
-        >
-          🛒 Ver oferta
-        </Link>
-        <button
-          aria-label="Favoritar oferta"
-          onClick={() => setFavorito(alternarFavorito(oferta.id).includes(oferta.id))}
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-ink/10 ${
-            favorito ? "bg-accent/10 text-accent" : "bg-cream text-ink/40"
-          }`}
-        >
-          {favorito ? "♥" : "♡"}
-        </button>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <Link href={`/oferta/${oferta.slug}`} className="line-clamp-2 min-h-11 font-bold text-white hover:text-[#f5b942]">{oferta.titulo}</Link>
+        {oferta.precoAntigo ? <span className="text-xs text-slate-400 line-through">{formatarPreco(oferta.precoAntigo)}</span> : null}
+        <strong className="text-2xl font-black text-[#f5b942]">{formatarPreco(oferta.precoAtual)}</strong>
+        {oferta.descontoPix ? <span className="text-xs text-slate-300">{oferta.descontoPix}</span> : null}
+        {oferta.cupom ? <span className="w-fit rounded-md border border-[#f5b942]/40 bg-[#f5b942]/10 px-2 py-1 text-xs font-bold text-[#ffd66b]">Cupom: {oferta.cupom}</span> : null}
+        <span className="mt-auto text-xs text-slate-400">{oferta.loja}</span>
+        <div className="flex items-center gap-2 pt-2">
+          <Link href={`/oferta/${oferta.slug}`} className="flex-1 rounded-xl bg-[#f5b942] px-3 py-3 text-center text-sm font-black text-[#07111f] transition hover:bg-[#ffd66b]">Ver oferta</Link>
+          <button type="button" aria-label="Favoritar" onClick={() => { const novo = alternarFavorito(oferta.id); setFavorito(novo); }} className="grid h-11 w-11 place-items-center rounded-xl border border-[#f5b942]/30 text-xl text-[#f5b942]">{favorito ? "★" : "☆"}</button>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
