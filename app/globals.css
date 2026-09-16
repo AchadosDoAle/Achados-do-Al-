@@ -7,12 +7,167 @@
   --font-body: "Inter", system-ui, sans-serif;
 }
 
-body {
-  background-color: #fff9f2;
-  color: #221333;
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #07111f;
 }
 
-/* Espaço reservado para a bottom nav fixa não cobrir o conteúdo */
+body {
+  color: #f8fafc !important;
+  font-family: var(--font-body);
+}
+
+/* A página atual usa classes de texto escuro. Estes seletores corrigem o contraste sem depender do componente. */
+body * {
+  border-color: rgba(245, 185, 66, .25);
+}
+
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6,
+body p,
+body li,
+body label,
+body span,
+body strong,
+body small {
+  color: #f8fafc !important;
+}
+
+body .text-ink,
+body .text-purple-950,
+body .text-purple-900,
+body .text-purple-800,
+body .text-gray-900,
+body .text-gray-800,
+body .text-gray-700,
+body .text-gray-600,
+body .text-slate-900,
+body .text-slate-800,
+body .text-slate-700,
+body .text-slate-600,
+body .text-black {
+  color: #f8fafc !important;
+}
+
+body .text-brand,
+body .text-pink-600,
+body .text-pink-500,
+body [class*="text-["] {
+  color: #f5b942 !important;
+}
+
+body del,
+body s,
+body .line-through {
+  color: #a8b5c5 !important;
+}
+
+body input,
+body textarea,
+body select {
+  color: #07111f !important;
+  background: #ffffff !important;
+}
+
+body button,
+body a {
+  color: inherit;
+}
+
+body button[class*="bg-brand"],
+body a[class*="bg-brand"],
+body button[class*="bg-pink"],
+body a[class*="bg-pink"] {
+  color: #07111f !important;
+}
+
+body .bg-white {
+  background-color: #10243a !important;
+}
+
+body .bg-gray-50,
+body .bg-gray-100,
+body .bg-purple-50 {
+  background-color: #0d1b2d !important;
+}
+
+.site-shell {
+  width: min(calc(100% - 32px), 1480px);
+  margin: 0 auto;
+}
+
+.offer-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.offer-card {
+  overflow: hidden;
+  border: 1px solid rgba(245, 185, 66, .28);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #122a43, #0c1c2f);
+}
+
+.offer-card-image {
+  display: grid;
+  height: 190px;
+  place-items: center;
+  background: #f8fafc;
+}
+
+.offer-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.offer-detail {
+  color: #f8fafc !important;
+}
+
+.offer-detail * {
+  color: #f8fafc !important;
+}
+
+.offer-detail h1,
+.offer-detail h2,
+.offer-detail h3,
+.offer-detail strong {
+  color: #ffffff !important;
+}
+
+.offer-detail del,
+.offer-detail s,
+.offer-detail .line-through {
+  color: #a8b5c5 !important;
+}
+
+.offer-detail button,
+.offer-detail a {
+  color: #07111f !important;
+}
+
 .pb-bottom-nav {
   padding-bottom: 84px;
+}
+
+@media (max-width: 1200px) {
+  .offer-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .offer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  body { padding-bottom: 78px; }
+  .site-shell { width: min(calc(100% - 20px), 520px); }
+  .offer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .offer-card-image { height: 150px; }
 }
