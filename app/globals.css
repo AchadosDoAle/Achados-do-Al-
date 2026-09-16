@@ -4,15 +4,12 @@
 
 :root {
   --background: #07111f;
-  --background-soft: #0d1b2d;
   --surface: #10243a;
-  --surface-hover: #15314d;
   --foreground: #f8fafc;
-  --muted: #a8b5c5;
+  --muted: #cbd5e1;
   --gold: #f5b942;
   --gold-light: #ffd66b;
-  --gold-dark: #b87912;
-  --border: rgba(245, 185, 66, 0.24);
+  --border: rgba(245, 185, 66, 0.28);
   --font-display: "Baloo 2", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
 }
@@ -22,21 +19,32 @@ html { background: var(--background); scroll-behavior: smooth; }
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--foreground);
-  background: radial-gradient(circle at 80% -10%, rgba(22,64,103,.42), transparent 38rem), linear-gradient(180deg,#07111f,#0a1727 48%,#07111f);
+  color: var(--foreground) !important;
+  background: radial-gradient(circle at 80% -10%, #163f67 0, transparent 38rem), linear-gradient(180deg, #07111f 0%, #0a1727 55%, #07111f 100%);
   font-family: var(--font-body);
 }
 a { color: inherit; text-decoration: none; }
-button,input,textarea,select { font: inherit; }
+button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 ::selection { color: #07111f; background: var(--gold); }
 
-/* Use these utilities in components while migrating Tailwind colors. */
-.bg-brand { background: var(--gold) !important; }
-.text-brand, .text-ink { color: var(--foreground) !important; }
-.bg-white { background: var(--surface) !important; }
-.ring-ink\/10 { --tw-ring-color: var(--border) !important; }
+/* Contraste global: impede que classes antigas deixem títulos e descrição invisíveis. */
+main, main section, main article, main div { color: var(--foreground); }
+main h1, main h2, main h3, main h4, main p, main strong, main span, main label { color: inherit; }
+main .text-ink, main .text-purple-950, main .text-purple-900, main .text-gray-900, main .text-gray-800, main .text-gray-700, main .text-slate-700, main .text-slate-600 { color: var(--muted) !important; }
+main h1, main h2, main h3, main h4, main .font-bold, main .font-semibold, main strong { color: #ffffff !important; }
+main .text-brand, main .text-pink-600, main .text-pink-500, main [class*="preco"] { color: var(--gold) !important; }
+main del, main s, main .line-through { color: #94a3b8 !important; }
 
+/* Fundos antigos claros continuam legíveis no novo tema. */
+.bg-white { background-color: var(--surface) !important; }
+.bg-gray-50, .bg-gray-100, .bg-purple-50 { background-color: #0d1b2d !important; }
+.border-gray-200, .border-gray-300 { border-color: var(--border) !important; }
+
+/* Ações: botão principal dourado; compartilhar permanece claro e legível. */
+main button, main a[class*="bg-brand"], main a[class*="bg-pink"] { color: #07111f !important; }
+
+.pb-bottom-nav { padding-bottom: 84px; }
 .site-shell { width: min(100% - 32px, 1480px); margin: 0 auto; }
 .offer-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
 .offer-card { background: linear-gradient(180deg, #122a43, #0c1c2f); border: 1px solid var(--border); box-shadow: 0 12px 35px rgba(0,0,0,.2); border-radius: 18px; overflow: hidden; }
