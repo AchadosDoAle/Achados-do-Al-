@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const ICONE_POR_CATEGORIA: Record<string, string> = {
   Todos: "▦",
   Casa: "⌂",
@@ -12,11 +10,13 @@ const ICONE_POR_CATEGORIA: Record<string, string> = {
   Infantil: "♧",
 };
 
-type Props = { categorias: string[] };
+type Props = {
+  categorias: string[];
+  selecionada: string;
+  onSelecionar: (categoria: string) => void;
+};
 
-export default function CategoryChips({ categorias }: Props) {
-  const [selecionada, setSelecionada] = useState("Todos");
-
+export default function CategoryChips({ categorias, selecionada, onSelecionar }: Props) {
   return (
     <div className="flex gap-3 overflow-x-auto pb-2">
       {categorias.map((categoria) => {
@@ -25,7 +25,7 @@ export default function CategoryChips({ categorias }: Props) {
           <button
             key={categoria}
             type="button"
-            onClick={() => setSelecionada(categoria)}
+            onClick={() => onSelecionar(categoria)}
             className={`flex shrink-0 items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold ${
               ativa
                 ? "border-[#f5b942] bg-[#f5b942] text-[#07111f]"
