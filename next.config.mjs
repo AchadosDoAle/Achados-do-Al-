@@ -1,9 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**" },
-    ],
+  async redirects() {
+    return [
+      {
+        source: "/grupo",
+        destination: "https://whatsapp.com/channel/0029VbDCazP2UPBJKKFNVo3J",
+        permanent: false,
+      },
+    ];
   },
 };
 
