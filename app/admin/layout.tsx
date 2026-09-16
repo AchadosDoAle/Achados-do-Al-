@@ -16,6 +16,7 @@ export default function AdminLayout({
       </header>
       <nav className="flex gap-4 bg-brand-light/20 px-4 py-2 text-sm">
         <Link href="/admin/ofertas">Ofertas</Link>
+        <Link href="/admin/cupons">Cupons</Link>
         <Link href="/admin/integracoes">Integrações</Link>
         <Link href="/admin/relatorios">Relatórios</Link>
       </nav>

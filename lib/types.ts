@@ -93,3 +93,29 @@ export const ESTILO_LABEL: Record<EstiloTexto, string> = {
   infantil: "Infantil",
   minimalista: "Minimalista",
 };
+
+export type Cupom = {
+  id: string;
+  loja: string;
+  nomeCupom: string;
+  descontoPercentual?: number;
+  linkProdutos?: string;
+  corLoja: string;
+  validade?: string;
+  ativo: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+};
+
+export type CupomFormValues = Omit<Cupom, "id" | "criadoEm" | "atualizadoEm">;
+
+export const PALETA_CORES_LOJA = [
+  { nome: "Amarelo", cor: "#FFC93C" },
+  { nome: "Laranja", cor: "#FF9900" },
+  { nome: "Vermelho", cor: "#FF4D4D" },
+  { nome: "Rosa", cor: "#FF4F81" },
+  { nome: "Roxo", cor: "#8B5CF6" },
+  { nome: "Azul", cor: "#3B82F6" },
+  { nome: "Verde", cor: "#2FBF8F" },
+  { nome: "Cinza", cor: "#94A3B8" },
+] as const;

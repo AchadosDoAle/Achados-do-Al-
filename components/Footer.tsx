@@ -11,9 +11,9 @@ export default function Footer() {
         </p>
         <Link
           href="/login"
-          className="mt-3 inline-block text-[10px] text-text-muted/40 hover:text-text-muted"
+          className="mt-3 inline-block text-[11px] text-text-muted/60 hover:text-gold"
         >
-          ·
+          Acesso administrativo
         </Link>
       </Container>
     </footer>

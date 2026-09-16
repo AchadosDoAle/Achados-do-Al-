@@ -60,6 +60,9 @@ export default function Header() {
             <Link href="/categorias" className="hover:text-gold">
               Categorias
             </Link>
+            <Link href="/cupons" className="hover:text-gold">
+              Cupons
+            </Link>
             <Link href="/favoritos" className="hover:text-gold">
               Favoritos
             </Link>

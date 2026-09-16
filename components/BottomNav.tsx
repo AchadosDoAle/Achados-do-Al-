@@ -3,6 +3,7 @@ import Link from "next/link";
 const ITENS = [
   { href: "/", label: "Início", icone: "🏠" },
   { href: "/categorias", label: "Categorias", icone: "▦" },
+  { href: "/cupons", label: "Cupons", icone: "🎟️" },
   { href: "/favoritos", label: "Favoritos", icone: "♡" },
   {
     href: "https://whatsapp.com/channel/0029VbDCazP2UPBJKKFNVo3J",
@@ -21,7 +22,7 @@ export default function BottomNav() {
         <Link
           key={item.label}
           href={item.href}
-          className="flex flex-col items-center gap-0.5 px-3 py-1 text-xs text-text-muted"
+          className="flex flex-col items-center gap-0.5 px-2 py-1 text-[11px] text-text-muted"
         >
           <span aria-hidden="true" className="text-lg">
             {item.icone}
