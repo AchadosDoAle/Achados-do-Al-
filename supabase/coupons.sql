@@ -2,11 +2,26 @@
 -- sem medo — ele nunca apaga dados, só cria o que estiver faltando.
 
 create table if not exists public.coupons (
-  id uuid primary key default gen_random_uuid()
+create table if not exists public.coupons (
+  id uuid primary key default gen_random_uuid(),
+  loja text not null,
+  nome_cupom text not null,
+  desconto_percentual numeric,
+  valor_cupom text,
+  descricao text,
+  observacoes text,
+  link_produtos text,
+  cor_loja text not null default '#FFC93C',
+  validade timestamptz,
+  ativo boolean not null default true,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
 );
 
 -- Garante que TODAS as colunas existem, mesmo que a tabela já tivesse
--- sido criada antes de forma incompleta.
+-- sido criada antes de forma incompleta. Se você já tinha rodado uma
+-- versão anterior deste arquivo, estas linhas adicionam só as colunas
+-- novas, sem apagar nada que já existia.
 alter table public.coupons add column if not exists loja text;
 alter table public.coupons add column if not exists nome_cupom text;
 alter table public.coupons add column if not exists desconto_percentual numeric;
