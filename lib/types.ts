@@ -99,6 +99,9 @@ export type Cupom = {
   loja: string;
   nomeCupom: string;
   descontoPercentual?: number;
+  valorCupom?: string;
+  descricao?: string;
+  observacoes?: string;
   linkProdutos?: string;
   corLoja: string;
   validade?: string;

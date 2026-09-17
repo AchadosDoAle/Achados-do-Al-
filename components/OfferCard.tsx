@@ -9,7 +9,13 @@ function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export default function OfferCard({ oferta }: { oferta: Oferta }) {
+export default function OfferCard({
+  oferta,
+  atraso = 0,
+}: {
+  oferta: Oferta;
+  atraso?: number;
+}) {
   const [favorito, setFavorito] = useState(false);
 
   useEffect(() => {
@@ -24,7 +30,10 @@ export default function OfferCard({ oferta }: { oferta: Oferta }) {
       : null;
 
   return (
-    <div className="relative mx-auto w-full max-w-[220px] overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5">
+    <div
+      className="relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-gold/10 hover:ring-gold/30"
+      style={{ animationDelay: `${Math.min(atraso, 8) * 0.05}s` }}
+    >
       <button
         aria-label="Favoritar oferta"
         onClick={(e) => {
@@ -38,16 +47,16 @@ export default function OfferCard({ oferta }: { oferta: Oferta }) {
         {favorito ? "♥" : "♡"}
       </button>
 
-      <Link href={`/oferta/${oferta.slug}`} className="block">
-        <div className="relative aspect-[4/5] bg-bg-secondary">
-          {oferta.imagemPrincipal && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={oferta.imagemPrincipal}
-              alt={oferta.titulo}
-              className="h-full w-full object-cover"
-            />
-          )}
+      <Link href={`/oferta/${oferta.slug}`} className="group block">
+        <div className="relative aspect-[4/5] overflow-hidden bg-bg-secondary">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={oferta.imagemPrincipal || "/icon.png"}
+            alt={oferta.titulo}
+            className={`h-full w-full transition-transform duration-300 group-hover:scale-110 ${
+              oferta.imagemPrincipal ? "object-cover" : "object-contain p-8 opacity-70"
+            }`}
+          />
           {desconto && (
             <span className="absolute right-2 top-2 rounded-full bg-gold px-2 py-1 text-xs font-bold text-bg">
               -{desconto}%

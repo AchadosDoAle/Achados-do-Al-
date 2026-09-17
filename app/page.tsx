@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { criarClientePublico } from "@/lib/supabase/public";
 import { listarOfertas } from "@/lib/offers-repo";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function HomePage() {
   const supabase = criarClientePublico();

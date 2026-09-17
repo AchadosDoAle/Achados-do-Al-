@@ -12,6 +12,9 @@ const VALORES_INICIAIS: CupomFormValues = {
   loja: LOJAS[0],
   nomeCupom: "",
   descontoPercentual: undefined,
+  valorCupom: "",
+  descricao: "",
+  observacoes: "",
   linkProdutos: "",
   corLoja: PALETA_CORES_LOJA[0].cor,
   validade: "",
@@ -62,10 +65,12 @@ export default function CupomForm({
       }
       router.push("/admin/cupons");
       router.refresh();
-    } catch (erro) {
+    } catch (erro: any) {
       console.error(erro);
       setErroSalvar(
-        "Não foi possível salvar o cupom. Confira sua conexão e tente de novo."
+        `Não foi possível salvar o cupom${
+          erro?.message ? `: ${erro.message}` : ""
+        }. Confira se a tabela "coupons" já existe no Supabase (rode supabase/coupons.sql).`
       );
     } finally {
       setSalvando(false);
@@ -116,6 +121,37 @@ export default function CupomForm({
                 )
               }
             />
+            <p className="mt-1 text-xs text-ink/50">
+              Use este campo só quando o desconto for uma porcentagem
+              simples. Para descontos em reais ou regras mais específicas,
+              use o campo "Valor do cupom" abaixo.
+            </p>
+          </Campo>
+
+          <Campo rotulo="Valor do cupom">
+            <input
+              className={classeInput}
+              value={valores.valorCupom}
+              onChange={(e) => atualizarCampo("valorCupom", e.target.value)}
+              placeholder='Ex: "10% OFF" ou "R$30,00 de desconto"'
+            />
+            <p className="mt-1 text-xs text-ink/50">
+              Texto livre que aparece em destaque no card do cupom — use
+              quando não for uma simples porcentagem. Ex: "Receba R$30,00 de
+              desconto para compras a partir de R$99".
+            </p>
+          </Campo>
+
+          <Campo rotulo="Descrição do cupom (se houver)">
+            <textarea
+              className={classeInput}
+              rows={3}
+              value={valores.descricao}
+              onChange={(e) => atualizarCampo("descricao", e.target.value)}
+              placeholder={
+                "Ex: Tecnologia | Compra mínima: R$149 | Desconto máx.: R$200\nVálido somente em 16.09, enquanto durarem os estoques."
+              }
+            />
           </Campo>
 
           <Campo rotulo="Link (ou lista) dos produtos exclusivos deste cupom">
@@ -125,6 +161,20 @@ export default function CupomForm({
               value={valores.linkProdutos}
               onChange={(e) => atualizarCampo("linkProdutos", e.target.value)}
               placeholder="Cole o link da promoção, ou liste os produtos que o cupom vale"
+            />
+            <p className="mt-1 text-xs text-ink/50">
+              Se for um link, ele abre automaticamente quando alguém tocar
+              no nome do cupom na página pública.
+            </p>
+          </Campo>
+
+          <Campo rotulo="Observações / termos de uso">
+            <textarea
+              className={classeInput}
+              rows={3}
+              value={valores.observacoes}
+              onChange={(e) => atualizarCampo("observacoes", e.target.value)}
+              placeholder="Ex: Não cumulativo com outras promoções. Válido 1 uso por CPF. Frete não incluso."
             />
           </Campo>
 

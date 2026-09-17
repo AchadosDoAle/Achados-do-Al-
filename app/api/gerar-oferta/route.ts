@@ -26,37 +26,72 @@ function montarPrompt({
   return `Você escreve publicações promocionais em português do Brasil para o
 canal "Achado do Alê", que divulga achadinhos e ofertas de afiliados.
 
-FORMATO OBRIGATÓRIO (siga exatamente esta estrutura, sem markdown, sem
-transformar links em hiperlink, links sempre em texto puro):
+Siga MUITO de perto o exemplo abaixo — é o padrão exato de tom, estrutura,
+pontuação e uso de emojis que o canal usa (só troque os dados pelos da
+oferta atual, nunca copie o produto do exemplo):
 
-[Título curto e chamativo com emojis]
+---
+🫙🔥 *POTES ELECTROLUX COM QUALIDADE!*
 
-🏁 [NOME DA LOJA]
+🏁 *MERCADO LIVRE*
 
-🪩 [NOME DO PRODUTO EM MAIÚSCULAS QUANDO FIZER SENTIDO]
+🪩 *KIT COM 10 POTES HERMÉTICOS ELECTROLUX DE PLÁSTICO*
 
-❌ *~DE R$ XX,XX~* (omita esta linha se não houver preço antigo)
-💵 *POR R$ XX,XX*
-💳 *OU EM ATÉ X VEZES SEM JUROS* (omita se não houver parcelamento)
-Cupom: *CUPOM* (omita se não houver cupom)
+❌ ~De: R$ 129,00~
+💵 *Por R$ 71,00 no Pix*
 
-[Descrição 1 — uma frase]
-[Descrição 2 — uma frase]
-[Descrição 3 — uma frase]
+🎟️ Use o cupom: *DESCONTOEMCASA*
+💳 Selecione o pagamento via Pix
 
-⚠️ *PREÇO, CUPOM, PARCELAMENTO, FRETE E ESTOQUE SUJEITOS À DISPONIBILIDADE. A OFERTA PODE ENCERRAR A QUALQUER MOMENTO!*
+🫙 Kit com 10 potes herméticos
+✨ Ideais para organizar e conservar alimentos
+🏠 Perfeitos para deixar a cozinha mais prática e organizada
 
-🛒 *COMPRE AQUI:*
-[link do produto em texto puro]
+🛒 Compre aqui:
+https://meli.la/1rQRQWZ
+
+⚠️ *PARA GARANTIR O VALOR, USE O CUPOM E SELECIONE PIX.*
+⚠️ *PREÇO, CUPOM, CONDIÇÕES DE PAGAMENTO E ESTOQUE SUJEITOS À DISPONIBILIDADE.*
 
 📲 *VAGAS NO GRUPO DO WHATSAPP NESSE LINK:*
 ${LINK_CANAL_WHATSAPP}
+---
 
-REGRAS IMPORTANTES:
+REGRAS DE MONTAGEM (adapte de acordo com os dados que a oferta realmente
+tem — nunca invente um dado que falta):
+
+1. Título: 1 ou 2 emojis relacionados ao produto (não fixos, escolha
+   conforme o item) + frase curta e chamativa em CAIXA ALTA, negrito.
+2. 🏁 *[LOJA]* em negrito.
+3. 🪩 *[NOME DO PRODUTO]* em negrito.
+4. Se houver preço antigo: "❌ ~De: R$ XX,XX~" (til simples, sem negrito,
+   só riscado).
+5. Preço atual: "💵 *Por R$ XX,XX*". Se esse valor for especificamente o
+   preço no Pix, acrescente "no Pix" no final da linha, ex:
+   "💵 *Por R$ XX,XX no Pix*". Se não houver preço no Pix, só "*Por R$ XX,XX*".
+6. Se houver cupom: "🎟️ Use o cupom: *CÓDIGO*".
+7. Linha de pagamento: se houver preço no Pix, "💳 Selecione o pagamento
+   via Pix"; se em vez disso houver parcelamento, use algo como
+   "💳 Ou parcele em até Xx sem juros"; se não houver nenhum dos dois,
+   omita esta linha.
+8. Exatamente 3 linhas de descrição, cada uma com um emoji relevante ao
+   produto no início (varie os emojis conforme o item — não repita os do
+   exemplo se não fizerem sentido para o produto atual).
+9. "🛒 Compre aqui:" seguido do link do produto em texto puro (nunca em
+   markdown, nunca como hiperlink).
+10. Linha(s) de aviso: se houver cupom E preço no Pix ao mesmo tempo,
+    inclua "⚠️ *PARA GARANTIR O VALOR, USE O CUPOM E SELECIONE PIX.*"
+    antes do aviso padrão. Sempre inclua o aviso padrão:
+    "⚠️ *PREÇO, CUPOM, CONDIÇÕES DE PAGAMENTO E ESTOQUE SUJEITOS À
+    DISPONIBILIDADE.*"
+11. Por último, sempre: "📲 *VAGAS NO GRUPO DO WHATSAPP NESSE LINK:*"
+    seguido de ${LINK_CANAL_WHATSAPP} em texto puro.
+
+REGRAS GERAIS:
 - Use linguagem simples, natural e persuasiva, sem exageros falsos.
-- NUNCA invente especificação, característica ou vantagem que não esteja
-  nos dados abaixo. Se faltar um dado necessário para o formato, escreva
-  uma frase neutra no lugar em vez de inventar.
+- NUNCA invente especificação, característica, cupom ou vantagem que não
+  esteja nos dados abaixo. Se faltar um dado necessário, omita a linha
+  correspondente em vez de inventar.
 - Corrija a ortografia e a gramática do texto original, se houver.
 - Estilo pedido para esta publicação: ${estilo}.
 - Ao final da sua resposta, se algum dado importante estiver faltando
@@ -71,7 +106,8 @@ ${textoAtual ? `TEXTO ATUAL (a ser editado, não recriado do zero):\n${textoAtua
 ${comando ? `COMANDO DO USUÁRIO PARA ESTE PEDIDO: "${comando}"` : "Gere a publicação completa seguindo o formato acima."}
 
 Responda apenas com o texto final da publicação (e a linha "AVISOS:" no
-final, se necessária). Não explique o que você fez.`;
+final, se necessária). Não explique o que você fez, e não copie o produto
+do exemplo — use somente os DADOS DA OFERTA informados acima.`;
 }
 
 export async function POST(req: Request) {

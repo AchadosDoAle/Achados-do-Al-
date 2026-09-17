@@ -6,7 +6,7 @@ import CupomCard from "@/components/CupomCard";
 import { criarClientePublico } from "@/lib/supabase/public";
 import { listarCupons } from "@/lib/coupons-repo";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function CuponsPage() {
   const supabase = criarClientePublico();

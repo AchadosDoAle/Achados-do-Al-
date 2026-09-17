@@ -106,6 +106,41 @@ export default function OfferForm({
 
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [erroImagem, setErroImagem] = useState("");
+  const [buscandoImagemAuto, setBuscandoImagemAuto] = useState(false);
+  const [statusImagemAuto, setStatusImagemAuto] = useState("");
+
+  async function buscarImagemAutomaticamente() {
+    if (!valores.linkProduto.trim()) {
+      setStatusImagemAuto("Cole o link do produto antes de buscar a imagem.");
+      return;
+    }
+    setBuscandoImagemAuto(true);
+    setStatusImagemAuto("");
+    try {
+      const resposta = await fetch("/api/buscar-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ link: valores.linkProduto }),
+      });
+      const dados = await resposta.json();
+      if (dados.imagemUrl) {
+        atualizarCampo("imagemPrincipal", dados.imagemUrl);
+        setPreviewImagem(dados.imagemUrl);
+        setStatusImagemAuto("✅ Imagem encontrada e adicionada!");
+      } else {
+        setStatusImagemAuto(
+          `${dados.erro || "Não encontramos a imagem automaticamente."} Envie manualmente abaixo.`
+        );
+      }
+    } catch (erro) {
+      console.error(erro);
+      setStatusImagemAuto(
+        "Não foi possível buscar a imagem automaticamente. Envie manualmente abaixo."
+      );
+    } finally {
+      setBuscandoImagemAuto(false);
+    }
+  }
 
   async function aoEscolherImagem(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0];
@@ -301,6 +336,7 @@ export default function OfferForm({
                 className={classeInput}
                 value={valores.linkCupom}
                 onChange={(e) => atualizarCampo("linkCupom", e.target.value)}
+                placeholder="Preencha só se o cupom precisar ser resgatado em um link"
               />
             </Campo>
           </div>
@@ -415,6 +451,19 @@ export default function OfferForm({
               placeholder="Cole aqui o link de afiliado"
             />
           </Campo>
+          <button
+            type="button"
+            onClick={buscarImagemAutomaticamente}
+            disabled={buscandoImagemAuto}
+            className="w-fit rounded-lg bg-brand/10 px-3 py-2 text-xs font-semibold text-brand disabled:opacity-60"
+          >
+            {buscandoImagemAuto
+              ? "Buscando imagem..."
+              : "🔍 Buscar foto do produto automaticamente"}
+          </button>
+          {statusImagemAuto && (
+            <p className="text-xs text-ink/60">{statusImagemAuto}</p>
+          )}
           {valores.linkProduto &&
             !linkParecePertencerALoja(valores.linkProduto, valores.loja) && (
               <p className="text-xs text-accent-dark">
