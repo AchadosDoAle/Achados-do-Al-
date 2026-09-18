@@ -15,8 +15,10 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
       <Header />
-      <Hero />
-      <OfertasGrid ofertas={ofertas} />
+      <Hero ofertaDestaque={ofertas[0]} />
+      <section id="ofertas" className="scroll-mt-24">
+        <OfertasGrid ofertas={ofertas} />
+      </section>
       <Footer />
       <BottomNav />
     </main>
