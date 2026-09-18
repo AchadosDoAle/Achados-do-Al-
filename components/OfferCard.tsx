@@ -23,10 +23,13 @@ export default function OfferCard({
     setFavorito(ehFavorito(oferta.id));
   }, [oferta.id]);
 
+  // O selo usa o melhor preço disponível: Pix quando houver;
+  // caso contrário, usa o preço atual normal.
+  const precoParaDesconto = oferta.precoPix ?? oferta.precoAtual;
   const desconto =
-    oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual
+    oferta.precoAntigo && oferta.precoAntigo > precoParaDesconto
       ? Math.round(
-          ((oferta.precoAntigo - oferta.precoAtual) / oferta.precoAntigo) * 100
+          ((oferta.precoAntigo - precoParaDesconto) / oferta.precoAntigo) * 100
         )
       : null;
 
@@ -83,6 +86,11 @@ export default function OfferCard({
             <span className="text-lg font-bold text-gold">
               {formatarPreco(oferta.precoAtual)}
             </span>
+            {oferta.precoPix && (
+              <span className="mt-1 block text-sm font-bold text-trust">
+                {formatarPreco(oferta.precoPix)} no Pix
+              </span>
+            )}
           </div>
 
           {oferta.cupom && (

@@ -63,12 +63,22 @@ export default async function PaginaOferta({
 
   const expirada = oferta.status === "expirada";
 
+  // Quando existe preço à vista no Pix, ele é o menor preço efetivo da oferta
+  // e por isso é usado como referência para o percentual de desconto.
+  const precoParaDesconto = oferta.precoPix ?? oferta.precoAtual;
   const desconto =
-    oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual
+    oferta.precoAntigo && oferta.precoAntigo > precoParaDesconto
       ? Math.round(
-          ((oferta.precoAntigo - oferta.precoAtual) / oferta.precoAntigo) * 100
+          ((oferta.precoAntigo - precoParaDesconto) / oferta.precoAntigo) * 100
         )
       : null;
+
+  const totalParcelado =
+    oferta.parcelas && oferta.valorParcela
+      ? oferta.parcelas * oferta.valorParcela
+      : null;
+  const parcelamentoSemJuros =
+    totalParcelado != null && Math.abs(totalParcelado - oferta.precoAtual) <= 0.05;
 
   const linkFinal = oferta.usarLinkRedirecionamento
     ? `${URL_SITE}/r/${oferta.id}`
@@ -142,13 +152,21 @@ export default async function PaginaOferta({
             </div>
 
             {oferta.precoPix && (
-              <p className="mt-1 text-sm text-trust">
-                {formatarPreco(oferta.precoPix)} à vista no Pix
-              </p>
+              <div className="mt-3 rounded-xl2 border border-trust/25 bg-trust/10 px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-trust">
+                  💸 Melhor preço à vista no Pix
+                </p>
+                <p className="mt-1 font-display text-2xl font-extrabold text-trust">
+                  {formatarPreco(oferta.precoPix)}
+                </p>
+              </div>
             )}
             {oferta.parcelas && oferta.valorParcela && (
-              <p className="text-sm text-text-muted">
+              <p className="mt-2 text-sm text-text-muted">
                 ou {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}
+                {parcelamentoSemJuros ? (
+                  <span className="font-semibold text-text"> sem juros</span>
+                ) : null}
               </p>
             )}
             {(oferta.freteGratis || oferta.freteCondicao) && (
