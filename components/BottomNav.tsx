@@ -6,7 +6,7 @@ const ITENS = [
   { href: "/cupons", label: "Cupons", icone: "🎟️" },
   { href: "/favoritos", label: "Favoritos", icone: "♡" },
   {
-    href: "https://whatsapp.com/channel/0029VbDCazP2UPBJKKFNVo3J",
+    href: "/grupo",
     label: "Canal",
     icone: "➤",
   },

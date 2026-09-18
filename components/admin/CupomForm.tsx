@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Campo, classeInput } from "./Campo";
-import { LOJAS } from "@/lib/mock-data";
+import { LOJAS, LOJAS_AFILIADAS, LOJA_OUTROS } from "@/lib/mock-data";
 import { Cupom, CupomFormValues, PALETA_CORES_LOJA } from "@/lib/types";
 import { salvarNovoCupom, atualizarCupom } from "@/lib/coupons-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
@@ -31,6 +31,18 @@ export default function CupomForm({
   const [valores, setValores] = useState<CupomFormValues>(
     cupomExistente ?? VALORES_INICIAIS
   );
+  const lojaExistente = cupomExistente?.loja ?? LOJAS[0];
+  const lojaExistenteEhAfiliada = LOJAS_AFILIADAS.includes(lojaExistente);
+  const [lojaSelecionada, setLojaSelecionada] = useState(
+    lojaExistenteEhAfiliada ? lojaExistente : cupomExistente ? LOJA_OUTROS : LOJAS[0]
+  );
+  const [lojaPersonalizada, setLojaPersonalizada] = useState(
+    cupomExistente &&
+      !lojaExistenteEhAfiliada &&
+      lojaExistente !== LOJA_OUTROS
+      ? lojaExistente
+      : ""
+  );
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState("");
@@ -44,7 +56,11 @@ export default function CupomForm({
 
   function validar(): boolean {
     const novosErros: Record<string, string> = {};
-    if (!valores.loja) novosErros.loja = "Escolha a loja.";
+    if (lojaSelecionada === LOJA_OUTROS && !lojaPersonalizada.trim()) {
+      novosErros.loja = "Informe o nome da loja.";
+    } else if (!valores.loja) {
+      novosErros.loja = "Escolha a loja.";
+    }
     if (!valores.nomeCupom.trim())
       novosErros.nomeCupom = "Informe o nome/código do cupom.";
     setErros(novosErros);
@@ -82,17 +98,39 @@ export default function CupomForm({
       <section className="rounded-xl2 bg-white p-4 ring-1 ring-ink/10">
         <div className="flex flex-col gap-3">
           <Campo rotulo="Loja" obrigatorio erro={erros.loja}>
-            <select
-              className={classeInput}
-              value={valores.loja}
-              onChange={(e) => atualizarCampo("loja", e.target.value)}
-            >
-              {LOJAS.map((loja) => (
-                <option key={loja} value={loja}>
-                  {loja}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-col gap-2">
+              <select
+                className={classeInput}
+                value={lojaSelecionada}
+                onChange={(e) => {
+                  const novaLoja = e.target.value;
+                  setLojaSelecionada(novaLoja);
+                  atualizarCampo(
+                    "loja",
+                    novaLoja === LOJA_OUTROS ? lojaPersonalizada : novaLoja
+                  );
+                }}
+              >
+                {LOJAS.map((loja) => (
+                  <option key={loja} value={loja}>
+                    {loja}
+                  </option>
+                ))}
+              </select>
+
+              {lojaSelecionada === LOJA_OUTROS && (
+                <input
+                  className={classeInput}
+                  value={lojaPersonalizada}
+                  onChange={(e) => {
+                    setLojaPersonalizada(e.target.value);
+                    atualizarCampo("loja", e.target.value);
+                  }}
+                  placeholder="Digite o nome da loja"
+                  autoFocus
+                />
+              )}
+            </div>
           </Campo>
 
           <Campo

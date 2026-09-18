@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Campo, classeInput } from "./Campo";
-import { CATEGORIAS, LOJAS } from "@/lib/mock-data";
+import {
+  CATEGORIAS,
+  LOJAS,
+  LOJAS_AFILIADAS,
+  LOJA_OUTROS,
+} from "@/lib/mock-data";
 import { Oferta, OfertaFormValues, STATUS_LABEL, StatusOferta } from "@/lib/types";
 import { salvarNovaOferta, atualizarOferta } from "@/lib/offers-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
@@ -53,6 +58,18 @@ export default function OfferForm({
   const [valores, setValores] = useState<OfertaFormValues>(
     ofertaExistente ?? VALORES_INICIAIS
   );
+  const lojaExistente = ofertaExistente?.loja ?? LOJAS[0];
+  const lojaExistenteEhAfiliada = LOJAS_AFILIADAS.includes(lojaExistente);
+  const [lojaSelecionada, setLojaSelecionada] = useState(
+    lojaExistenteEhAfiliada ? lojaExistente : ofertaExistente ? LOJA_OUTROS : LOJAS[0]
+  );
+  const [lojaPersonalizada, setLojaPersonalizada] = useState(
+    ofertaExistente &&
+      !lojaExistenteEhAfiliada &&
+      lojaExistente !== LOJA_OUTROS
+      ? lojaExistente
+      : ""
+  );
   const [erros, setErros] = useState<Record<string, string>>({});
   const [previewImagem, setPreviewImagem] = useState<string | undefined>(
     ofertaExistente?.imagemPrincipal
@@ -70,7 +87,11 @@ export default function OfferForm({
   function validar(): boolean {
     const novosErros: Record<string, string> = {};
     if (!valores.titulo.trim()) novosErros.titulo = "Informe o nome do produto.";
-    if (!valores.loja) novosErros.loja = "Escolha a loja.";
+    if (lojaSelecionada === LOJA_OUTROS && !lojaPersonalizada.trim()) {
+      novosErros.loja = "Informe o nome da loja.";
+    } else if (!valores.loja) {
+      novosErros.loja = "Escolha a loja.";
+    }
     if (!valores.categoria) novosErros.categoria = "Escolha a categoria.";
     if (!valores.precoAtual || valores.precoAtual <= 0)
       novosErros.precoAtual = "Informe o preço atual.";
@@ -106,6 +127,41 @@ export default function OfferForm({
 
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [erroImagem, setErroImagem] = useState("");
+  const [buscandoImagemAuto, setBuscandoImagemAuto] = useState(false);
+  const [statusImagemAuto, setStatusImagemAuto] = useState("");
+
+  async function buscarImagemAutomaticamente() {
+    if (!valores.linkProduto.trim()) {
+      setStatusImagemAuto("Cole o link do produto antes de buscar a imagem.");
+      return;
+    }
+    setBuscandoImagemAuto(true);
+    setStatusImagemAuto("");
+    try {
+      const resposta = await fetch("/api/buscar-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ link: valores.linkProduto }),
+      });
+      const dados = await resposta.json();
+      if (dados.imagemUrl) {
+        atualizarCampo("imagemPrincipal", dados.imagemUrl);
+        setPreviewImagem(dados.imagemUrl);
+        setStatusImagemAuto("✅ Imagem encontrada e adicionada!");
+      } else {
+        setStatusImagemAuto(
+          `${dados.erro || "Não encontramos a imagem automaticamente."} Envie manualmente abaixo.`
+        );
+      }
+    } catch (erro) {
+      console.error(erro);
+      setStatusImagemAuto(
+        "Não foi possível buscar a imagem automaticamente. Envie manualmente abaixo."
+      );
+    } finally {
+      setBuscandoImagemAuto(false);
+    }
+  }
 
   async function aoEscolherImagem(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0];
@@ -156,17 +212,39 @@ export default function OfferForm({
 
           <div className="grid grid-cols-2 gap-3">
             <Campo rotulo="Loja" obrigatorio erro={erros.loja}>
-              <select
-                className={classeInput}
-                value={valores.loja}
-                onChange={(e) => atualizarCampo("loja", e.target.value)}
-              >
-                {LOJAS.map((loja) => (
-                  <option key={loja} value={loja}>
-                    {loja}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-col gap-2">
+                <select
+                  className={classeInput}
+                  value={lojaSelecionada}
+                  onChange={(e) => {
+                    const novaLoja = e.target.value;
+                    setLojaSelecionada(novaLoja);
+                    atualizarCampo(
+                      "loja",
+                      novaLoja === LOJA_OUTROS ? lojaPersonalizada : novaLoja
+                    );
+                  }}
+                >
+                  {LOJAS.map((loja) => (
+                    <option key={loja} value={loja}>
+                      {loja}
+                    </option>
+                  ))}
+                </select>
+
+                {lojaSelecionada === LOJA_OUTROS && (
+                  <input
+                    className={classeInput}
+                    value={lojaPersonalizada}
+                    onChange={(e) => {
+                      setLojaPersonalizada(e.target.value);
+                      atualizarCampo("loja", e.target.value);
+                    }}
+                    placeholder="Digite o nome da loja"
+                    autoFocus
+                  />
+                )}
+              </div>
             </Campo>
 
             <Campo rotulo="Categoria" obrigatorio erro={erros.categoria}>
@@ -301,6 +379,7 @@ export default function OfferForm({
                 className={classeInput}
                 value={valores.linkCupom}
                 onChange={(e) => atualizarCampo("linkCupom", e.target.value)}
+                placeholder="Preencha só se o cupom precisar ser resgatado em um link"
               />
             </Campo>
           </div>
@@ -415,6 +494,19 @@ export default function OfferForm({
               placeholder="Cole aqui o link de afiliado"
             />
           </Campo>
+          <button
+            type="button"
+            onClick={buscarImagemAutomaticamente}
+            disabled={buscandoImagemAuto}
+            className="w-fit rounded-lg bg-brand/10 px-3 py-2 text-xs font-semibold text-brand disabled:opacity-60"
+          >
+            {buscandoImagemAuto
+              ? "Buscando imagem..."
+              : "🔍 Buscar foto do produto automaticamente"}
+          </button>
+          {statusImagemAuto && (
+            <p className="text-xs text-ink/60">{statusImagemAuto}</p>
+          )}
           {valores.linkProduto &&
             !linkParecePertencerALoja(valores.linkProduto, valores.loja) && (
               <p className="text-xs text-accent-dark">

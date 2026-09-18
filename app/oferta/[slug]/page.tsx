@@ -11,6 +11,8 @@ import Container from "@/components/Container";
 
 const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 
+export const revalidate = 0;
+
 async function buscar(slug: string) {
   const supabase = criarClientePublico();
   return buscarOfertaPorSlug(supabase, slug);
@@ -85,14 +87,16 @@ export default async function PaginaOferta({
           {/* Imagem */}
           <div className="order-1 mx-auto w-full max-w-[500px] shrink-0 md:order-2">
             <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 md:h-[500px] md:w-[500px]">
-              {oferta.imagemPrincipal && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={oferta.imagemPrincipal}
-                  alt={oferta.titulo}
-                  className="h-full w-full object-cover"
-                />
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={oferta.imagemPrincipal || "/icon.png"}
+                alt={oferta.titulo}
+                className={`h-full w-full ${
+                  oferta.imagemPrincipal
+                    ? "object-cover"
+                    : "object-contain p-16 opacity-70"
+                }`}
+              />
               {desconto && (
                 <span className="absolute right-3 top-3 rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg">
                   -{desconto}%
@@ -137,9 +141,19 @@ export default async function PaginaOferta({
               </span>
             )}
 
-            {oferta.cupom && (
-              <div className="mt-4">
-                <BotaoCopiarCupom cupom={oferta.cupom} />
+            {(oferta.cupom || oferta.linkCupom) && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {oferta.cupom && <BotaoCopiarCupom cupom={oferta.cupom} />}
+                {oferta.linkCupom && (
+                  <a
+                    href={oferta.linkCupom}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow sponsored"
+                    className="rounded-lg bg-gold/15 px-4 py-2 text-sm font-medium text-gold"
+                  >
+                    🔗 Resgatar cupom no site da loja
+                  </a>
+                )}
               </div>
             )}
 
@@ -177,7 +191,7 @@ export default async function PaginaOferta({
             </div>
 
             <a
-              href="https://whatsapp.com/channel/0029VbDCazP2UPBJKKFNVo3J"
+              href="/grupo"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 block rounded-xl2 bg-trust/15 py-3 text-center text-sm font-medium text-trust"

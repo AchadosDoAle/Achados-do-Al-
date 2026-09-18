@@ -67,7 +67,7 @@ export default function Header() {
               Favoritos
             </Link>
             <a
-              href="https://whatsapp.com/channel/0029VbDCazP2UPBJKKFNVo3J"
+              href="/grupo"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-gold px-4 py-2 text-bg hover:bg-gold-light"

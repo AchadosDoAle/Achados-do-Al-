@@ -7,7 +7,7 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl2 bg-card p-4 ring-1 ring-white/5 ${
+      className={`relative overflow-hidden rounded-xl2 bg-card p-4 ring-1 ring-white/5 animar-entrada transition-transform duration-200 hover:-translate-y-1 ${
         expirado ? "grayscale" : ""
       }`}
     >

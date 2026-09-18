@@ -17,7 +17,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Achado do Alê — Achadinhos e ofertas todo dia",
   description:
-    "Ofertas e cupons selecionados de Mercado Livre, Amazon, Magalu, Shopee e muito mais.",
+    "Ofertas e cupons selecionados de Mercado Livre, Amazon, Netshoes, Magalu, Shopee, ZZ Mall, BAW, AliExpress, Natura, Avon e outras lojas.",
   icons: {
     icon: "/icon.png",
     apple: "/icon.png",

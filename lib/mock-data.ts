@@ -10,17 +10,42 @@ export const CATEGORIAS = [
   "Infantil",
 ];
 
-export const LOJAS = [
+// Lojas em que o Achado do Alê trabalha com links de afiliado.
+// "Outros" existe apenas no painel: ao selecionar essa opção,
+// o nome real da loja é digitado manualmente e é esse nome que fica salvo.
+export const LOJAS_AFILIADAS = [
   "Mercado Livre",
   "Amazon",
-  "Magalu",
+  "Netshoes",
+  "Magalu - Magazine Luiza",
   "Shopee",
+  "ZZ Mall",
+  "BAW",
+  "AliExpress",
   "Natura",
   "Avon",
-  "Malwee",
-  "O Boticário",
-  "Outra loja",
 ];
+
+export const LOJA_OUTROS = "Outros";
+export const LOJAS = [...LOJAS_AFILIADAS, LOJA_OUTROS];
+
+// Mantém compatibilidade com registros antigos que já podem estar no Supabase.
+const ALIASES_LOJAS: Record<string, string> = {
+  MercadoLivre: "Mercado Livre",
+  Magalu: "Magalu - Magazine Luiza",
+  "Magazine Luiza": "Magalu - Magazine Luiza",
+  "MagaLu-Magazine Luiza": "Magalu - Magazine Luiza",
+  Baw: "BAW",
+  "Outra loja": LOJA_OUTROS,
+};
+
+export function normalizarNomeLoja(loja: string): string {
+  return ALIASES_LOJAS[loja] ?? loja;
+}
+
+export function lojaEhAfiliada(loja: string): boolean {
+  return LOJAS_AFILIADAS.includes(normalizarNomeLoja(loja));
+}
 
 const agora = new Date().toISOString();
 
@@ -29,7 +54,7 @@ export const OFERTAS_EXEMPLO: Oferta[] = [
     id: "1",
     slug: "fritadeira-eletrica-air-fryer-5l",
     titulo: "Fritadeira elétrica Air Fryer 5L",
-    loja: "Magalu",
+    loja: "Magalu - Magazine Luiza",
     categoria: "Casa",
     imagemPrincipal: "/placeholder-produto.png",
     precoAntigo: 349.9,
