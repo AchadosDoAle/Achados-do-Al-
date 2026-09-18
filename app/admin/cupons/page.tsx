@@ -34,63 +34,85 @@ export default function ListaCuponsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold text-ink">Cupons</h1>
+      <div className="mb-6 flex flex-col items-start gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-ink">Cupons</h1>
+          <p className="mt-1 text-sm text-ink/55">
+            Gerencie cupons com uma visualização mais atual e direta.
+          </p>
+        </div>
         <Link
           href="/admin/cupons/novo"
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white"
+          className="rounded-[16px] bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
         >
-          Novo cupom
+          + Novo cupom
         </Link>
       </div>
 
       {carregando ? (
         <p className="text-sm text-ink/60">Carregando...</p>
       ) : cupons.length === 0 ? (
-        <p className="text-sm text-ink/60">Nenhum cupom cadastrado ainda.</p>
+        <div className="rounded-[22px] border border-brand/10 bg-white p-5 text-sm text-ink/60 shadow-sm">
+          Nenhum cupom cadastrado ainda.
+        </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid gap-4 xl:grid-cols-2">
           {cupons.map((cupom) => {
             const expirado = cupomExpirado(cupom);
             return (
               <li
                 key={cupom.id}
-                className="rounded-xl2 bg-white p-3 ring-1 ring-ink/10"
+                className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm"
               >
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p
-                      className="text-sm font-bold"
-                      style={{ color: cupom.corLoja }}
-                    >
+                    <p className="text-base font-bold" style={{ color: cupom.corLoja }}>
                       CUPOM {cupom.nomeCupom}
                     </p>
-                    <p className="text-xs text-ink/50">{cupom.loja}</p>
+                    <p className="mt-1 text-sm text-ink/55">{cupom.loja}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex flex-wrap justify-end gap-2">
                     {expirado && (
-                      <span className="rounded-full bg-ink/10 px-2 py-0.5 text-xs font-medium text-ink/50">
+                      <span className="rounded-full bg-ink/10 px-2.5 py-1 text-xs font-medium text-ink/50">
                         Esgotado
                       </span>
                     )}
                     {!cupom.ativo && (
-                      <span className="rounded-full bg-ink/10 px-2 py-0.5 text-xs font-medium text-ink/50">
+                      <span className="rounded-full bg-ink/10 px-2.5 py-1 text-xs font-medium text-ink/50">
                         Inativo
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-3 flex gap-2 text-xs font-medium">
+                <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/60">
+                  {cupom.descontoPercentual ? (
+                    <div className="rounded-full bg-discount/25 px-3 py-1 font-medium text-ink">
+                      {cupom.descontoPercentual}% OFF
+                    </div>
+                  ) : null}
+                  {cupom.valorCupom ? (
+                    <div className="rounded-full bg-brand/5 px-3 py-1">{cupom.valorCupom}</div>
+                  ) : null}
+                  {cupom.validade ? (
+                    <div className="rounded-full bg-cream px-3 py-1">
+                      Validade configurada
+                    </div>
+                  ) : (
+                    <div className="rounded-full bg-cream px-3 py-1">Sem validade</div>
+                  )}
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">
                   <Link
                     href={`/admin/cupons/${cupom.id}/editar`}
-                    className="rounded-lg bg-cream px-3 py-1.5 text-ink/70 ring-1 ring-ink/10"
+                    className="rounded-xl bg-cream px-3 py-2 text-ink/80 ring-1 ring-ink/10"
                   >
                     Editar
                   </Link>
                   <button
                     onClick={() => aoExcluir(cupom.id)}
-                    className="rounded-lg bg-cream px-3 py-1.5 text-accent-dark ring-1 ring-ink/10"
+                    className="rounded-xl bg-cream px-3 py-2 text-accent-dark ring-1 ring-ink/10"
                   >
                     Excluir
                   </button>

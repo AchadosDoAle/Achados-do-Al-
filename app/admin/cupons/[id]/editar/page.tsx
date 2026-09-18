@@ -26,9 +26,12 @@ export default function EditarCupomPage() {
 
   return (
     <div>
-      <h1 className="mb-4 font-display text-xl font-bold text-ink">
-        Editar cupom
-      </h1>
+      <div className="mb-5">
+        <h1 className="font-display text-2xl font-bold text-ink">Editar cupom</h1>
+        <p className="mt-1 text-sm text-ink/55">
+          Ajuste dados, validade e horário no fuso de Brasília.
+        </p>
+      </div>
       <CupomForm cupomExistente={cupom} />
     </div>
   );

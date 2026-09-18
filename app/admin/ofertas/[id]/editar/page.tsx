@@ -26,9 +26,12 @@ export default function EditarOfertaPage() {
 
   return (
     <div>
-      <h1 className="mb-4 font-display text-xl font-bold text-ink">
-        Editar oferta
-      </h1>
+      <div className="mb-5">
+        <h1 className="font-display text-2xl font-bold text-ink">Editar oferta</h1>
+        <p className="mt-1 text-sm text-ink/55">
+          Atualize os dados da oferta mantendo a organização em blocos.
+        </p>
+      </div>
       <OfferForm ofertaExistente={oferta} />
     </div>
   );

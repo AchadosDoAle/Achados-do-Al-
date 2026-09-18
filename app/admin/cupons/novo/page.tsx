@@ -3,9 +3,12 @@ import CupomForm from "@/components/admin/CupomForm";
 export default function NovoCupomPage() {
   return (
     <div>
-      <h1 className="mb-4 font-display text-xl font-bold text-ink">
-        Novo cupom
-      </h1>
+      <div className="mb-5">
+        <h1 className="font-display text-2xl font-bold text-ink">Novo cupom</h1>
+        <p className="mt-1 text-sm text-ink/55">
+          Agora com data e horário separados para evitar perda da validade ao editar.
+        </p>
+      </div>
       <CupomForm />
     </div>
   );

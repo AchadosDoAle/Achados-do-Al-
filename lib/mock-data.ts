@@ -1,5 +1,7 @@
 import { Oferta } from "./types";
 
+export const CATEGORIA_OUTROS = "Outras";
+
 export const CATEGORIAS = [
   "Todos",
   "Casa",
@@ -8,6 +10,36 @@ export const CATEGORIAS = [
   "Moda",
   "Ferramentas",
   "Infantil",
+];
+
+export const CATEGORIAS_ADMIN = [
+  "Casa",
+  "Eletrodomésticos",
+  "Cozinha",
+  "Beleza",
+  "Perfumaria",
+  "Tecnologia",
+  "Informática",
+  "Celulares",
+  "TV e Áudio",
+  "Games",
+  "Moda",
+  "Calçados",
+  "Esporte",
+  "Ferramentas",
+  "Automotivo",
+  "Infantil",
+  "Bebês",
+  "Mercado",
+  "Saúde",
+  "Suplementos",
+  "Pet",
+  "Móveis",
+  "Decoração",
+  "Papelaria",
+  "Livros",
+  "Utilidades",
+  CATEGORIA_OUTROS,
 ];
 
 // Lojas em que o Achado do Alê trabalha com links de afiliado.
