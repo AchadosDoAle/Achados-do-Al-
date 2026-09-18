@@ -73,13 +73,6 @@ export default async function PaginaOferta({
         )
       : null;
 
-  const totalParcelado =
-    oferta.parcelas && oferta.valorParcela
-      ? oferta.parcelas * oferta.valorParcela
-      : null;
-  const parcelamentoSemJuros =
-    totalParcelado != null && Math.abs(totalParcelado - oferta.precoAtual) <= 0.05;
-
   const linkFinal = oferta.usarLinkRedirecionamento
     ? `${URL_SITE}/r/${oferta.id}`
     : oferta.linkProduto;
@@ -163,10 +156,16 @@ export default async function PaginaOferta({
             )}
             {oferta.parcelas && oferta.valorParcela && (
               <p className="mt-2 text-sm text-text-muted">
-                ou {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}
-                {parcelamentoSemJuros ? (
-                  <span className="font-semibold text-text"> sem juros</span>
-                ) : null}
+                ou {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}{" "}
+                <span
+                  className={
+                    oferta.parcelamentoSemJuros
+                      ? "font-semibold text-trust"
+                      : "font-semibold text-text-muted"
+                  }
+                >
+                  {oferta.parcelamentoSemJuros ? "sem juros" : "com juros"}
+                </span>
               </p>
             )}
             {(oferta.freteGratis || oferta.freteCondicao) && (

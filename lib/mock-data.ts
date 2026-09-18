@@ -93,6 +93,7 @@ export const OFERTAS_EXEMPLO: Oferta[] = [
     precoAtual: 219.9,
     parcelas: 6,
     valorParcela: 36.65,
+    parcelamentoSemJuros: true,
     cupom: "FRITOU10",
     linkProduto: "#",
     freteGratis: true,

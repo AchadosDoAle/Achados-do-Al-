@@ -36,6 +36,7 @@ export type Oferta = {
   precoPix?: number;
   parcelas?: number;
   valorParcela?: number;
+  parcelamentoSemJuros?: boolean;
 
   // Promoção
   cupom?: string;

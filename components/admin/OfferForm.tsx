@@ -35,6 +35,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   precoPix: undefined,
   parcelas: undefined,
   valorParcela: undefined,
+  parcelamentoSemJuros: false,
   cupom: "",
   cupomDescricao: "",
   linkCupom: "",
@@ -513,6 +514,46 @@ export default function OfferForm({
                   }
                 />
               </Campo>
+            </div>
+
+            <div>
+              <span className="text-sm font-semibold text-ink">Juros do parcelamento</span>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition ${
+                    !valores.parcelamentoSemJuros
+                      ? "border-brand bg-brand/5 text-brand ring-2 ring-brand/10"
+                      : "border-ink/10 bg-white text-ink/75"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="juros-parcelamento"
+                    checked={!valores.parcelamentoSemJuros}
+                    onChange={() => atualizarCampo("parcelamentoSemJuros", false)}
+                  />
+                  Com juros
+                </label>
+
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition ${
+                    valores.parcelamentoSemJuros
+                      ? "border-trust bg-trust/5 text-trust ring-2 ring-trust/10"
+                      : "border-ink/10 bg-white text-ink/75"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="juros-parcelamento"
+                    checked={Boolean(valores.parcelamentoSemJuros)}
+                    onChange={() => atualizarCampo("parcelamentoSemJuros", true)}
+                  />
+                  Sem juros
+                </label>
+              </div>
+              <p className="mt-2 text-xs text-ink/50">
+                Essa informação é exibida na página do produto. O sistema não tenta mais deduzir os juros pelo valor das parcelas.
+              </p>
             </div>
           </div>
         </section>

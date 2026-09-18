@@ -35,6 +35,7 @@ export default function FavoritosPage() {
           precoPix: linha.preco_pix ?? undefined,
           parcelas: linha.parcelas ?? undefined,
           valorParcela: linha.valor_parcela ?? undefined,
+          parcelamentoSemJuros: linha.parcelamento_sem_juros ?? false,
           cupom: linha.cupom ?? undefined,
           linkProduto: linha.link_produto,
           imagemPrincipal: linha.imagem_principal ?? undefined,

@@ -70,9 +70,11 @@ tem — nunca invente um dado que falta):
    "💵 *Por R$ XX,XX no Pix*". Se não houver preço no Pix, só "*Por R$ XX,XX*".
 6. Se houver cupom: "🎟️ Use o cupom: *CÓDIGO*".
 7. Linha de pagamento: se houver preço no Pix, "💳 Selecione o pagamento
-   via Pix"; se em vez disso houver parcelamento, use algo como
-   "💳 Ou parcele em até Xx sem juros"; se não houver nenhum dos dois,
-   omita esta linha.
+   via Pix". Se em vez disso houver parcelamento, respeite obrigatoriamente
+   o campo parcelamentoSemJuros: se for true, use algo como
+   "💳 Ou parcele em até Xx sem juros"; se for false, use algo como
+   "💳 Ou parcele em Xx de R$ XX,XX com juros". Nunca deduza que é sem juros
+   comparando valores. Se não houver Pix nem parcelamento, omita esta linha.
 8. Exatamente 3 linhas de descrição, cada uma com um emoji relevante ao
    produto no início (varie os emojis conforme o item — não repita os do
    exemplo se não fizerem sentido para o produto atual).
