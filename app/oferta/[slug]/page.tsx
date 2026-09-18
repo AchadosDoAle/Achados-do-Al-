@@ -90,7 +90,7 @@ export default async function PaginaOferta({
           <div className="mb-5 rounded-xl2 border border-white/10 bg-white/5 p-4 text-center">
             <p className="font-display text-lg font-bold text-text">PROMOÇÃO VENCIDA</p>
             <p className="mt-1 text-sm text-text-muted">
-              Esta oferta recebeu 3 avisos de visitantes diferentes. Ela continua disponível para consulta, mas pode não estar mais no preço anunciado.
+              Esta promoção foi sinalizada como vencida. Ela continua disponível para consulta, mas o preço ou a disponibilidade podem ter mudado.
             </p>
           </div>
         )}

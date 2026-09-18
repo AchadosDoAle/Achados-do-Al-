@@ -49,13 +49,12 @@ export default function ReportarOferta({ ofertaId }: { ofertaId: string }) {
       if (error) throw error;
 
       const resultado = Array.isArray(data) ? data[0] : data;
-      const total = Number(resultado?.total ?? 0);
       const desativada = Boolean(resultado?.desativada);
       const novoAviso = Boolean(resultado?.novo_aviso);
 
       if (desativada) {
         setMensagem(
-          "Obrigado! A oferta recebeu 3 confirmações de visitantes diferentes e foi marcada como vencida."
+          "Obrigado pelo aviso! A promoção foi marcada como vencida para revisão."
         );
         router.refresh();
         return;
@@ -65,7 +64,7 @@ export default function ReportarOferta({ ofertaId }: { ofertaId: string }) {
         setMensagem("Seu aviso para esta oferta já foi registrado anteriormente.");
       } else {
         setMensagem(
-          `Obrigado! Aviso registrado (${total}/3). Com 3 confirmações diferentes, a promoção é desativada automaticamente.`
+          "Obrigado! Seu aviso foi registrado e vamos verificar essa promoção."
         );
       }
     } catch (erro) {
@@ -80,7 +79,7 @@ export default function ReportarOferta({ ofertaId }: { ofertaId: string }) {
     <section className="mt-5 rounded-xl2 border border-danger/20 bg-danger/5 p-4">
       <p className="text-sm font-semibold text-text">Encontrou algum problema com a promoção?</p>
       <p className="mt-1 text-xs leading-5 text-text-muted">
-        Avise a gente. Um visitante só pode confirmar uma vez por oferta. Com 3 confirmações de visitantes diferentes, a promoção fica marcada como vencida automaticamente.
+        Avise a gente se a promoção acabou, venceu ou se o preço anunciado não estiver mais disponível.
       </p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-3">
