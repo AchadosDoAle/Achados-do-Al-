@@ -1,6 +1,7 @@
 import { Cupom } from "@/lib/types";
 import { cupomExpirado } from "@/lib/coupons-repo";
 import BotaoNomeCupom from "./BotaoNomeCupom";
+import BotaoCompartilharCupom from "./BotaoCompartilharCupom";
 
 export default function CupomCard({ cupom }: { cupom: Cupom }) {
   const expirado = cupomExpirado(cupom);
@@ -67,16 +68,20 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
         </p>
       )}
 
-      {!expirado && cupom.linkProdutos && (
-        <a
-          href={cupom.linkProdutos}
-          target="_blank"
-          rel="noopener noreferrer nofollow sponsored"
-          className="mt-3 block rounded-lg bg-gold py-2 text-center text-sm font-semibold text-bg"
-        >
-          Ver produtos com esse cupom
-        </a>
-      )}
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <BotaoCompartilharCupom cupom={cupom} />
+
+        {!expirado && cupom.linkProdutos && /^https?:\/\//i.test(cupom.linkProdutos.trim()) && (
+          <a
+            href={cupom.linkProdutos}
+            target="_blank"
+            rel="noopener noreferrer nofollow sponsored"
+            className="block flex-1 rounded-lg bg-gold py-2 text-center text-sm font-semibold text-bg"
+          >
+            Ver produtos com esse cupom
+          </a>
+        )}
+      </div>
     </div>
   );
 }
