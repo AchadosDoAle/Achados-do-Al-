@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Oferta, OfertaFormValues } from "./types";
+import { normalizarNomeLoja } from "./mock-data";
 
 // O banco usa snake_case (como no modelo que você pediu); o app usa
 // camelCase. Estas duas funções fazem a conversão nos dois sentidos.
@@ -9,7 +10,7 @@ function linhaParaOferta(linha: any): Oferta {
     id: linha.id,
     slug: linha.slug,
     titulo: linha.titulo,
-    loja: linha.loja,
+    loja: normalizarNomeLoja(linha.loja),
     categoria: linha.categoria,
     marca: linha.marca ?? undefined,
     modelo: linha.modelo ?? undefined,
@@ -44,7 +45,7 @@ function linhaParaOferta(linha: any): Oferta {
 function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
   return {
     titulo: valores.titulo,
-    loja: valores.loja,
+    loja: valores.loja ? normalizarNomeLoja(valores.loja) : valores.loja,
     categoria: valores.categoria,
     marca: valores.marca || null,
     modelo: valores.modelo || null,

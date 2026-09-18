@@ -1,10 +1,11 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Cupom, CupomFormValues } from "./types";
+import { normalizarNomeLoja } from "./mock-data";
 
 function linhaParaCupom(linha: any): Cupom {
   return {
     id: linha.id,
-    loja: linha.loja,
+    loja: normalizarNomeLoja(linha.loja),
     nomeCupom: linha.nome_cupom,
     descontoPercentual: linha.desconto_percentual ?? undefined,
     valorCupom: linha.valor_cupom ?? undefined,
@@ -21,7 +22,7 @@ function linhaParaCupom(linha: any): Cupom {
 
 function cupomParaLinha(valores: Partial<CupomFormValues>) {
   return {
-    loja: valores.loja,
+    loja: valores.loja ? normalizarNomeLoja(valores.loja) : valores.loja,
     nome_cupom: valores.nomeCupom,
     desconto_percentual: valores.descontoPercentual ?? null,
     valor_cupom: valores.valorCupom || null,

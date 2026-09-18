@@ -1,8 +1,8 @@
 # Achado do Alê
 
 Site + painel administrativo para cadastrar, gerar com IA e publicar
-ofertas de afiliados (Mercado Livre, Amazon, Magalu, Shopee, Natura, Avon,
-Malwee, O Boticário e outras).
+ofertas de afiliados (Mercado Livre, Amazon, Netshoes, Magalu - Magazine Luiza,
+Shopee, ZZ Mall, BAW, AliExpress, Natura, Avon e outras lojas cadastradas manualmente).
 
 Stack: **Next.js 14 (App Router) + TypeScript + Tailwind + Supabase**
 (banco de dados, autenticação e, futuramente, storage de imagens).

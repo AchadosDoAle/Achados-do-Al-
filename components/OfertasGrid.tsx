@@ -3,7 +3,11 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Oferta } from "@/lib/types";
-import { CATEGORIAS, LOJAS } from "@/lib/mock-data";
+import {
+  CATEGORIAS,
+  LOJAS_AFILIADAS,
+  normalizarNomeLoja,
+} from "@/lib/mock-data";
 import CategoryChips from "./CategoryChips";
 import OfferCard from "./OfferCard";
 import Container from "./Container";
@@ -21,10 +25,17 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
   // imediatamente quando alguém pesquisa pelo campo do cabeçalho.
   const busca = (params.get("busca") ?? "").trim().toLowerCase();
 
-  const lojasComOfertas = useMemo(
-    () => ["Todas", ...LOJAS.filter((l) => ofertas.some((o) => o.loja === l))],
-    [ofertas]
-  );
+  const lojasComOfertas = useMemo(() => {
+    const lojasPersonalizadas = Array.from(
+      new Set(
+        ofertas
+          .map((oferta) => normalizarNomeLoja(oferta.loja))
+          .filter((loja) => !LOJAS_AFILIADAS.includes(loja))
+      )
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    return ["Todas", ...LOJAS_AFILIADAS, ...lojasPersonalizadas];
+  }, [ofertas]);
 
   const ofertasFiltradas = useMemo(() => {
     let resultado = ofertas;
@@ -34,7 +45,9 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
     }
 
     if (lojaSelecionada !== "Todas") {
-      resultado = resultado.filter((o) => o.loja === lojaSelecionada);
+      resultado = resultado.filter(
+        (o) => normalizarNomeLoja(o.loja) === lojaSelecionada
+      );
     }
 
     if (busca) {
@@ -79,24 +92,22 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
         />
       </Container>
 
-      {lojasComOfertas.length > 2 && (
-        <Container className="px-4 pb-1">
-          <label className="flex items-center gap-2 text-sm text-text-muted">
-            🏪 Loja:
-            <select
-              value={lojaSelecionada}
-              onChange={(e) => setLojaSelecionada(e.target.value)}
-              className="rounded-lg bg-card px-3 py-1.5 text-sm text-text outline-none ring-1 ring-white/10"
-            >
-              {lojasComOfertas.map((loja) => (
-                <option key={loja} value={loja}>
-                  {loja}
-                </option>
-              ))}
-            </select>
-          </label>
-        </Container>
-      )}
+      <Container className="px-4 pb-1">
+        <label className="flex items-center gap-2 text-sm text-text-muted">
+          🏪 Loja:
+          <select
+            value={lojaSelecionada}
+            onChange={(e) => setLojaSelecionada(e.target.value)}
+            className="rounded-lg bg-card px-3 py-1.5 text-sm text-text outline-none ring-1 ring-white/10"
+          >
+            {lojasComOfertas.map((loja) => (
+              <option key={loja} value={loja}>
+                {loja}
+              </option>
+            ))}
+          </select>
+        </label>
+      </Container>
 
       <Container className="px-4">
         <div ref={topoRef} className="scroll-mt-24" />

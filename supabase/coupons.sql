@@ -1,6 +1,3 @@
--- Rode isto no SQL Editor do Supabase. Pode rodar quantas vezes precisar
--- sem medo — ele nunca apaga dados, só cria o que estiver faltando.
-
 -- Rode isto no SQL Editor do Supabase. Pode rodar quantas vezes precisar.
 -- O script preserva os dados existentes e adapta uma tabela "coupons"
 -- que eventualmente tenha sido criada antes com outro formato.
@@ -80,18 +77,4 @@ create policy "Usuários autenticados gerenciam cupons"
   with check (auth.role() = 'authenticated');
 
 -- Força a API do Supabase/PostgREST a reconhecer imediatamente o esquema atual.
-NOTIFY pgrst, 'reload schema';
-de ver os cupons"
-  on public.coupons for select
-  using (true);
-
-drop policy if exists "Usuários autenticados gerenciam cupons" on public.coupons;
-create policy "Usuários autenticados gerenciam cupons"
-  on public.coupons for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
-
--- ESSENCIAL: força o Supabase a "esquecer" o formato antigo da tabela e
--- reconhecer as colunas novas imediatamente (sem isso, pode continuar
--- dando erro de coluna não encontrada por alguns minutos).
 NOTIFY pgrst, 'reload schema';
