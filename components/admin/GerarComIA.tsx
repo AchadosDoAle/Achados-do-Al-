@@ -117,10 +117,10 @@ export default function GerarComIA({
 
           <div className="flex gap-2">
             <input
-              className={classeInput}
+              className={`${classeInput} uppercase`}
               placeholder='Ou digite um comando, ex: "troca o título"'
               value={comando}
-              onChange={(e) => setComando(e.target.value)}
+              onChange={(e) => setComando(e.target.value.toLocaleUpperCase("pt-BR"))}
             />
             <button
               type="button"

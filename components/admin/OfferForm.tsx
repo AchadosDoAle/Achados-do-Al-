@@ -54,6 +54,28 @@ const VALORES_INICIAIS: OfertaFormValues = {
 
 const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
 
+const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
+
+function normalizarTextosOferta(valores: OfertaFormValues): OfertaFormValues {
+  return {
+    ...valores,
+    titulo: paraCaixaAlta(valores.titulo),
+    marca: paraCaixaAlta(valores.marca || ""),
+    modelo: paraCaixaAlta(valores.modelo || ""),
+    cupom: paraCaixaAlta(valores.cupom || ""),
+    cupomDescricao: paraCaixaAlta(valores.cupomDescricao || ""),
+    freteCondicao: paraCaixaAlta(valores.freteCondicao || ""),
+    estoque: paraCaixaAlta(valores.estoque || ""),
+    voltagem: paraCaixaAlta(valores.voltagem || ""),
+    cor: paraCaixaAlta(valores.cor || ""),
+    tamanho: paraCaixaAlta(valores.tamanho || ""),
+    capacidade: paraCaixaAlta(valores.capacidade || ""),
+    textoOriginal: paraCaixaAlta(valores.textoOriginal || ""),
+    observacoes: paraCaixaAlta(valores.observacoes || ""),
+    textoPublicacao: paraCaixaAlta(valores.textoPublicacao || ""),
+  };
+}
+
 export default function OfferForm({
   ofertaExistente,
 }: {
@@ -159,10 +181,12 @@ export default function OfferForm({
     setSalvando(true);
     setErroSalvar("");
     try {
+      const valoresParaSalvar = normalizarTextosOferta(valores);
+
       if (ofertaExistente) {
-        await atualizarOferta(supabase, ofertaExistente.id, valores);
+        await atualizarOferta(supabase, ofertaExistente.id, valoresParaSalvar);
       } else {
-        await salvarNovaOferta(supabase, valores);
+        await salvarNovaOferta(supabase, valoresParaSalvar);
       }
       router.push("/admin/ofertas");
       router.refresh();
@@ -278,9 +302,9 @@ export default function OfferForm({
           <div className="flex flex-col gap-4">
             <Campo rotulo="Nome do produto" obrigatorio erro={erros.titulo}>
               <input
-                className={classeInput}
+                className={`${classeInput} uppercase`}
                 value={valores.titulo}
-                onChange={(e) => atualizarCampo("titulo", e.target.value)}
+                onChange={(e) => atualizarCampo("titulo", paraCaixaAlta(e.target.value))}
                 placeholder="Ex: Fritadeira elétrica Air Fryer 5L"
               />
             </Campo>
@@ -363,16 +387,16 @@ export default function OfferForm({
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Marca">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.marca}
-                  onChange={(e) => atualizarCampo("marca", e.target.value)}
+                  onChange={(e) => atualizarCampo("marca", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
               <Campo rotulo="Modelo">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.modelo}
-                  onChange={(e) => atualizarCampo("modelo", e.target.value)}
+                  onChange={(e) => atualizarCampo("modelo", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
             </div>
@@ -486,9 +510,9 @@ export default function OfferForm({
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Cupom">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.cupom}
-                  onChange={(e) => atualizarCampo("cupom", e.target.value)}
+                  onChange={(e) => atualizarCampo("cupom", paraCaixaAlta(e.target.value))}
                   placeholder="Ex: ALE15"
                 />
               </Campo>
@@ -505,10 +529,10 @@ export default function OfferForm({
 
             <Campo rotulo="Descrição do cupom">
               <textarea
-                className={classeInput}
+                className={`${classeInput} uppercase`}
                 rows={3}
                 value={valores.cupomDescricao}
-                onChange={(e) => atualizarCampo("cupomDescricao", e.target.value)}
+                onChange={(e) => atualizarCampo("cupomDescricao", paraCaixaAlta(e.target.value))}
                 placeholder="Ex: 15% OFF em ferramentas, compra mínima de R$ 99 e limite de R$ 40 de desconto."
               />
               <p className="mt-1 text-xs text-ink/50">
@@ -529,9 +553,9 @@ export default function OfferForm({
               <div className="mt-3">
                 <Campo rotulo="Condição do frete (opcional)">
                   <input
-                    className={classeInput}
+                    className={`${classeInput} uppercase`}
                     value={valores.freteCondicao ?? ""}
-                    onChange={(e) => atualizarCampo("freteCondicao", e.target.value)}
+                    onChange={(e) => atualizarCampo("freteCondicao", paraCaixaAlta(e.target.value))}
                     placeholder="Ex: Frete grátis para assinantes Meli+ ou Amazon Prime"
                   />
                   <p className="mt-1 text-xs text-ink/50">
@@ -544,10 +568,10 @@ export default function OfferForm({
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Estoque">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   placeholder="Ex: últimas unidades"
                   value={valores.estoque}
-                  onChange={(e) => atualizarCampo("estoque", e.target.value)}
+                  onChange={(e) => atualizarCampo("estoque", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
               <Campo rotulo="Validade da promoção">
@@ -577,30 +601,30 @@ export default function OfferForm({
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Voltagem">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.voltagem}
-                  onChange={(e) => atualizarCampo("voltagem", e.target.value)}
+                  onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
               <Campo rotulo="Cor">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.cor}
-                  onChange={(e) => atualizarCampo("cor", e.target.value)}
+                  onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
               <Campo rotulo="Tamanho">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.tamanho}
-                  onChange={(e) => atualizarCampo("tamanho", e.target.value)}
+                  onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
               <Campo rotulo="Capacidade">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.capacidade}
-                  onChange={(e) => atualizarCampo("capacidade", e.target.value)}
+                  onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
             </div>
@@ -687,20 +711,20 @@ export default function OfferForm({
             <div className="flex flex-col gap-4">
               <Campo rotulo="Texto original da oferta">
                 <textarea
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   rows={4}
                   value={valores.textoOriginal}
-                  onChange={(e) => atualizarCampo("textoOriginal", e.target.value)}
+                  onChange={(e) => atualizarCampo("textoOriginal", paraCaixaAlta(e.target.value))}
                   placeholder="Cole aqui o texto ou a descrição recebida do fornecedor"
                 />
               </Campo>
 
               <Campo rotulo="Observações">
                 <textarea
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   rows={3}
                   value={valores.observacoes}
-                  onChange={(e) => atualizarCampo("observacoes", e.target.value)}
+                  onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))}
                 />
               </Campo>
 
@@ -751,7 +775,7 @@ export default function OfferForm({
           </div>
           <GerarComIA
             valores={valores}
-            onTextoGerado={(texto) => atualizarCampo("textoPublicacao", texto)}
+            onTextoGerado={(texto) => atualizarCampo("textoPublicacao", paraCaixaAlta(texto))}
           />
         </section>
 
@@ -767,10 +791,10 @@ export default function OfferForm({
           </div>
           <Campo rotulo="Texto final (edite à vontade antes de publicar)">
             <textarea
-              className={classeInput}
+              className={`${classeInput} uppercase`}
               rows={10}
               value={valores.textoPublicacao}
-              onChange={(e) => atualizarCampo("textoPublicacao", e.target.value)}
+              onChange={(e) => atualizarCampo("textoPublicacao", paraCaixaAlta(e.target.value))}
               placeholder='Toque em "Gerar publicação" acima ou escreva manualmente aqui'
             />
           </Campo>

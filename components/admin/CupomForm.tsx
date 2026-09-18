@@ -24,6 +24,18 @@ const VALORES_INICIAIS: CupomFormValues = {
 const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
 const FUSO_BRASILIA = "America/Sao_Paulo";
 
+const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
+
+function normalizarTextosCupom(valores: CupomFormValues): CupomFormValues {
+  return {
+    ...valores,
+    nomeCupom: paraCaixaAlta(valores.nomeCupom),
+    valorCupom: paraCaixaAlta(valores.valorCupom || ""),
+    descricao: paraCaixaAlta(valores.descricao || ""),
+    observacoes: paraCaixaAlta(valores.observacoes || ""),
+  };
+}
+
 function extrairDataHoraBrasilia(valor?: string) {
   if (!valor) return { data: "", hora: "" };
 
@@ -120,7 +132,7 @@ export default function CupomForm({
     setErroSalvar("");
     try {
       const valoresParaSalvar: CupomFormValues = {
-        ...valores,
+        ...normalizarTextosCupom(valores),
         validade: montarIsoBrasilia(validadeData, validadeHora),
       };
 
@@ -215,9 +227,9 @@ export default function CupomForm({
 
             <Campo rotulo="Nome / código do cupom" obrigatorio erro={erros.nomeCupom}>
               <input
-                className={classeInput}
+                className={`${classeInput} uppercase`}
                 value={valores.nomeCupom}
-                onChange={(e) => atualizarCampo("nomeCupom", e.target.value)}
+                onChange={(e) => atualizarCampo("nomeCupom", paraCaixaAlta(e.target.value))}
                 placeholder="Ex: PORTO15OFF"
               />
             </Campo>
@@ -243,9 +255,9 @@ export default function CupomForm({
 
               <Campo rotulo="Valor do cupom">
                 <input
-                  className={classeInput}
+                  className={`${classeInput} uppercase`}
                   value={valores.valorCupom}
-                  onChange={(e) => atualizarCampo("valorCupom", e.target.value)}
+                  onChange={(e) => atualizarCampo("valorCupom", paraCaixaAlta(e.target.value))}
                   placeholder='Ex: "R$40 OFF"'
                 />
                 <p className="mt-1 text-xs text-ink/50">
@@ -270,10 +282,10 @@ export default function CupomForm({
           <div className="flex flex-col gap-4">
             <Campo rotulo="Descrição do cupom (se houver)">
               <textarea
-                className={classeInput}
+                className={`${classeInput} uppercase`}
                 rows={4}
                 value={valores.descricao}
-                onChange={(e) => atualizarCampo("descricao", e.target.value)}
+                onChange={(e) => atualizarCampo("descricao", paraCaixaAlta(e.target.value))}
                 placeholder={
                   "Ex: Tecnologia | Compra mínima: R$149 | Desconto máx.: R$200\nVálido enquanto durarem os estoques."
                 }
@@ -295,10 +307,10 @@ export default function CupomForm({
 
             <Campo rotulo="Observações / termos de uso">
               <textarea
-                className={classeInput}
+                className={`${classeInput} uppercase`}
                 rows={4}
                 value={valores.observacoes}
-                onChange={(e) => atualizarCampo("observacoes", e.target.value)}
+                onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))}
                 placeholder="Ex: Não cumulativo. 1 uso por CPF. Frete não incluso."
               />
             </Campo>
