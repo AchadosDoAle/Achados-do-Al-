@@ -11,7 +11,11 @@ import {
   LOJA_OUTROS,
 } from "@/lib/mock-data";
 import { Oferta, OfertaFormValues, STATUS_LABEL, StatusOferta } from "@/lib/types";
-import { salvarNovaOferta, atualizarOferta } from "@/lib/offers-repo";
+import {
+  salvarNovaOferta,
+  atualizarOferta,
+  reativarOfertaReportada,
+} from "@/lib/offers-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { linkParecePertencerALoja } from "@/lib/validar-link";
 import GerarComIA from "./GerarComIA";
@@ -185,6 +189,12 @@ export default function OfferForm({
 
       if (ofertaExistente) {
         await atualizarOferta(supabase, ofertaExistente.id, valoresParaSalvar);
+        if (
+          ofertaExistente.status === "expirada" &&
+          valoresParaSalvar.status === "publicada"
+        ) {
+          await reativarOfertaReportada(supabase, ofertaExistente.id);
+        }
       } else {
         await salvarNovaOferta(supabase, valoresParaSalvar);
       }

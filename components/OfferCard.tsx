@@ -17,6 +17,7 @@ export default function OfferCard({
   atraso?: number;
 }) {
   const [favorito, setFavorito] = useState(false);
+  const expirada = oferta.status === "expirada";
 
   useEffect(() => {
     setFavorito(ehFavorito(oferta.id));
@@ -31,7 +32,7 @@ export default function OfferCard({
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-gold/10 hover:ring-gold/30"
+      className={`relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-gold/10 hover:ring-gold/30 ${expirada ? "grayscale opacity-70" : ""}`}
       style={{ animationDelay: `${Math.min(atraso, 8) * 0.05}s` }}
     >
       <button
@@ -57,11 +58,15 @@ export default function OfferCard({
               oferta.imagemPrincipal ? "object-cover" : "object-contain p-8 opacity-70"
             }`}
           />
-          {desconto && (
+          {expirada ? (
+            <span className="absolute right-2 top-2 rounded-full bg-danger px-2 py-1 text-[10px] font-bold text-white">
+              PROMOÇÃO VENCIDA
+            </span>
+          ) : desconto ? (
             <span className="absolute right-2 top-2 rounded-full bg-gold px-2 py-1 text-xs font-bold text-bg">
               -{desconto}%
             </span>
-          )}
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-1 p-3">
@@ -88,8 +93,8 @@ export default function OfferCard({
 
           <span className="text-xs text-text-muted">🏪 {oferta.loja}</span>
 
-          <span className="mt-2 block rounded-lg bg-gold py-2 text-center text-xs font-semibold text-bg">
-            Acessar promoção
+          <span className={`mt-2 block rounded-lg py-2 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
+            {expirada ? "Ver promoção vencida" : "Acessar promoção"}
           </span>
         </div>
       </Link>

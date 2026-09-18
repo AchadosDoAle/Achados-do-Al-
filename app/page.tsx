@@ -15,7 +15,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
       <Header />
-      <Hero ofertaDestaque={ofertas[0]} />
+      <Hero ofertaDestaque={ofertas.find((oferta) => oferta.status === "publicada")} />
       <section id="ofertas" className="scroll-mt-24">
         <OfertasGrid ofertas={ofertas} />
       </section>

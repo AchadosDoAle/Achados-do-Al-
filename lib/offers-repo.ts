@@ -99,7 +99,7 @@ export async function listarOfertas(
     .order("criado_em", { ascending: false });
 
   if (filtros?.status) consulta = consulta.eq("status", filtros.status);
-  if (filtros?.apenasPublicadas) consulta = consulta.eq("status", "publicada");
+  if (filtros?.apenasPublicadas) consulta = consulta.in("status", ["publicada", "expirada"]);
 
   const { data, error } = await consulta;
   if (error) throw error;
@@ -181,5 +181,16 @@ export async function duplicarOferta(
 
 export async function excluirOferta(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("offers").delete().eq("id", id);
+  if (error) throw error;
+}
+
+
+export async function reativarOfertaReportada(
+  supabase: SupabaseClient,
+  id: string
+) {
+  const { error } = await supabase.rpc("reactivate_offer", {
+    p_offer_id: id,
+  });
   if (error) throw error;
 }

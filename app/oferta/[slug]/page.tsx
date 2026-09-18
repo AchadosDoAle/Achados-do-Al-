@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Container from "@/components/Container";
+import ReportarOferta from "@/components/ReportarOferta";
 
 const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 
@@ -58,7 +59,9 @@ export default async function PaginaOferta({
   params: { slug: string };
 }) {
   const oferta = await buscar(params.slug);
-  if (!oferta || oferta.status !== "publicada") notFound();
+  if (!oferta || !["publicada", "expirada"].includes(oferta.status)) notFound();
+
+  const expirada = oferta.status === "expirada";
 
   const desconto =
     oferta.precoAntigo && oferta.precoAntigo > oferta.precoAtual
@@ -83,7 +86,16 @@ export default async function PaginaOferta({
           ← Voltar para o início
         </Link>
 
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
+        {expirada && (
+          <div className="mb-5 rounded-xl2 border border-white/10 bg-white/5 p-4 text-center">
+            <p className="font-display text-lg font-bold text-text">PROMOÇÃO VENCIDA</p>
+            <p className="mt-1 text-sm text-text-muted">
+              Esta oferta recebeu 3 avisos de visitantes diferentes. Ela continua disponível para consulta, mas pode não estar mais no preço anunciado.
+            </p>
+          </div>
+        )}
+
+        <div className={`flex flex-col gap-6 md:flex-row md:items-start md:gap-10 ${expirada ? "grayscale opacity-75" : ""}`}>
           {/* Imagem */}
           <div className="order-1 mx-auto w-full max-w-[500px] shrink-0 md:order-2">
             <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 md:h-[500px] md:w-[500px]">
@@ -97,11 +109,15 @@ export default async function PaginaOferta({
                     : "object-contain p-16 opacity-70"
                 }`}
               />
-              {desconto && (
+              {expirada ? (
+                <span className="absolute right-3 top-3 rounded-full bg-danger px-3 py-1 text-xs font-bold text-white">
+                  PROMOÇÃO VENCIDA
+                </span>
+              ) : desconto ? (
                 <span className="absolute right-3 top-3 rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg">
                   -{desconto}%
                 </span>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -214,6 +230,8 @@ export default async function PaginaOferta({
                 url={`${URL_SITE}/oferta/${oferta.slug}`}
               />
             </div>
+
+            {!expirada && <ReportarOferta ofertaId={oferta.id} />}
 
             <a
               href="/grupo"

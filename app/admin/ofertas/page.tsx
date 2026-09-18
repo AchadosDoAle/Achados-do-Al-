@@ -8,6 +8,7 @@ import {
   duplicarOferta,
   excluirOferta,
   atualizarOferta,
+  reativarOfertaReportada,
 } from "@/lib/offers-repo";
 import { registrarPublicacao } from "@/lib/publications-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
@@ -48,6 +49,16 @@ export default function ListaOfertasPage() {
       ...oferta,
       status: "enviada_whatsapp",
     });
+    recarregar();
+  }
+
+
+  async function aoReativar(id: string) {
+    const confirmou = window.confirm(
+      "Reativar esta oferta? Os avisos de visitantes serão zerados e ela voltará a aparecer como publicada."
+    );
+    if (!confirmou) return;
+    await reativarOfertaReportada(supabase, id);
     recarregar();
   }
 
@@ -119,6 +130,14 @@ export default function ListaOfertasPage() {
                 >
                   Editar
                 </Link>
+                {oferta.status === "expirada" && (
+                  <button
+                    onClick={() => aoReativar(oferta.id)}
+                    className="rounded-xl bg-trust/10 px-3 py-2 text-trust ring-1 ring-trust/20"
+                  >
+                    Reativar oferta
+                  </button>
+                )}
                 {oferta.status === "aprovada" && (
                   <button
                     onClick={() => aoMarcarComoEnviada(oferta)}
