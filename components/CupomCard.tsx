@@ -2,6 +2,7 @@ import { Cupom } from "@/lib/types";
 import { cupomExpirado } from "@/lib/coupons-repo";
 import BotaoNomeCupom from "./BotaoNomeCupom";
 import BotaoCompartilharCupom from "./BotaoCompartilharCupom";
+import TermosCupom from "./TermosCupom";
 
 export default function CupomCard({ cupom }: { cupom: Cupom }) {
   const expirado = cupomExpirado(cupom);
@@ -49,18 +50,6 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
         )
       )}
 
-      {cupom.descricao && (
-        <p className="mt-1 whitespace-pre-wrap text-xs text-text-muted">
-          {cupom.descricao}
-        </p>
-      )}
-
-      {cupom.observacoes && (
-        <p className="mt-2 whitespace-pre-wrap text-[11px] italic text-text-muted/70">
-          📋 {cupom.observacoes}
-        </p>
-      )}
-
       {cupom.validade && (
         <p className="mt-2 text-xs text-text-muted">
           {expirado ? "Expirou em " : "Válido até "}
@@ -68,15 +57,20 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
         </p>
       )}
 
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <BotaoCompartilharCupom cupom={cupom} />
+        <TermosCupom
+          nomeCupom={cupom.nomeCupom}
+          descricao={cupom.descricao}
+          observacoes={cupom.observacoes}
+        />
 
         {!expirado && cupom.linkProdutos && /^https?:\/\//i.test(cupom.linkProdutos.trim()) && (
           <a
             href={cupom.linkProdutos}
             target="_blank"
             rel="noopener noreferrer nofollow sponsored"
-            className="block flex-1 rounded-lg bg-gold py-2 text-center text-sm font-semibold text-bg"
+            className="block rounded-lg bg-gold py-2 text-center text-sm font-semibold text-bg sm:col-span-2"
           >
             Ver produtos com esse cupom
           </a>
