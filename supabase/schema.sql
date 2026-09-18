@@ -18,6 +18,7 @@ create table if not exists public.offers (
   parcelas integer,
   valor_parcela numeric,
   cupom text,
+  cupom_descricao text,
   link_cupom text,
   frete_gratis boolean default false,
   estoque text,

@@ -141,18 +141,36 @@ export default async function PaginaOferta({
               </span>
             )}
 
-            {(oferta.cupom || oferta.linkCupom) && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {oferta.cupom && <BotaoCopiarCupom cupom={oferta.cupom} />}
+            {(oferta.cupom || oferta.cupomDescricao || oferta.linkCupom) && (
+              <div className="mt-5 rounded-xl2 border border-gold/20 bg-gold/10 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">
+                  🏷️ Cupom desta oferta
+                </p>
+
+                {oferta.cupomDescricao && (
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text">
+                    {oferta.cupomDescricao}
+                  </p>
+                )}
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {oferta.cupom && <BotaoCopiarCupom cupom={oferta.cupom} />}
+                  {oferta.linkCupom && (
+                    <a
+                      href={oferta.linkCupom}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow sponsored"
+                      className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-bg hover:bg-gold-light"
+                    >
+                      🔗 Abrir link do cupom
+                    </a>
+                  )}
+                </div>
+
                 {oferta.linkCupom && (
-                  <a
-                    href={oferta.linkCupom}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow sponsored"
-                    className="rounded-lg bg-gold/15 px-4 py-2 text-sm font-medium text-gold"
-                  >
-                    🔗 Resgatar cupom no site da loja
-                  </a>
+                  <p className="mt-2 break-all text-xs text-text-muted">
+                    Link do cupom: {oferta.linkCupom}
+                  </p>
                 )}
               </div>
             )}

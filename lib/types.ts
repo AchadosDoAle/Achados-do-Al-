@@ -39,6 +39,7 @@ export type Oferta = {
 
   // Promoção
   cupom?: string;
+  cupomDescricao?: string;
   linkCupom?: string;
   freteGratis?: boolean;
   estoque?: string;

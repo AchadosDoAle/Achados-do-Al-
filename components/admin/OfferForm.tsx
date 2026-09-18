@@ -32,6 +32,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   parcelas: undefined,
   valorParcela: undefined,
   cupom: "",
+  cupomDescricao: "",
   linkCupom: "",
   freteGratis: false,
   estoque: "",
@@ -105,6 +106,28 @@ export default function OfferForm({
     valor: OfertaFormValues[K]
   ) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  function atualizarParcelamento(
+    campo: "parcelas" | "valorParcela",
+    valor: number | undefined
+  ) {
+    setValores((atual) => {
+      const parcelas = campo === "parcelas" ? valor : atual.parcelas;
+      const valorParcela = campo === "valorParcela" ? valor : atual.valorParcela;
+
+      const precoAtual =
+        parcelas && parcelas > 0 && valorParcela && valorParcela > 0
+          ? Math.round(parcelas * valorParcela * 100) / 100
+          : atual.precoAtual;
+
+      return {
+        ...atual,
+        parcelas,
+        valorParcela,
+        precoAtual,
+      };
+    });
   }
 
   function validar(): boolean {
@@ -392,6 +415,9 @@ export default function OfferForm({
                     atualizarCampo("precoAtual", Number(e.target.value))
                   }
                 />
+                <p className="mt-1 text-xs text-ink/50">
+                  Se você preencher quantidade de parcelas + valor da parcela, este total é calculado automaticamente.
+                </p>
               </Campo>
             </div>
 
@@ -414,10 +440,11 @@ export default function OfferForm({
               <Campo rotulo="Quantidade de parcelas">
                 <input
                   type="number"
+                  min="1"
                   className={classeInput}
                   value={valores.parcelas ?? ""}
                   onChange={(e) =>
-                    atualizarCampo(
+                    atualizarParcelamento(
                       "parcelas",
                       e.target.value ? Number(e.target.value) : undefined
                     )
@@ -427,11 +454,12 @@ export default function OfferForm({
               <Campo rotulo="Valor de cada parcela (R$)">
                 <input
                   type="number"
+                  min="0"
                   step="0.01"
                   className={classeInput}
                   value={valores.valorParcela ?? ""}
                   onChange={(e) =>
-                    atualizarCampo(
+                    atualizarParcelamento(
                       "valorParcela",
                       e.target.value ? Number(e.target.value) : undefined
                     )
@@ -460,17 +488,32 @@ export default function OfferForm({
                   className={classeInput}
                   value={valores.cupom}
                   onChange={(e) => atualizarCampo("cupom", e.target.value)}
+                  placeholder="Ex: ALE15"
                 />
               </Campo>
               <Campo rotulo="Link do cupom">
                 <input
+                  type="url"
                   className={classeInput}
                   value={valores.linkCupom}
                   onChange={(e) => atualizarCampo("linkCupom", e.target.value)}
-                  placeholder="Preencha só se o cupom precisar ser resgatado em um link"
+                  placeholder="https://..."
                 />
               </Campo>
             </div>
+
+            <Campo rotulo="Descrição do cupom">
+              <textarea
+                className={classeInput}
+                rows={3}
+                value={valores.cupomDescricao}
+                onChange={(e) => atualizarCampo("cupomDescricao", e.target.value)}
+                placeholder="Ex: 15% OFF em ferramentas, compra mínima de R$ 99 e limite de R$ 40 de desconto."
+              />
+              <p className="mt-1 text-xs text-ink/50">
+                Essa descrição será exibida na página pública do produto junto com o cupom.
+              </p>
+            </Campo>
 
             <label className="flex items-center gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink">
               <input
