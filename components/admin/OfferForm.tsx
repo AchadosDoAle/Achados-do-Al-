@@ -35,6 +35,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   cupomDescricao: "",
   linkCupom: "",
   freteGratis: false,
+  freteCondicao: "",
   estoque: "",
   validadePromocao: "",
   voltagem: "",
@@ -515,14 +516,30 @@ export default function OfferForm({
               </p>
             </Campo>
 
-            <label className="flex items-center gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink">
-              <input
-                type="checkbox"
-                checked={valores.freteGratis}
-                onChange={(e) => atualizarCampo("freteGratis", e.target.checked)}
-              />
-              Frete grátis
-            </label>
+            <div className="rounded-2xl bg-cream p-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={valores.freteGratis}
+                  onChange={(e) => atualizarCampo("freteGratis", e.target.checked)}
+                />
+                Frete grátis
+              </label>
+
+              <div className="mt-3">
+                <Campo rotulo="Condição do frete (opcional)">
+                  <input
+                    className={classeInput}
+                    value={valores.freteCondicao ?? ""}
+                    onChange={(e) => atualizarCampo("freteCondicao", e.target.value)}
+                    placeholder="Ex: Frete grátis para assinantes Meli+ ou Amazon Prime"
+                  />
+                  <p className="mt-1 text-xs text-ink/50">
+                    Use quando o frete grátis depender de assinatura, valor mínimo, região ou outra regra.
+                  </p>
+                </Campo>
+              </div>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Estoque">

@@ -21,6 +21,7 @@ create table if not exists public.offers (
   cupom_descricao text,
   link_cupom text,
   frete_gratis boolean default false,
+  frete_condicao text,
   estoque text,
   validade_promocao date,
   voltagem text,

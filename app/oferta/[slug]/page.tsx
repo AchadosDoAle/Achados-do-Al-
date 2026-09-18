@@ -135,10 +135,17 @@ export default async function PaginaOferta({
                 ou {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}
               </p>
             )}
-            {oferta.freteGratis && (
-              <span className="mt-2 inline-block rounded-md bg-trust/15 px-2 py-0.5 text-xs font-semibold text-trust">
-                Frete grátis
-              </span>
+            {(oferta.freteGratis || oferta.freteCondicao) && (
+              <div className="mt-3 rounded-xl2 border border-trust/20 bg-trust/10 p-3">
+                <p className="text-sm font-semibold text-trust">
+                  🚚 {oferta.freteGratis ? "Frete grátis" : "Condição de frete"}
+                </p>
+                {oferta.freteCondicao && (
+                  <p className="mt-1 text-sm leading-5 text-text-muted">
+                    {oferta.freteCondicao}
+                  </p>
+                )}
+              </div>
             )}
 
             {(oferta.cupom || oferta.cupomDescricao || oferta.linkCupom) && (
