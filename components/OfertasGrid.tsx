@@ -4,7 +4,8 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Oferta } from "@/lib/types";
 import {
-  CATEGORIAS,
+  CATEGORIAS_ADMIN,
+  CATEGORIA_OUTROS,
   LOJAS_AFILIADAS,
   normalizarNomeLoja,
 } from "@/lib/mock-data";
@@ -35,6 +36,35 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
     ).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
     return ["Todas", ...LOJAS_AFILIADAS, ...lojasPersonalizadas];
+  }, [ofertas]);
+
+  const categoriasFiltro = useMemo(() => {
+    const categoriasPadrao = CATEGORIAS_ADMIN.filter(
+      (categoria) => categoria !== CATEGORIA_OUTROS
+    );
+    const categoriasPersonalizadas = Array.from(
+      new Set(
+        ofertas
+          .map((oferta) => oferta.categoria?.trim())
+          .filter(
+            (categoria): categoria is string =>
+              typeof categoria === "string" &&
+              categoria.length > 0 &&
+              !categoriasPadrao.includes(categoria) &&
+              categoria !== CATEGORIA_OUTROS
+          )
+      )
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    return ["Todos", ...categoriasPadrao, ...categoriasPersonalizadas];
+  }, [ofertas]);
+
+  const contagensCategorias = useMemo(() => {
+    return ofertas.reduce<Record<string, number>>((acc, oferta) => {
+      const categoria = oferta.categoria?.trim();
+      if (categoria) acc[categoria] = (acc[categoria] ?? 0) + 1;
+      return acc;
+    }, {});
   }, [ofertas]);
 
   const ofertasFiltradas = useMemo(() => {
@@ -84,29 +114,46 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
 
   return (
     <>
-      <Container>
-        <CategoryChips
-          categorias={CATEGORIAS}
-          selecionada={selecionada}
-          onSelecionar={setSelecionada}
-        />
-      </Container>
+      <Container className="px-4 py-3">
+        <div className="flex flex-col gap-3 rounded-2xl bg-bg-secondary/70 p-3 ring-1 ring-white/5 md:flex-row md:items-center md:justify-between">
+          <CategoryChips
+            categorias={categoriasFiltro}
+            selecionada={selecionada}
+            onSelecionar={setSelecionada}
+            contagens={contagensCategorias}
+          />
 
-      <Container className="px-4 pb-1">
-        <label className="flex items-center gap-2 text-sm text-text-muted">
-          🏪 Loja:
-          <select
-            value={lojaSelecionada}
-            onChange={(e) => setLojaSelecionada(e.target.value)}
-            className="rounded-lg bg-card px-3 py-1.5 text-sm text-text outline-none ring-1 ring-white/10"
-          >
-            {lojasComOfertas.map((loja) => (
-              <option key={loja} value={loja}>
-                {loja}
-              </option>
-            ))}
-          </select>
-        </label>
+          <div className="flex min-w-0 items-center gap-2">
+            <label className="flex min-w-0 flex-1 items-center gap-2 text-sm text-text-muted md:flex-none">
+              <span className="shrink-0" aria-hidden="true">🏪</span>
+              <span className="sr-only">Loja</span>
+              <select
+                value={lojaSelecionada}
+                onChange={(e) => setLojaSelecionada(e.target.value)}
+                className="min-w-0 flex-1 rounded-full bg-card px-3 py-2 text-sm text-text outline-none ring-1 ring-white/10 md:max-w-56"
+              >
+                {lojasComOfertas.map((loja) => (
+                  <option key={loja} value={loja}>
+                    {loja === "Todas" ? "Todas as lojas" : loja}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {(selecionada !== "Todos" || lojaSelecionada !== "Todas") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelecionada("Todos");
+                  setLojaSelecionada("Todas");
+                }}
+                className="shrink-0 rounded-full px-3 py-2 text-xs font-semibold text-text-muted ring-1 ring-white/10 transition hover:text-text"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </div>
       </Container>
 
       <Container className="px-4">

@@ -3,15 +3,35 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Container from "@/components/Container";
-import { CATEGORIAS } from "@/lib/mock-data";
+import { CATEGORIAS_ADMIN, CATEGORIA_OUTROS } from "@/lib/mock-data";
 
 const ICONE_POR_CATEGORIA: Record<string, string> = {
   Casa: "🏠",
+  Eletrodomésticos: "🔌",
+  Cozinha: "🍳",
   Beleza: "💄",
+  Perfumaria: "🧴",
   Tecnologia: "📱",
+  Informática: "💻",
+  Celulares: "📲",
+  "TV e Áudio": "📺",
+  Games: "🎮",
   Moda: "👕",
+  Calçados: "👟",
+  Esporte: "🏃",
   Ferramentas: "🔧",
+  Automotivo: "🚗",
   Infantil: "🧸",
+  Bebês: "🍼",
+  Mercado: "🛒",
+  Saúde: "🩺",
+  Suplementos: "💪",
+  Pet: "🐾",
+  Móveis: "🛋️",
+  Decoração: "🪴",
+  Papelaria: "✏️",
+  Livros: "📚",
+  Utilidades: "✨",
 };
 
 export default function CategoriasPage() {
@@ -23,7 +43,7 @@ export default function CategoriasPage() {
           Categorias
         </h1>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {CATEGORIAS.filter((c) => c !== "Todos").map((categoria) => (
+          {CATEGORIAS_ADMIN.filter((c) => c !== CATEGORIA_OUTROS).map((categoria) => (
             <Link
               key={categoria}
               href={`/?categoria=${encodeURIComponent(categoria)}`}
