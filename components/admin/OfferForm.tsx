@@ -72,7 +72,7 @@ function normalizarTextosOferta(valores: OfertaFormValues): OfertaFormValues {
     capacidade: paraCaixaAlta(valores.capacidade || ""),
     textoOriginal: paraCaixaAlta(valores.textoOriginal || ""),
     observacoes: paraCaixaAlta(valores.observacoes || ""),
-    textoPublicacao: paraCaixaAlta(valores.textoPublicacao || ""),
+    textoPublicacao: valores.textoPublicacao || "",
   };
 }
 
@@ -263,32 +263,44 @@ export default function OfferForm({
   }
 
   return (
-    <form onSubmit={aoEnviar} className="flex flex-col gap-6 pb-10">
-      <section className="rounded-[26px] bg-gradient-to-r from-brand to-brand-light p-5 text-white shadow-lg">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <form onSubmit={aoEnviar} className="flex flex-col gap-5 pb-10">
+      <section className="rounded-[22px] border border-brand/10 bg-white p-3 shadow-sm sm:p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
-              Painel administrativo
-            </p>
-            <h2 className="mt-1 font-display text-2xl font-bold">
-              {ofertaExistente ? "Atualize a oferta" : "Cadastre uma nova oferta"}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm text-white/80">
-              Tudo foi reorganizado em blocos para ficar mais rápido de preencher no PC,
-              sem perder a harmonia no celular.
-            </p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">Etapas do cadastro</p>
+            <p className="mt-1 text-xs text-ink/50">Use os atalhos para ir direto ao bloco que deseja preencher.</p>
           </div>
-          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white/10 p-3 text-xs text-white/90 sm:w-fit">
-            <div className="rounded-xl bg-white/10 px-3 py-2">🧾 Produto e preço</div>
-            <div className="rounded-xl bg-white/10 px-3 py-2">🏷️ Promoção e mídia</div>
-            <div className="rounded-xl bg-white/10 px-3 py-2">📣 Publicação</div>
-            <div className="rounded-xl bg-white/10 px-3 py-2">🤖 IA e prévia</div>
-          </div>
+          <span className="hidden rounded-full bg-brand/5 px-3 py-1 text-xs font-semibold text-brand sm:inline-flex">
+            7 etapas
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+          {[
+            ["#etapa-produto", "1", "Produto"],
+            ["#etapa-preco", "2", "Preço"],
+            ["#etapa-promocao", "3", "Promoção"],
+            ["#etapa-caracteristicas", "4", "Detalhes"],
+            ["#etapa-publicacao", "5", "Publicação"],
+            ["#etapa-ia", "6", "IA"],
+            ["#etapa-previa", "7", "Prévia"],
+          ].map(([href, numero, nome]) => (
+            <a
+              key={href}
+              href={href}
+              className="flex items-center gap-2 rounded-xl border border-ink/10 bg-cream/60 px-3 py-2 text-xs font-semibold text-ink/75 transition hover:border-brand/30 hover:bg-brand/5 hover:text-brand"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
+                {numero}
+              </span>
+              <span className="truncate">{nome}</span>
+            </a>
+          ))}
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section className={classeCard}>
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section id="etapa-produto" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Produto</h2>
@@ -403,7 +415,7 @@ export default function OfferForm({
           </div>
         </section>
 
-        <section className={classeCard}>
+        <section id="etapa-preco" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Preço e pagamento</h2>
@@ -495,7 +507,7 @@ export default function OfferForm({
           </div>
         </section>
 
-        <section className={classeCard}>
+        <section id="etapa-promocao" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Promoção</h2>
@@ -586,7 +598,7 @@ export default function OfferForm({
           </div>
         </section>
 
-        <section className={classeCard}>
+        <section id="etapa-caracteristicas" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Características e mídia</h2>
@@ -653,7 +665,7 @@ export default function OfferForm({
           </div>
         </section>
 
-        <section className={`${classeCard} xl:col-span-2`}>
+        <section id="etapa-publicacao" className={`${classeCard} scroll-mt-28 xl:col-span-2`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Publicação</h2>
@@ -763,7 +775,7 @@ export default function OfferForm({
           </div>
         </section>
 
-        <section className={classeCard}>
+        <section id="etapa-ia" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Gerar oferta com IA</h2>
@@ -775,11 +787,11 @@ export default function OfferForm({
           </div>
           <GerarComIA
             valores={valores}
-            onTextoGerado={(texto) => atualizarCampo("textoPublicacao", paraCaixaAlta(texto))}
+            onTextoGerado={(texto) => atualizarCampo("textoPublicacao", texto)}
           />
         </section>
 
-        <section className={classeCard}>
+        <section id="etapa-previa" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold text-ink">Prévia e edição da publicação</h2>
@@ -791,10 +803,10 @@ export default function OfferForm({
           </div>
           <Campo rotulo="Texto final (edite à vontade antes de publicar)">
             <textarea
-              className={`${classeInput} uppercase`}
+              className={classeInput}
               rows={10}
               value={valores.textoPublicacao}
-              onChange={(e) => atualizarCampo("textoPublicacao", paraCaixaAlta(e.target.value))}
+              onChange={(e) => atualizarCampo("textoPublicacao", e.target.value)}
               placeholder='Toque em "Gerar publicação" acima ou escreva manualmente aqui'
             />
           </Campo>

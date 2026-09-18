@@ -14,36 +14,39 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand/5 via-cream to-white">
-      <header className="sticky top-0 z-20 border-b border-brand/10 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      className="min-h-screen bg-[#F7F4FA] text-ink"
+      style={{ colorScheme: "light" }}
+    >
+      <header className="sticky top-0 z-20 border-b border-brand/10 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div>
-            <Link href="/admin" className="font-display text-xl font-bold text-ink">
+            <Link href="/admin" className="font-display text-lg font-bold text-ink sm:text-xl">
               Painel — Achado do Alê
             </Link>
-            <p className="mt-1 text-sm text-ink/55">
-              Gerencie ofertas, cupons e publicações em um painel mais moderno.
+            <p className="hidden text-xs text-ink/50 sm:block">
+              Ofertas, cupons e publicações
             </p>
           </div>
           <BotaoSair />
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-4">
-        <nav className="mb-6 flex flex-wrap gap-2">
+      <div className="border-b border-brand/10 bg-white">
+        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-full border border-brand/10 bg-white px-4 py-2 text-sm font-medium text-ink shadow-sm transition hover:border-brand/25 hover:text-brand"
+              className="shrink-0 rounded-full border border-brand/10 bg-[#F7F4FA] px-4 py-2 text-sm font-semibold text-ink/75 transition hover:border-brand/25 hover:bg-brand/5 hover:text-brand"
             >
               {link.label}
             </Link>
           ))}
         </nav>
-
-        <main>{children}</main>
       </div>
+
+      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6">{children}</main>
     </div>
   );
 }
