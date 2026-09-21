@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Baloo_2, Inter } from "next/font/google";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import { NOME_MARCA, URL_SITE } from "@/lib/seo-brand";
 import "./globals.css";
 
 const baloo = Baloo_2({
@@ -16,16 +17,15 @@ const inter = Inter({
   variable: "--font-body",
 });
 
-const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GOOGLE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(URL_SITE),
-  applicationName: "Achado do Alê",
+  applicationName: NOME_MARCA,
   title: {
-    default: "Achado do Alê — Ofertas, cupons e achadinhos",
-    template: "%s | Achado do Alê",
+    default: "Achado do Alê — Promoções, cupons e achadinhos",
+    template: `%s | ${NOME_MARCA}`,
   },
   description:
     "Ofertas, cupons e achadinhos selecionados de Mercado Livre, Amazon, Magalu, Shopee e outras lojas para você economizar de verdade.",
@@ -43,8 +43,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "pt_BR",
     url: URL_SITE,
-    siteName: "Achado do Alê",
-    title: "Achado do Alê — Ofertas, cupons e achadinhos",
+    siteName: NOME_MARCA,
+    title: "Achado do Alê — Promoções, cupons e achadinhos",
     description:
       "Ofertas e cupons selecionados para você encontrar bons preços sem precisar garimpar.",
     images: [
@@ -52,13 +52,13 @@ export const metadata: Metadata = {
         url: "/icon.png",
         width: 1254,
         height: 1254,
-        alt: "Achado do Alê",
+        alt: NOME_MARCA,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Achado do Alê — Ofertas, cupons e achadinhos",
+    title: "Achado do Alê — Promoções, cupons e achadinhos",
     description: "Ofertas e cupons selecionados todos os dias.",
     images: ["/icon.png"],
   },
