@@ -18,11 +18,13 @@ import {
 } from "@/lib/offers-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { linkParecePertencerALoja } from "@/lib/validar-link";
-import GerarComIA from "./GerarComIA";
+import { interpretarTextoOferta } from "@/lib/parse-oferta-texto";
 import PreviaWhatsApp from "./PreviaWhatsApp";
 
 const STATUS_OPCOES = Object.keys(STATUS_LABEL) as StatusOferta[];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
+const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
+const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
 
 const VALORES_INICIAIS: OfertaFormValues = {
   titulo: "",
@@ -57,10 +59,6 @@ const VALORES_INICIAIS: OfertaFormValues = {
   agendadoPara: "",
 };
 
-const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
-
-const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
-
 function normalizarTextosOferta(valores: OfertaFormValues): OfertaFormValues {
   return {
     ...valores,
@@ -75,22 +73,16 @@ function normalizarTextosOferta(valores: OfertaFormValues): OfertaFormValues {
     cor: paraCaixaAlta(valores.cor || ""),
     tamanho: paraCaixaAlta(valores.tamanho || ""),
     capacidade: paraCaixaAlta(valores.capacidade || ""),
-    textoOriginal: paraCaixaAlta(valores.textoOriginal || ""),
     observacoes: paraCaixaAlta(valores.observacoes || ""),
+    // O texto da publicação é mantido exatamente como foi colado/editado.
     textoPublicacao: valores.textoPublicacao || "",
   };
 }
 
-export default function OfferForm({
-  ofertaExistente,
-}: {
-  ofertaExistente?: Oferta;
-}) {
+export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Oferta }) {
   const router = useRouter();
   const supabase = criarClienteNavegador();
-  const [valores, setValores] = useState<OfertaFormValues>(
-    ofertaExistente ?? VALORES_INICIAIS
-  );
+  const [valores, setValores] = useState<OfertaFormValues>(ofertaExistente ?? VALORES_INICIAIS);
 
   const lojaExistente = ofertaExistente?.loja ?? LOJAS[0];
   const lojaExistenteEhAfiliada = LOJAS_AFILIADAS.includes(lojaExistente);
@@ -98,9 +90,7 @@ export default function OfferForm({
     lojaExistenteEhAfiliada ? lojaExistente : ofertaExistente ? LOJA_OUTROS : LOJAS[0]
   );
   const [lojaPersonalizada, setLojaPersonalizada] = useState(
-    ofertaExistente &&
-      !lojaExistenteEhAfiliada &&
-      lojaExistente !== LOJA_OUTROS
+    ofertaExistente && !lojaExistenteEhAfiliada && lojaExistente !== LOJA_OUTROS
       ? lojaExistente
       : ""
   );
@@ -119,62 +109,79 @@ export default function OfferForm({
   );
 
   const [erros, setErros] = useState<Record<string, string>>({});
-  const [previewImagem, setPreviewImagem] = useState<string | undefined>(
-    ofertaExistente?.imagemPrincipal
-  );
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState("");
+  const [previewImagem, setPreviewImagem] = useState<string | undefined>(ofertaExistente?.imagemPrincipal);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [erroImagem, setErroImagem] = useState("");
   const [buscandoImagemAuto, setBuscandoImagemAuto] = useState(false);
   const [statusImagemAuto, setStatusImagemAuto] = useState("");
+  const [resultadoLeitura, setResultadoLeitura] = useState("");
 
-  function atualizarCampo<K extends keyof OfertaFormValues>(
-    campo: K,
-    valor: OfertaFormValues[K]
-  ) {
+  function atualizarCampo<K extends keyof OfertaFormValues>(campo: K, valor: OfertaFormValues[K]) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
   }
 
-  function atualizarParcelamento(
-    campo: "parcelas" | "valorParcela",
-    valor: number | undefined
-  ) {
+  function atualizarParcelamento(campo: "parcelas" | "valorParcela", valor: number | undefined) {
     setValores((atual) => {
       const parcelas = campo === "parcelas" ? valor : atual.parcelas;
       const valorParcela = campo === "valorParcela" ? valor : atual.valorParcela;
-
       const precoAtual =
         parcelas && parcelas > 0 && valorParcela && valorParcela > 0
           ? Math.round(parcelas * valorParcela * 100) / 100
           : atual.precoAtual;
-
-      return {
-        ...atual,
-        parcelas,
-        valorParcela,
-        precoAtual,
-      };
+      return { ...atual, parcelas, valorParcela, precoAtual };
     });
   }
 
-  function validar(): boolean {
+  function reconhecerTexto() {
+    const texto = valores.textoPublicacao.trim();
+    if (!texto) {
+      setResultadoLeitura("Cole primeiro o texto da oferta.");
+      return;
+    }
+
+    const resultado = interpretarTextoOferta(texto);
+    setValores((atual) => ({ ...atual, ...resultado.valores, textoPublicacao: texto }));
+
+    if (resultado.valores.loja) {
+      if (LOJAS_AFILIADAS.includes(resultado.valores.loja)) {
+        setLojaSelecionada(resultado.valores.loja);
+        setLojaPersonalizada("");
+      } else {
+        setLojaSelecionada(LOJA_OUTROS);
+        setLojaPersonalizada(resultado.valores.loja);
+      }
+    }
+
+    if (resultado.valores.categoria) {
+      if (CATEGORIAS_DISPONIVEIS.includes(resultado.valores.categoria)) {
+        setCategoriaSelecionada(resultado.valores.categoria);
+        setCategoriaPersonalizada("");
+      } else {
+        setCategoriaSelecionada(CATEGORIA_OUTROS);
+        setCategoriaPersonalizada(resultado.valores.categoria);
+      }
+    }
+
+    setResultadoLeitura(
+      resultado.camposDetectados.length
+        ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}. Revise os campos antes de salvar.`
+        : "Não consegui identificar os dados principais. O texto foi mantido e você pode preencher os campos manualmente."
+    );
+  }
+
+  function validar() {
     const novosErros: Record<string, string> = {};
     if (!valores.titulo.trim()) novosErros.titulo = "Informe o nome do produto.";
     if (lojaSelecionada === LOJA_OUTROS && !lojaPersonalizada.trim()) {
       novosErros.loja = "Informe o nome da loja.";
-    } else if (!valores.loja) {
-      novosErros.loja = "Escolha a loja.";
-    }
+    } else if (!valores.loja) novosErros.loja = "Escolha a loja.";
     if (categoriaSelecionada === CATEGORIA_OUTROS && !categoriaPersonalizada.trim()) {
       novosErros.categoria = "Informe a categoria manualmente.";
-    } else if (!valores.categoria) {
-      novosErros.categoria = "Escolha a categoria.";
-    }
-    if (!valores.precoAtual || valores.precoAtual <= 0)
-      novosErros.precoAtual = "Informe o preço atual.";
-    if (!valores.linkProduto.trim())
-      novosErros.linkProduto = "Cole o link do produto.";
+    } else if (!valores.categoria) novosErros.categoria = "Escolha a categoria.";
+    if (!valores.precoAtual || valores.precoAtual <= 0) novosErros.precoAtual = "Informe o preço atual.";
+    if (!valores.linkProduto.trim()) novosErros.linkProduto = "Cole o link do produto.";
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   }
@@ -187,13 +194,9 @@ export default function OfferForm({
     setErroSalvar("");
     try {
       const valoresParaSalvar = normalizarTextosOferta(valores);
-
       if (ofertaExistente) {
         await atualizarOferta(supabase, ofertaExistente.id, valoresParaSalvar);
-        if (
-          ofertaExistente.status === "expirada" &&
-          valoresParaSalvar.status === "publicada"
-        ) {
+        if (ofertaExistente.status === "expirada" && valoresParaSalvar.status === "publicada") {
           await reativarOfertaReportada(supabase, ofertaExistente.id);
         }
       } else {
@@ -203,9 +206,7 @@ export default function OfferForm({
       router.refresh();
     } catch (erro) {
       console.error(erro);
-      setErroSalvar(
-        "Não foi possível salvar a oferta. Confira sua conexão e tente de novo."
-      );
+      setErroSalvar("Não foi possível salvar a oferta. Confira sua conexão e tente de novo.");
     } finally {
       setSalvando(false);
     }
@@ -230,15 +231,11 @@ export default function OfferForm({
         setPreviewImagem(dados.imagemUrl);
         setStatusImagemAuto("✅ Imagem encontrada e adicionada!");
       } else {
-        setStatusImagemAuto(
-          `${dados.erro || "Não encontramos a imagem automaticamente."} Envie manualmente abaixo.`
-        );
+        setStatusImagemAuto(`${dados.erro || "Não encontramos a imagem automaticamente."} Envie manualmente abaixo.`);
       }
     } catch (erro) {
       console.error(erro);
-      setStatusImagemAuto(
-        "Não foi possível buscar a imagem automaticamente. Envie manualmente abaixo."
-      );
+      setStatusImagemAuto("Não foi possível buscar a imagem automaticamente. Envie manualmente abaixo.");
     } finally {
       setBuscandoImagemAuto(false);
     }
@@ -247,639 +244,223 @@ export default function OfferForm({
   async function aoEscolherImagem(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0];
     if (!arquivo) return;
-
     setPreviewImagem(URL.createObjectURL(arquivo));
     setEnviandoImagem(true);
     setErroImagem("");
-
     try {
       const nomeArquivo = `${crypto.randomUUID()}-${arquivo.name}`;
-      const { error } = await supabase.storage
-        .from("ofertas")
-        .upload(nomeArquivo, arquivo, { upsert: false });
-
+      const { error } = await supabase.storage.from("ofertas").upload(nomeArquivo, arquivo, { upsert: false });
       if (error) throw error;
-
       const { data } = supabase.storage.from("ofertas").getPublicUrl(nomeArquivo);
-
       atualizarCampo("imagemPrincipal", data.publicUrl);
     } catch (erro) {
       console.error(erro);
-      setErroImagem(
-        "Não foi possível enviar a imagem. Confira se você rodou o supabase/storage.sql e tente de novo."
-      );
+      setErroImagem("Não foi possível enviar a imagem. Confira o Storage do Supabase e tente de novo.");
     } finally {
       setEnviandoImagem(false);
     }
   }
+
+  const etapas = [
+    ["#etapa-texto", "1", "Colar oferta"],
+    ["#etapa-produto", "2", "Produto"],
+    ["#etapa-preco", "3", "Preço"],
+    ["#etapa-promocao", "4", "Promoção"],
+    ["#etapa-detalhes", "5", "Detalhes"],
+    ["#etapa-publicacao", "6", "Publicar"],
+  ];
 
   return (
     <form onSubmit={aoEnviar} className="flex flex-col gap-5 pb-10">
       <section className="rounded-[22px] border border-brand/10 bg-white p-3 shadow-sm sm:p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">Etapas do cadastro</p>
-            <p className="mt-1 text-xs text-ink/50">Use os atalhos para ir direto ao bloco que deseja preencher.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">Cadastro simplificado</p>
+            <p className="mt-1 text-xs text-ink/50">Cole a oferta pronta primeiro; o site tenta preencher o restante para você.</p>
           </div>
-          <span className="hidden rounded-full bg-brand/5 px-3 py-1 text-xs font-semibold text-brand sm:inline-flex">
-            7 etapas
-          </span>
+          <span className="hidden rounded-full bg-brand/5 px-3 py-1 text-xs font-semibold text-brand sm:inline-flex">6 etapas</span>
         </div>
-
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
-          {[
-            ["#etapa-produto", "1", "Produto"],
-            ["#etapa-preco", "2", "Preço"],
-            ["#etapa-promocao", "3", "Promoção"],
-            ["#etapa-caracteristicas", "4", "Detalhes"],
-            ["#etapa-publicacao", "5", "Publicação"],
-            ["#etapa-ia", "6", "IA"],
-            ["#etapa-previa", "7", "Prévia"],
-          ].map(([href, numero, nome]) => (
-            <a
-              key={href}
-              href={href}
-              className="flex items-center gap-2 rounded-xl border border-ink/10 bg-cream/60 px-3 py-2 text-xs font-semibold text-ink/75 transition hover:border-brand/30 hover:bg-brand/5 hover:text-brand"
-            >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
-                {numero}
-              </span>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+          {etapas.map(([href, numero, nome]) => (
+            <a key={href} href={href} className="flex items-center gap-2 rounded-xl border border-ink/10 bg-cream/60 px-3 py-2 text-xs font-semibold text-ink/75 transition hover:border-brand/30 hover:bg-brand/5 hover:text-brand">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">{numero}</span>
               <span className="truncate">{nome}</span>
             </a>
           ))}
         </div>
       </section>
 
+      <section id="etapa-texto" className={`${classeCard} scroll-mt-28 border-brand/20 bg-brand/[0.025]`}>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-display text-lg font-bold text-ink">Cole o texto pronto da oferta</h2>
+            <p className="text-sm text-ink/55">Pode colar exatamente o texto que você gerou fora do site, com emojis, preços, link e formatação.</p>
+          </div>
+          <span className="w-fit rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">Etapa 1</span>
+        </div>
+
+        <Campo rotulo="Texto da publicação">
+          <textarea
+            className={classeInput}
+            rows={12}
+            value={valores.textoPublicacao}
+            onChange={(e) => atualizarCampo("textoPublicacao", e.target.value)}
+            placeholder="Cole aqui a oferta completa..."
+          />
+        </Campo>
+
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <button type="button" onClick={reconhecerTexto} className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-light">
+            ✨ Reconhecer texto e preencher campos
+          </button>
+          <p className="text-xs text-ink/50">O reconhecimento acontece no próprio site e não altera o texto que você colou.</p>
+        </div>
+
+        {resultadoLeitura && (
+          <p className="mt-3 rounded-xl bg-trust/10 px-3 py-2 text-sm text-ink/75">{resultadoLeitura}</p>
+        )}
+
+        {valores.textoPublicacao && (
+          <div className="mt-4 border-t border-ink/10 pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/45">Prévia do texto</p>
+            <PreviaWhatsApp texto={valores.textoPublicacao} />
+          </div>
+        )}
+      </section>
+
       <div className="grid gap-5 xl:grid-cols-2">
         <section id="etapa-produto" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Produto</h2>
-              <p className="text-sm text-ink/55">Dados principais da oferta e classificação.</p>
-            </div>
-            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">
-              Etapa 1
-            </span>
+            <div><h2 className="font-display text-lg font-bold text-ink">Produto</h2><p className="text-sm text-ink/55">Revise o que foi reconhecido.</p></div>
+            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">Etapa 2</span>
           </div>
-
           <div className="flex flex-col gap-4">
             <Campo rotulo="Nome do produto" obrigatorio erro={erros.titulo}>
-              <input
-                className={`${classeInput} uppercase`}
-                value={valores.titulo}
-                onChange={(e) => atualizarCampo("titulo", paraCaixaAlta(e.target.value))}
-                placeholder="Ex: Fritadeira elétrica Air Fryer 5L"
-              />
+              <input className={`${classeInput} uppercase`} value={valores.titulo} onChange={(e) => atualizarCampo("titulo", paraCaixaAlta(e.target.value))} />
             </Campo>
-
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Loja" obrigatorio erro={erros.loja}>
                 <div className="flex flex-col gap-2">
-                  <select
-                    className={classeInput}
-                    value={lojaSelecionada}
-                    onChange={(e) => {
-                      const novaLoja = e.target.value;
-                      setLojaSelecionada(novaLoja);
-                      atualizarCampo(
-                        "loja",
-                        novaLoja === LOJA_OUTROS ? lojaPersonalizada : novaLoja
-                      );
-                    }}
-                  >
-                    {LOJAS.map((loja) => (
-                      <option key={loja} value={loja}>
-                        {loja}
-                      </option>
-                    ))}
+                  <select className={classeInput} value={lojaSelecionada} onChange={(e) => {
+                    const nova = e.target.value; setLojaSelecionada(nova);
+                    atualizarCampo("loja", nova === LOJA_OUTROS ? lojaPersonalizada : nova);
+                  }}>
+                    {LOJAS.map((loja) => <option key={loja} value={loja}>{loja}</option>)}
                   </select>
-
-                  {lojaSelecionada === LOJA_OUTROS && (
-                    <input
-                      className={classeInput}
-                      value={lojaPersonalizada}
-                      onChange={(e) => {
-                        setLojaPersonalizada(e.target.value);
-                        atualizarCampo("loja", e.target.value);
-                      }}
-                      placeholder="Digite o nome da loja"
-                      autoFocus
-                    />
-                  )}
+                  {lojaSelecionada === LOJA_OUTROS && <input className={classeInput} value={lojaPersonalizada} onChange={(e) => { setLojaPersonalizada(e.target.value); atualizarCampo("loja", e.target.value); }} placeholder="Digite o nome da loja" />}
                 </div>
               </Campo>
-
               <Campo rotulo="Categoria" obrigatorio erro={erros.categoria}>
                 <div className="flex flex-col gap-2">
-                  <select
-                    className={classeInput}
-                    value={categoriaSelecionada}
-                    onChange={(e) => {
-                      const novaCategoria = e.target.value;
-                      setCategoriaSelecionada(novaCategoria);
-                      atualizarCampo(
-                        "categoria",
-                        novaCategoria === CATEGORIA_OUTROS
-                          ? categoriaPersonalizada
-                          : novaCategoria
-                      );
-                    }}
-                  >
-                    {CATEGORIAS_DISPONIVEIS.map((categoria) => (
-                      <option key={categoria} value={categoria}>
-                        {categoria}
-                      </option>
-                    ))}
+                  <select className={classeInput} value={categoriaSelecionada} onChange={(e) => {
+                    const nova = e.target.value; setCategoriaSelecionada(nova);
+                    atualizarCampo("categoria", nova === CATEGORIA_OUTROS ? categoriaPersonalizada : nova);
+                  }}>
+                    {CATEGORIAS_DISPONIVEIS.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-
-                  {categoriaSelecionada === CATEGORIA_OUTROS && (
-                    <input
-                      className={classeInput}
-                      value={categoriaPersonalizada}
-                      onChange={(e) => {
-                        setCategoriaPersonalizada(e.target.value);
-                        atualizarCampo("categoria", e.target.value);
-                      }}
-                      placeholder="Digite a categoria manualmente"
-                    />
-                  )}
+                  {categoriaSelecionada === CATEGORIA_OUTROS && <input className={classeInput} value={categoriaPersonalizada} onChange={(e) => { setCategoriaPersonalizada(e.target.value); atualizarCampo("categoria", e.target.value); }} placeholder="Digite a categoria" />}
                 </div>
               </Campo>
             </div>
-
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Marca">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.marca}
-                  onChange={(e) => atualizarCampo("marca", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-              <Campo rotulo="Modelo">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.modelo}
-                  onChange={(e) => atualizarCampo("modelo", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
+              <Campo rotulo="Marca"><input className={`${classeInput} uppercase`} value={valores.marca} onChange={(e) => atualizarCampo("marca", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Modelo"><input className={`${classeInput} uppercase`} value={valores.modelo} onChange={(e) => atualizarCampo("modelo", paraCaixaAlta(e.target.value))} /></Campo>
             </div>
           </div>
         </section>
 
         <section id="etapa-preco" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Preço e pagamento</h2>
-              <p className="text-sm text-ink/55">Preencha o valor principal e as condições de pagamento.</p>
-            </div>
-            <span className="rounded-full bg-discount/25 px-3 py-1 text-xs font-semibold text-ink">
-              Etapa 2
-            </span>
+            <div><h2 className="font-display text-lg font-bold text-ink">Preço e pagamento</h2><p className="text-sm text-ink/55">Revise preços e parcelamento.</p></div>
+            <span className="rounded-full bg-discount/25 px-3 py-1 text-xs font-semibold text-ink">Etapa 3</span>
           </div>
-
           <div className="flex flex-col gap-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Preço antigo (R$)">
-                <input
-                  type="number"
-                  step="0.01"
-                  className={classeInput}
-                  value={valores.precoAntigo ?? ""}
-                  onChange={(e) =>
-                    atualizarCampo(
-                      "precoAntigo",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                />
-              </Campo>
-              <Campo rotulo="Preço atual (R$)" obrigatorio erro={erros.precoAtual}>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={classeInput}
-                  value={valores.precoAtual || ""}
-                  onChange={(e) =>
-                    atualizarCampo("precoAtual", Number(e.target.value))
-                  }
-                />
-                <p className="mt-1 text-xs text-ink/50">
-                  Se você preencher quantidade de parcelas + valor da parcela, este total é calculado automaticamente.
-                </p>
-              </Campo>
+              <Campo rotulo="Preço antigo (R$)"><input type="number" step="0.01" className={classeInput} value={valores.precoAntigo ?? ""} onChange={(e) => atualizarCampo("precoAntigo", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
+              <Campo rotulo="Preço atual (R$)" obrigatorio erro={erros.precoAtual}><input type="number" step="0.01" className={classeInput} value={valores.precoAtual || ""} onChange={(e) => atualizarCampo("precoAtual", Number(e.target.value))} /></Campo>
             </div>
-
-            <Campo rotulo="Preço no Pix (R$)">
-              <input
-                type="number"
-                step="0.01"
-                className={classeInput}
-                value={valores.precoPix ?? ""}
-                onChange={(e) =>
-                  atualizarCampo(
-                    "precoPix",
-                    e.target.value ? Number(e.target.value) : undefined
-                  )
-                }
-              />
-            </Campo>
-
+            <Campo rotulo="Preço no Pix (R$)"><input type="number" step="0.01" className={classeInput} value={valores.precoPix ?? ""} onChange={(e) => atualizarCampo("precoPix", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Quantidade de parcelas">
-                <input
-                  type="number"
-                  min="1"
-                  className={classeInput}
-                  value={valores.parcelas ?? ""}
-                  onChange={(e) =>
-                    atualizarParcelamento(
-                      "parcelas",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                />
-              </Campo>
-              <Campo rotulo="Valor de cada parcela (R$)">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className={classeInput}
-                  value={valores.valorParcela ?? ""}
-                  onChange={(e) =>
-                    atualizarParcelamento(
-                      "valorParcela",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                />
-              </Campo>
+              <Campo rotulo="Quantidade de parcelas"><input type="number" min="1" className={classeInput} value={valores.parcelas ?? ""} onChange={(e) => atualizarParcelamento("parcelas", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
+              <Campo rotulo="Valor de cada parcela (R$)"><input type="number" min="0" step="0.01" className={classeInput} value={valores.valorParcela ?? ""} onChange={(e) => atualizarParcelamento("valorParcela", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
             </div>
-
             <div>
-              <span className="text-sm font-semibold text-ink">Juros do parcelamento</span>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition ${
-                    !valores.parcelamentoSemJuros
-                      ? "border-brand bg-brand/5 text-brand ring-2 ring-brand/10"
-                      : "border-ink/10 bg-white text-ink/75"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="juros-parcelamento"
-                    checked={!valores.parcelamentoSemJuros}
-                    onChange={() => atualizarCampo("parcelamentoSemJuros", false)}
-                  />
-                  Com juros
-                </label>
-
-                <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition ${
-                    valores.parcelamentoSemJuros
-                      ? "border-trust bg-trust/5 text-trust ring-2 ring-trust/10"
-                      : "border-ink/10 bg-white text-ink/75"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="juros-parcelamento"
-                    checked={Boolean(valores.parcelamentoSemJuros)}
-                    onChange={() => atualizarCampo("parcelamentoSemJuros", true)}
-                  />
-                  Sem juros
-                </label>
+              <p className="mb-2 text-sm font-semibold text-ink">Parcelamento</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${!valores.parcelamentoSemJuros ? "border-brand bg-brand/5 text-brand ring-2 ring-brand/10" : "border-ink/10"}`}><input type="radio" name="juros" checked={!valores.parcelamentoSemJuros} onChange={() => atualizarCampo("parcelamentoSemJuros", false)} />Com juros</label>
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${valores.parcelamentoSemJuros ? "border-trust bg-trust/5 text-trust ring-2 ring-trust/10" : "border-ink/10"}`}><input type="radio" name="juros" checked={Boolean(valores.parcelamentoSemJuros)} onChange={() => atualizarCampo("parcelamentoSemJuros", true)} />Sem juros</label>
               </div>
-              <p className="mt-2 text-xs text-ink/50">
-                Essa informação é exibida na página do produto. O sistema não tenta mais deduzir os juros pelo valor das parcelas.
-              </p>
             </div>
           </div>
         </section>
 
         <section id="etapa-promocao" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Promoção</h2>
-              <p className="text-sm text-ink/55">Cupom, estoque, frete e validade da oferta.</p>
-            </div>
-            <span className="rounded-full bg-trust/10 px-3 py-1 text-xs font-semibold text-trust">
-              Etapa 3
-            </span>
+            <div><h2 className="font-display text-lg font-bold text-ink">Promoção</h2><p className="text-sm text-ink/55">Cupom, frete, estoque e validade.</p></div>
+            <span className="rounded-full bg-trust/10 px-3 py-1 text-xs font-semibold text-trust">Etapa 4</span>
           </div>
-
           <div className="flex flex-col gap-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Cupom">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.cupom}
-                  onChange={(e) => atualizarCampo("cupom", paraCaixaAlta(e.target.value))}
-                  placeholder="Ex: ALE15"
-                />
-              </Campo>
-              <Campo rotulo="Link do cupom">
-                <input
-                  type="url"
-                  className={classeInput}
-                  value={valores.linkCupom}
-                  onChange={(e) => atualizarCampo("linkCupom", e.target.value)}
-                  placeholder="https://..."
-                />
-              </Campo>
+              <Campo rotulo="Cupom"><input className={`${classeInput} uppercase`} value={valores.cupom} onChange={(e) => atualizarCampo("cupom", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Link do cupom"><input type="url" className={classeInput} value={valores.linkCupom} onChange={(e) => atualizarCampo("linkCupom", e.target.value)} /></Campo>
             </div>
-
-            <Campo rotulo="Descrição do cupom">
-              <textarea
-                className={`${classeInput} uppercase`}
-                rows={3}
-                value={valores.cupomDescricao}
-                onChange={(e) => atualizarCampo("cupomDescricao", paraCaixaAlta(e.target.value))}
-                placeholder="Ex: 15% OFF em ferramentas, compra mínima de R$ 99 e limite de R$ 40 de desconto."
-              />
-              <p className="mt-1 text-xs text-ink/50">
-                Essa descrição será exibida na página pública do produto junto com o cupom.
-              </p>
-            </Campo>
-
+            <Campo rotulo="Descrição do cupom"><textarea className={`${classeInput} uppercase`} rows={2} value={valores.cupomDescricao} onChange={(e) => atualizarCampo("cupomDescricao", paraCaixaAlta(e.target.value))} /></Campo>
             <div className="rounded-2xl bg-cream p-3">
-              <label className="flex items-center gap-2 text-sm font-medium text-ink">
-                <input
-                  type="checkbox"
-                  checked={valores.freteGratis}
-                  onChange={(e) => atualizarCampo("freteGratis", e.target.checked)}
-                />
-                Frete grátis
-              </label>
-
-              <div className="mt-3">
-                <Campo rotulo="Condição do frete (opcional)">
-                  <input
-                    className={`${classeInput} uppercase`}
-                    value={valores.freteCondicao ?? ""}
-                    onChange={(e) => atualizarCampo("freteCondicao", paraCaixaAlta(e.target.value))}
-                    placeholder="Ex: Frete grátis para assinantes Meli+ ou Amazon Prime"
-                  />
-                  <p className="mt-1 text-xs text-ink/50">
-                    Use quando o frete grátis depender de assinatura, valor mínimo, região ou outra regra.
-                  </p>
-                </Campo>
-              </div>
+              <label className="flex items-center gap-2 text-sm font-medium text-ink"><input type="checkbox" checked={valores.freteGratis} onChange={(e) => atualizarCampo("freteGratis", e.target.checked)} />Frete grátis</label>
+              <div className="mt-3"><Campo rotulo="Condição do frete"><input className={`${classeInput} uppercase`} value={valores.freteCondicao ?? ""} onChange={(e) => atualizarCampo("freteCondicao", paraCaixaAlta(e.target.value))} /></Campo></div>
             </div>
-
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Estoque">
-                <input
-                  className={`${classeInput} uppercase`}
-                  placeholder="Ex: últimas unidades"
-                  value={valores.estoque}
-                  onChange={(e) => atualizarCampo("estoque", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-              <Campo rotulo="Validade da promoção">
-                <input
-                  type="date"
-                  className={classeInput}
-                  value={valores.validadePromocao}
-                  onChange={(e) => atualizarCampo("validadePromocao", e.target.value)}
-                />
-              </Campo>
+              <Campo rotulo="Estoque"><input className={`${classeInput} uppercase`} value={valores.estoque} onChange={(e) => atualizarCampo("estoque", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Validade da promoção"><input type="date" className={classeInput} value={valores.validadePromocao} onChange={(e) => atualizarCampo("validadePromocao", e.target.value)} /><p className="mt-1 text-xs text-ink/50">Depois dessa data, a oferta fica visualmente esgotada automaticamente.</p></Campo>
             </div>
           </div>
         </section>
 
-        <section id="etapa-caracteristicas" className={`${classeCard} scroll-mt-28`}>
+        <section id="etapa-detalhes" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Características e mídia</h2>
-              <p className="text-sm text-ink/55">Detalhes técnicos e imagem principal do produto.</p>
-            </div>
-            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">
-              Etapa 4
-            </span>
+            <div><h2 className="font-display text-lg font-bold text-ink">Detalhes e imagem</h2><p className="text-sm text-ink/55">Só revise o que for relevante para o produto.</p></div>
+            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">Etapa 5</span>
           </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Voltagem">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.voltagem}
-                  onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-              <Campo rotulo="Cor">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.cor}
-                  onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-              <Campo rotulo="Tamanho">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.tamanho}
-                  onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-              <Campo rotulo="Capacidade">
-                <input
-                  className={`${classeInput} uppercase`}
-                  value={valores.capacidade}
-                  onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-            </div>
-
-            <div className="rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
-              <Campo rotulo="Imagem principal">
-                <input type="file" accept="image/*" onChange={aoEscolherImagem} />
-              </Campo>
-              {enviandoImagem && (
-                <p className="mt-2 text-xs text-ink/50">Enviando imagem...</p>
-              )}
-              {erroImagem && (
-                <p className="mt-2 text-xs text-accent-dark">{erroImagem}</p>
-              )}
-              {previewImagem && (
-                <img
-                  src={previewImagem}
-                  alt="Pré-visualização da imagem do produto"
-                  className="mt-3 h-36 w-36 rounded-2xl object-cover ring-1 ring-ink/10"
-                />
-              )}
-              <p className="mt-3 text-xs text-ink/50">
-                A imagem é enviada e guardada assim que você escolhe o arquivo.
-              </p>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo rotulo="Voltagem"><input className={`${classeInput} uppercase`} value={valores.voltagem} onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))} /></Campo>
+            <Campo rotulo="Cor"><input className={`${classeInput} uppercase`} value={valores.cor} onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))} /></Campo>
+            <Campo rotulo="Tamanho"><input className={`${classeInput} uppercase`} value={valores.tamanho} onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))} /></Campo>
+            <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))} /></Campo>
+          </div>
+          <div className="mt-4 rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
+            <Campo rotulo="Imagem principal"><input type="file" accept="image/*" onChange={aoEscolherImagem} /></Campo>
+            {enviandoImagem && <p className="mt-2 text-xs text-ink/50">Enviando imagem...</p>}
+            {erroImagem && <p className="mt-2 text-xs text-accent-dark">{erroImagem}</p>}
+            {previewImagem && <img src={previewImagem} alt="Prévia" className="mt-3 h-36 w-36 rounded-2xl object-cover ring-1 ring-ink/10" />}
           </div>
         </section>
 
         <section id="etapa-publicacao" className={`${classeCard} scroll-mt-28 xl:col-span-2`}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Publicação</h2>
-              <p className="text-sm text-ink/55">Link do produto, observações, status e agendamento.</p>
-            </div>
-            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">
-              Etapa 5
-            </span>
+            <div><h2 className="font-display text-lg font-bold text-ink">Publicação</h2><p className="text-sm text-ink/55">Link, status e controles finais.</p></div>
+            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">Etapa 6</span>
           </div>
-
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
-              <Campo rotulo="Link do produto" obrigatorio erro={erros.linkProduto}>
-                <input
-                  className={classeInput}
-                  value={valores.linkProduto}
-                  onChange={(e) => atualizarCampo("linkProduto", e.target.value)}
-                  placeholder="Cole aqui o link de afiliado"
-                />
-              </Campo>
-              <button
-                type="button"
-                onClick={buscarImagemAutomaticamente}
-                disabled={buscandoImagemAuto}
-                className="w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-              >
-                {buscandoImagemAuto
-                  ? "Buscando imagem..."
-                  : "🔍 Buscar foto do produto automaticamente"}
-              </button>
+              <Campo rotulo="Link do produto" obrigatorio erro={erros.linkProduto}><input className={classeInput} value={valores.linkProduto} onChange={(e) => atualizarCampo("linkProduto", e.target.value)} /></Campo>
+              <button type="button" onClick={buscarImagemAutomaticamente} disabled={buscandoImagemAuto} className="w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
               {statusImagemAuto && <p className="text-xs text-ink/60">{statusImagemAuto}</p>}
-              {valores.linkProduto &&
-                !linkParecePertencerALoja(valores.linkProduto, valores.loja) && (
-                  <p className="rounded-xl bg-accent/10 px-3 py-2 text-xs text-accent-dark">
-                    ⚠️ Esse link não parece ser do domínio oficial de {valores.loja}. Confira antes de publicar.
-                  </p>
-                )}
-
-              <label className="flex items-start gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink">
-                <input
-                  type="checkbox"
-                  className="mt-0.5"
-                  checked={valores.usarLinkRedirecionamento}
-                  onChange={(e) =>
-                    atualizarCampo("usarLinkRedirecionamento", e.target.checked)
-                  }
-                />
-                <span>
-                  Usar link de redirecionamento próprio (<code>seudominio.com/r/id-da-oferta</code>)
-                  para registrar cliques.
-                </span>
-              </label>
+              {valores.linkProduto && !linkParecePertencerALoja(valores.linkProduto, valores.loja) && <p className="rounded-xl bg-accent/10 px-3 py-2 text-xs text-accent-dark">⚠️ Confira se o link pertence à loja selecionada.</p>}
+              <label className="flex items-start gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink"><input type="checkbox" className="mt-0.5" checked={valores.usarLinkRedirecionamento} onChange={(e) => atualizarCampo("usarLinkRedirecionamento", e.target.checked)} /><span>Usar link de redirecionamento próprio para registrar cliques.</span></label>
             </div>
-
             <div className="flex flex-col gap-4">
-              <Campo rotulo="Texto original da oferta">
-                <textarea
-                  className={`${classeInput} uppercase`}
-                  rows={4}
-                  value={valores.textoOriginal}
-                  onChange={(e) => atualizarCampo("textoOriginal", paraCaixaAlta(e.target.value))}
-                  placeholder="Cole aqui o texto ou a descrição recebida do fornecedor"
-                />
-              </Campo>
-
-              <Campo rotulo="Observações">
-                <textarea
-                  className={`${classeInput} uppercase`}
-                  rows={3}
-                  value={valores.observacoes}
-                  onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))}
-                />
-              </Campo>
-
+              <Campo rotulo="Observações internas"><textarea className={`${classeInput} uppercase`} rows={3} value={valores.observacoes} onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))} /></Campo>
               <div className="grid gap-4 md:grid-cols-2">
-                <Campo rotulo="Status da publicação" obrigatorio>
-                  <select
-                    className={classeInput}
-                    value={valores.status}
-                    onChange={(e) =>
-                      atualizarCampo("status", e.target.value as StatusOferta)
-                    }
-                  >
-                    {STATUS_OPCOES.map((status) => (
-                      <option key={status} value={status}>
-                        {STATUS_LABEL[status]}
-                      </option>
-                    ))}
-                  </select>
-                </Campo>
-
-                {valores.status === "agendada" ? (
-                  <Campo rotulo="Agendar publicação para">
-                    <input
-                      type="datetime-local"
-                      className={classeInput}
-                      value={valores.agendadoPara}
-                      onChange={(e) => atualizarCampo("agendadoPara", e.target.value)}
-                    />
-                    <p className="mt-1 text-xs text-ink/50">Horário de Brasília.</p>
-                  </Campo>
-                ) : (
-                  <div className="hidden md:block" />
-                )}
+                <Campo rotulo="Status da publicação" obrigatorio><select className={classeInput} value={valores.status} onChange={(e) => atualizarCampo("status", e.target.value as StatusOferta)}>{STATUS_OPCOES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></Campo>
+                {valores.status === "agendada" && <Campo rotulo="Agendar para"><input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} /></Campo>}
               </div>
             </div>
-          </div>
-        </section>
-
-        <section id="etapa-ia" className={`${classeCard} scroll-mt-28`}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Gerar oferta com IA</h2>
-              <p className="text-sm text-ink/55">Use a IA para acelerar o texto de publicação.</p>
-            </div>
-            <span className="rounded-full bg-trust/10 px-3 py-1 text-xs font-semibold text-trust">
-              Etapa 6
-            </span>
-          </div>
-          <GerarComIA
-            valores={valores}
-            onTextoGerado={(texto) => atualizarCampo("textoPublicacao", texto)}
-          />
-        </section>
-
-        <section id="etapa-previa" className={`${classeCard} scroll-mt-28`}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">Prévia e edição da publicação</h2>
-              <p className="text-sm text-ink/55">Edite o texto final antes de publicar.</p>
-            </div>
-            <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">
-              Etapa 7
-            </span>
-          </div>
-          <Campo rotulo="Texto final (edite à vontade antes de publicar)">
-            <textarea
-              className={classeInput}
-              rows={10}
-              value={valores.textoPublicacao}
-              onChange={(e) => atualizarCampo("textoPublicacao", e.target.value)}
-              placeholder='Toque em "Gerar publicação" acima ou escreva manualmente aqui'
-            />
-          </Campo>
-          <div className="mt-4">
-            <PreviaWhatsApp texto={valores.textoPublicacao || ""} />
           </div>
         </section>
       </div>
 
       {erroSalvar && <p className="text-center text-sm text-accent-dark">{erroSalvar}</p>}
-
-      <button
-        type="submit"
-        disabled={salvando}
-        className="rounded-[18px] bg-accent px-6 py-3 text-center font-semibold text-white shadow-sm disabled:opacity-60"
-      >
-        {salvando
-          ? "Salvando..."
-          : ofertaExistente
-          ? "Salvar alterações"
-          : "Salvar oferta"}
-      </button>
+      <button type="submit" disabled={salvando} className="rounded-[18px] bg-accent px-6 py-3 text-center font-semibold text-white shadow-sm disabled:opacity-60">{salvando ? "Salvando..." : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}</button>
     </form>
   );
 }

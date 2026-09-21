@@ -1,3 +1,4 @@
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import OfertasGrid from "@/components/OfertasGrid";
@@ -15,7 +16,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
       <Header />
-      <Hero ofertaDestaque={ofertas.find((oferta) => oferta.status === "publicada")} />
+      <Hero ofertaDestaque={ofertas.find((oferta) => oferta.status === "publicada" && !ofertaEstaExpirada(oferta))} />
       <section id="ofertas" className="scroll-mt-24">
         <OfertasGrid ofertas={ofertas} />
       </section>

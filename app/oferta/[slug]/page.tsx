@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Container from "@/components/Container";
 import ReportarOferta from "@/components/ReportarOferta";
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 
@@ -61,7 +62,7 @@ export default async function PaginaOferta({
   const oferta = await buscar(params.slug);
   if (!oferta || !["publicada", "expirada"].includes(oferta.status)) notFound();
 
-  const expirada = oferta.status === "expirada";
+  const expirada = ofertaEstaExpirada(oferta);
 
   // Quando existe preço à vista no Pix, ele é o menor preço efetivo da oferta
   // e por isso é usado como referência para o percentual de desconto.
@@ -90,15 +91,13 @@ export default async function PaginaOferta({
         </Link>
 
         {expirada && (
-          <div className="mb-5 rounded-xl2 border border-white/10 bg-white/5 p-4 text-center">
-            <p className="font-display text-lg font-bold text-text">PROMOÇÃO VENCIDA</p>
-            <p className="mt-1 text-sm text-text-muted">
-              Esta promoção foi sinalizada como vencida. Ela continua disponível para consulta, mas o preço ou a disponibilidade podem ter mudado.
-            </p>
+          <div className="mb-5 rounded-xl2 border border-white/10 bg-white/5 p-4">
+            <p className="font-display text-base font-bold text-text-muted">OFERTA ESGOTADA</p>
+            <p className="mt-1 text-sm text-text-muted">O preço ou a disponibilidade podem ter mudado. A página continua disponível para consulta.</p>
           </div>
         )}
 
-        <div className={`flex flex-col gap-6 md:flex-row md:items-start md:gap-10 ${expirada ? "grayscale opacity-75" : ""}`}>
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
           {/* Imagem */}
           <div className="order-1 mx-auto w-full max-w-[500px] shrink-0 md:order-2">
             <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 md:h-[500px] md:w-[500px]">
@@ -110,13 +109,9 @@ export default async function PaginaOferta({
                   oferta.imagemPrincipal
                     ? "object-cover"
                     : "object-contain p-16 opacity-70"
-                }`}
+                } ${expirada ? "grayscale opacity-60" : ""}`}
               />
-              {expirada ? (
-                <span className="absolute right-3 top-3 rounded-full bg-danger px-3 py-1 text-xs font-bold text-white">
-                  PROMOÇÃO VENCIDA
-                </span>
-              ) : desconto ? (
+              {!expirada && desconto ? (
                 <span className="absolute right-3 top-3 rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg">
                   -{desconto}%
                 </span>
@@ -139,8 +134,8 @@ export default async function PaginaOferta({
                   {formatarPreco(oferta.precoAntigo)}
                 </span>
               )}
-              <span className="text-3xl font-bold text-gold">
-                {formatarPreco(oferta.precoAtual)}
+              <span className={`text-3xl font-bold ${expirada ? "text-text-muted" : "text-gold"}`}>
+                {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoAtual)}
               </span>
             </div>
 
@@ -149,7 +144,7 @@ export default async function PaginaOferta({
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-trust">
                   💸 Melhor preço à vista no Pix
                 </p>
-                <p className="mt-1 font-display text-2xl font-extrabold text-trust">
+                <p className={`mt-1 font-display text-2xl font-extrabold ${expirada ? "text-text-muted" : "text-trust"}`}>
                   {formatarPreco(oferta.precoPix)}
                 </p>
               </div>
