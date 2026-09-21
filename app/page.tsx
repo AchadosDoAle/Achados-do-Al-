@@ -80,7 +80,7 @@ export default async function HomePage() {
       <section id="ofertas" className="scroll-mt-24">
         <OfertasGrid ofertas={ofertas} />
       </section>
-      <Footer />
+      <Footer destacarInstagramProjeto />
       <BottomNav />
     </main>
   );

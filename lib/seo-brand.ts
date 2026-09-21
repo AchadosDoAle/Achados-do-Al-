@@ -13,7 +13,12 @@ export type RedeSocial = {
 };
 
 const redesConfiguradas: RedeSocial[] = [
-  { nome: "Instagram", url: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "" },
+  {
+    nome: "Instagram",
+    url:
+      process.env.NEXT_PUBLIC_INSTAGRAM_URL ||
+      "https://www.instagram.com/achados.do.ale/",
+  },
   { nome: "TikTok", url: process.env.NEXT_PUBLIC_TIKTOK_URL || "" },
   { nome: "Facebook", url: process.env.NEXT_PUBLIC_FACEBOOK_URL || "" },
   { nome: "YouTube", url: process.env.NEXT_PUBLIC_YOUTUBE_URL || "" },
