@@ -88,30 +88,56 @@ function detectarValorCupom(texto: string) {
   return undefined;
 }
 
+function anoCompleto(ano: string) {
+  return ano.length === 2 ? `20${ano}` : ano;
+}
+
 function detectarValidade(texto: string) {
-  // Caso comum: "até 23h59 do dia 20/09/2026"
-  const horaAntes = Array.from(
-    texto.matchAll(/(?:at[eé]|às|as)\s*(\d{1,2})\s*[h:]\s*(\d{2}).{0,45}?(\d{1,2})\/(\d{1,2})\/(\d{4})/gi)
+  // Formato muito comum nos termos do Mercado Livre:
+  // "Cupom válido apenas 21/09/26 até às 23h59"
+  // Também aceita 21/09/2026, 23:59, "às 23h59", "até 23h59" etc.
+  const datas = Array.from(
+    texto.matchAll(/\b(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})\b/gi)
   );
-  if (horaAntes.length) {
-    const m = horaAntes[horaAntes.length - 1];
+
+  if (datas.length) {
+    // Em campanhas que trazem início e fim, a última data costuma ser o término.
+    const m = datas[datas.length - 1];
+    const indiceFim = (m.index ?? 0) + m[0].length;
+    const trechoDepois = texto.slice(indiceFim, indiceFim + 80);
+
+    // Procura o horário logo depois da data, inclusive em frases como
+    // "21/09/26 até às 23h59".
+    const horarioDepois = trechoDepois.match(
+      /(?:\s|,|-)*(?:(?:at[eé]\s*)?(?:[àa]s?\s*)?)?(\d{1,2})\s*(?:h|:)\s*(\d{2})\b/i
+    );
+
+    let hora = horarioDepois?.[1];
+    let minuto = horarioDepois?.[2];
+
+    // Também cobre o formato inverso: "até 23h59 do dia 21/09/26".
+    if (!hora || !minuto) {
+      const trechoAntes = texto.slice(Math.max(0, (m.index ?? 0) - 80), m.index ?? 0);
+      const horariosAntes = Array.from(
+        trechoAntes.matchAll(/(\d{1,2})\s*(?:h|:)\s*(\d{2})/gi)
+      );
+      const ultimoHorario = horariosAntes[horariosAntes.length - 1];
+      if (ultimoHorario) {
+        hora = ultimoHorario[1];
+        minuto = ultimoHorario[2];
+      }
+    }
+
     return {
-      data: `${m[5]}-${m[4].padStart(2, "0")}-${m[3].padStart(2, "0")}`,
-      hora: `${m[1].padStart(2, "0")}:${m[2]}`,
+      data: `${anoCompleto(m[3])}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`,
+      hora:
+        hora && minuto
+          ? `${hora.padStart(2, "0")}:${minuto}`
+          : "23:59",
     };
   }
 
-  // Captura todas as datas e escolhe a última, que em campanhas com intervalo é o término.
-  const datas = Array.from(
-    texto.matchAll(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*(?:às?|,|-)?\s*(\d{1,2})\s*[:h]\s*(\d{2}))?/gi)
-  );
-  if (!datas.length) return undefined;
-
-  const m = datas[datas.length - 1];
-  return {
-    data: `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`,
-    hora: m[4] && m[5] ? `${m[4].padStart(2, "0")}:${m[5]}` : "23:59",
-  };
+  return undefined;
 }
 
 export function interpretarTextoCupom(textoOriginal: string): ResultadoLeituraCupom {
