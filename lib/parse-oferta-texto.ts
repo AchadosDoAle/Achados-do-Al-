@@ -14,6 +14,10 @@ function limparMarkdown(texto: string) {
   return texto
     .replace(/[\*_~`]/g, "")
     .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, " ")
+    // Remove seletores invisíveis que costumam sobrar depois dos emojis
+    // (ex.: ⚠️ deixa U+FE0F), evitando que uma linha de aviso seja
+    // interpretada como nome do produto.
+    .replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -105,29 +109,76 @@ function detectarTitulo(texto: string, loja?: string) {
     .filter(Boolean)
     .filter((linha) => !/^https?:\/\//i.test(linha));
 
-  const ignorar = [
-    /^DE\s*:/i,
-    /^POR\s+/i,
-    /^COMPRE AQUI/i,
-    /^PREÇO/i,
-    /^PRECO/i,
-    /^VAGAS NO GRUPO/i,
-    /^OFERTA$/i,
-  ];
+  const deveIgnorar = (linha: string) => {
+    const l = linha.toLocaleUpperCase("pt-BR");
 
-  const candidatos = linhas.filter((linha) => {
-    if (ignorar.some((r) => r.test(linha))) return false;
-    if (loja && linha.toLocaleUpperCase("pt-BR") === loja.toLocaleUpperCase("pt-BR")) return false;
-    if (/R\$\s*\d/.test(linha)) return false;
-    if (linha.length < 12 || linha.length > 150) return false;
-    return true;
-  });
+    if (/^(DE|POR)\s*:?\s*R?\$?/i.test(linha)) return true;
+    if (/R\$\s*\d/.test(linha)) return true;
+    if (/^CUPOM\b/i.test(linha)) return true;
+    if (/^COMPRE\s+AQUI\b/i.test(linha)) return true;
+    if (/^VAGAS\s+NO\s+GRUPO\b/i.test(linha)) return true;
+    if (/^FRETE\b/i.test(linha)) return true;
+    if (/^OFERTA$/i.test(linha)) return true;
 
-  const detalhados = candidatos.filter((l) => !/\bEM OFERTA\b|\bPROMOÇÃO\b|\bPROMOCAO\b/i.test(l));
-  const base = detalhados.length ? detalhados : candidatos;
-  if (!base.length) return undefined;
+    // Avisos/rodapés comuns dos textos prontos nunca devem virar título.
+    if (
+      l.includes("SUJEIT") ||
+      l.includes("CONDIÇÕES DE PAGAMENTO") ||
+      l.includes("CONDICOES DE PAGAMENTO") ||
+      l.includes("DISPONIBILIDADE") ||
+      l.includes("ESTOQUE SUJEITO") ||
+      l.includes("GRUPO DO WHATSAPP") ||
+      l.includes("ACHADOSDOALE.COM/GRUPO")
+    ) {
+      return true;
+    }
 
-  return base.sort((a, b) => b.length - a.length)[0];
+    if (loja && l === loja.toLocaleUpperCase("pt-BR")) return true;
+    if (linha.length < 8 || linha.length > 150) return true;
+    return false;
+  };
+
+  const candidatos = linhas.filter((linha) => !deveIgnorar(linha));
+  if (!candidatos.length) return undefined;
+
+  // Nos modelos usados no painel, o nome comercial da loja costuma vir
+  // imediatamente antes do nome exato do produto. Essa linha tem prioridade
+  // sobre chamadas publicitárias como "NO PRECINHO" ou "EM OFERTA".
+  if (loja) {
+    const lojaUpper = loja.toLocaleUpperCase("pt-BR");
+    const indiceLoja = linhas.findIndex((linha) => {
+      const l = linha.toLocaleUpperCase("pt-BR");
+      return l === lojaUpper || l.includes(lojaUpper);
+    });
+
+    if (indiceLoja >= 0) {
+      for (let i = indiceLoja + 1; i < Math.min(linhas.length, indiceLoja + 4); i += 1) {
+        const linha = linhas[i];
+        if (!deveIgnorar(linha)) return linha;
+      }
+    }
+  }
+
+  // Como fallback, reduz a pontuação de chamadas promocionais e favorece
+  // nomes com características concretas de produto (marca/modelo/medidas).
+  const pontuar = (linha: string) => {
+    const l = linha.toLocaleUpperCase("pt-BR");
+    let pontos = Math.min(linha.length, 100);
+
+    if (/\b(NO PRECINHO|EM OFERTA|PROMOÇÃO|PROMOCAO|ACHADINHO|CORRE|APROVEITE)\b/.test(l)) {
+      pontos -= 80;
+    }
+    if (/\b\d+(?:[.,]\d+)?\s*(W|V|L|ML|KG|GB|TB|CM|MM|UN|UNIDADES?)\b/.test(l)) {
+      pontos += 25;
+    }
+    if (/\b(MASCULIN[AO]|FEMININ[AO]|BRANCO|BRANCA|PRETO|PRETA|BIVOLT|DRY-FIT|ULTRA|PRO|PLUS)\b/.test(l)) {
+      pontos += 15;
+    }
+
+    return pontos;
+  };
+
+  return [...candidatos].sort((a, b) => pontuar(b) - pontuar(a))[0];
 }
 
 export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
