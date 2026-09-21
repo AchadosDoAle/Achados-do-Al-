@@ -152,10 +152,17 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("categoria");
   }
 
+  // Para preços, removemos só a marcação visual (negrito/tachado) e
+  // normalizamos espaços. Assim frases como "~De R$ 414,47~",
+  // "DE: R$ 414,47" e "DE R$ 414,47" sempre alimentam Preço antigo.
+  const textoPrecos = texto
+    .replace(/\u00A0/g, " ")
+    .replace(/[\*_~`]/g, " ");
+
   const precoAntigo = moedaParaNumero(
-    primeiroMatch(texto, [
-      /(?:^|\n)[^\n]*?\bDe\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
-      /(?:preço|preco)\s*(?:antigo|de)\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
+    primeiroMatch(textoPrecos, [
+      /\bDE\s*:?\s*R\s*\$\s*([\d.]+,\d{2})/i,
+      /(?:preço|preco)\s*(?:antigo|de)\s*:?\s*R\s*\$\s*([\d.]+,\d{2})/i,
     ])
   );
   if (precoAntigo != null) {
@@ -164,7 +171,7 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
   }
 
   const precoPix = moedaParaNumero(
-    primeiroMatch(texto, [
+    primeiroMatch(textoPrecos, [
       /R\$\s*([\d.]+,\d{2})\s*(?:à\s*vista\s*)?(?:no\s*)?pix/i,
       /pix\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
     ])
@@ -175,7 +182,7 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
   }
 
   const precoAtual = moedaParaNumero(
-    primeiroMatch(texto, [
+    primeiroMatch(textoPrecos, [
       /(?:^|\n)[^\n]*?\bPor\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
       /(?:preço|preco)\s*(?:atual|final)\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
     ])

@@ -7,6 +7,7 @@ import { LOJAS, LOJAS_AFILIADAS, LOJA_OUTROS } from "@/lib/mock-data";
 import { Cupom, CupomFormValues, PALETA_CORES_LOJA } from "@/lib/types";
 import { salvarNovoCupom, atualizarCupom } from "@/lib/coupons-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
+import { interpretarTextoCupom } from "@/lib/parse-cupom-texto";
 
 const VALORES_INICIAIS: CupomFormValues = {
   loja: LOJAS[0],
@@ -100,12 +101,48 @@ export default function CupomForm({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState("");
+  const [resultadoLeitura, setResultadoLeitura] = useState("");
 
   function atualizarCampo<K extends keyof CupomFormValues>(
     campo: K,
     valor: CupomFormValues[K]
   ) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  function reconhecerTextoCupom() {
+    const texto = (valores.descricao ?? "").trim();
+    if (!texto) {
+      setResultadoLeitura("Cole primeiro o texto/termos do cupom no campo acima.");
+      return;
+    }
+
+    const resultado = interpretarTextoCupom(texto);
+    setValores((atual) => ({
+      ...atual,
+      ...resultado.valores,
+      // O texto completo continua no campo para você editar livremente depois.
+      descricao: atual.descricao,
+    }));
+
+    if (resultado.valores.loja) {
+      if (LOJAS_AFILIADAS.includes(resultado.valores.loja)) {
+        setLojaSelecionada(resultado.valores.loja);
+        setLojaPersonalizada("");
+      } else {
+        setLojaSelecionada(LOJA_OUTROS);
+        setLojaPersonalizada(resultado.valores.loja);
+      }
+    }
+
+    if (resultado.validadeData) setValidadeData(resultado.validadeData);
+    if (resultado.validadeHora) setValidadeHora(resultado.validadeHora);
+
+    setResultadoLeitura(
+      resultado.camposDetectados.length
+        ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}. Você pode alterar qualquer campo antes de salvar.`
+        : "Não consegui identificar os dados principais. O texto foi mantido e todos os campos continuam editáveis."
+    );
   }
 
   function validar(): boolean {
@@ -280,16 +317,33 @@ export default function CupomForm({
           </div>
 
           <div className="flex flex-col gap-4">
-            <Campo rotulo="Descrição do cupom (se houver)">
+            <Campo rotulo="Texto / termos do cupom para reconhecimento">
               <textarea
                 className={`${classeInput} uppercase`}
-                rows={4}
+                rows={7}
                 value={valores.descricao}
                 onChange={(e) => atualizarCampo("descricao", paraCaixaAlta(e.target.value))}
                 placeholder={
-                  "Ex: Tecnologia | Compra mínima: R$149 | Desconto máx.: R$200\nVálido enquanto durarem os estoques."
+                  "Cole aqui o texto completo do cupom. O site tenta reconhecer loja, código, desconto, limite, link, data e horário de validade."
                 }
               />
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={reconhecerTextoCupom}
+                  className="w-fit rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-light"
+                >
+                  ✨ Reconhecer texto e preencher campos
+                </button>
+                <span className="text-xs text-ink/50">
+                  Nada fica bloqueado: revise e altere os campos como quiser.
+                </span>
+              </div>
+              {resultadoLeitura && (
+                <p className="mt-2 rounded-xl bg-brand/5 px-3 py-2 text-xs text-ink/70">
+                  {resultadoLeitura}
+                </p>
+              )}
             </Campo>
 
             <Campo rotulo="Link (ou lista) dos produtos exclusivos deste cupom">
