@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Container from "@/components/Container";
 import { CATEGORIAS_ADMIN, CATEGORIA_OUTROS } from "@/lib/mock-data";
+
+export const metadata: Metadata = {
+  title: "Categorias de ofertas",
+  description: "Navegue pelas categorias de ofertas e achadinhos do Achado do Alê.",
+  alternates: { canonical: "/categorias" },
+};
 
 const ICONE_POR_CATEGORIA: Record<string, string> = {
   Casa: "🏠",

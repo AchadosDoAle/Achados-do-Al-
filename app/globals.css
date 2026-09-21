@@ -42,3 +42,15 @@ body {
 .animar-entrada {
   animation: entrada-card 0.45s ease-out both;
 }
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #221333 !important;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}

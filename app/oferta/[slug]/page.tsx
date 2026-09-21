@@ -33,14 +33,32 @@ export async function generateMetadata({
     ? `${oferta.loja} · por ${precoMeta.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
     : `${oferta.loja} · confira a promoção no Achado do Alê`;
 
+  const expirada = ofertaEstaExpirada(oferta);
+  const url = `${URL_SITE}/oferta/${oferta.slug}`;
+
   return {
-    title: `${oferta.titulo} — Achado do Alê`,
+    title: oferta.titulo,
     description: descricao,
+    alternates: { canonical: url },
+    robots: expirada
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
     openGraph: {
+      type: "website",
+      title: oferta.titulo,
+      description: descricao,
+      images: oferta.imagemPrincipal
+        ? [{ url: oferta.imagemPrincipal, alt: oferta.titulo }]
+        : undefined,
+      url,
+      siteName: "Achado do Alê",
+      locale: "pt_BR",
+    },
+    twitter: {
+      card: "summary_large_image",
       title: oferta.titulo,
       description: descricao,
       images: oferta.imagemPrincipal ? [oferta.imagemPrincipal] : undefined,
-      url: `${URL_SITE}/oferta/${oferta.slug}`,
     },
   };
 }
@@ -83,8 +101,50 @@ export default async function PaginaOferta({
     ? `${URL_SITE}/r/${oferta.id}`
     : oferta.linkProduto;
 
+  const precoEstruturado = oferta.precoPix ?? oferta.precoAtual;
+  const imagemEstruturada = oferta.imagemPrincipal
+    ? new URL(oferta.imagemPrincipal, URL_SITE).toString()
+    : `${URL_SITE}/icon.png`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: oferta.titulo,
+    image: [imagemEstruturada],
+    description: `${oferta.titulo} em ${oferta.loja}. Confira preço, condições e disponibilidade.`,
+    category: oferta.categoria,
+    ...(oferta.marca
+      ? { brand: { "@type": "Brand", name: oferta.marca } }
+      : {}),
+    ...(precoEstruturado != null
+      ? {
+          offers: {
+            "@type": "Offer",
+            url: `${URL_SITE}/oferta/${oferta.slug}`,
+            priceCurrency: "BRL",
+            price: precoEstruturado,
+            availability: expirada
+              ? "https://schema.org/OutOfStock"
+              : "https://schema.org/InStock",
+            ...(oferta.validadePromocao
+              ? { priceValidUntil: oferta.validadePromocao }
+              : {}),
+            seller: {
+              "@type": "Organization",
+              name: oferta.loja,
+            },
+          },
+        }
+      : {}),
+  };
+
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <Header />
 
       <Container className="p-4">

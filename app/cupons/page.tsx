@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
@@ -7,6 +8,12 @@ import { criarClientePublico } from "@/lib/supabase/public";
 import { listarCupons } from "@/lib/coupons-repo";
 
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: "Cupons de desconto",
+  description: "Cupons de desconto selecionados de grandes lojas, com validade e termos de uso.",
+  alternates: { canonical: "/cupons" },
+};
 
 export default async function CuponsPage() {
   const supabase = criarClientePublico();

@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import BotaoSair from "@/components/admin/BotaoSair";
+
+export const metadata: Metadata = {
+  title: "Painel administrativo",
+  robots: { index: false, follow: false },
+};
 
 const links = [
   { href: "/admin/ofertas", label: "Ofertas" },
@@ -18,7 +24,7 @@ export default function AdminLayout({
       className="min-h-screen bg-[#F7F4FA] text-ink"
       style={{ colorScheme: "light" }}
     >
-      <header className="sticky top-0 z-20 border-b border-brand/10 bg-white shadow-sm">
+      <header className="sticky top-0 z-20 border-b border-brand/10 bg-white shadow-sm print:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div>
             <Link href="/admin" className="font-display text-lg font-bold text-ink sm:text-xl">
@@ -32,7 +38,7 @@ export default function AdminLayout({
         </div>
       </header>
 
-      <div className="border-b border-brand/10 bg-white">
+      <div className="border-b border-brand/10 bg-white print:hidden">
         <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
           {links.map((link) => (
             <Link
