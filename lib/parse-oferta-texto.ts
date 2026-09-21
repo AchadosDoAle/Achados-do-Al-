@@ -181,6 +181,51 @@ function detectarTitulo(texto: string, loja?: string) {
   return [...candidatos].sort((a, b) => pontuar(b) - pontuar(a))[0];
 }
 
+
+function detectarCupomOferta(texto: string) {
+  // Se o próprio texto disser que não precisa de cupom, respeita isso.
+  if (
+    /\b(?:sem\s+(?:necessidade\s+de\s+)?cupom|n[aã]o\s+(?:precisa|necessita|tem)\s+(?:de\s+)?cupom|cupom\s+n[aã]o\s+necess[aá]rio|dispensa\s+cupom)\b/i.test(
+      texto
+    )
+  ) {
+    return "";
+  }
+
+  // Remove apenas marcações visuais para aceitar formatos comuns como:
+  // "Cupom: *QUEIMADEESTOQUE2109*", "CUPOM - ABC123" e
+  // "Use o cupom ABC123".
+  const textoLimpo = texto
+    .replace(/[\*_~`]/g, " ")
+    .replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, " ");
+
+  const regexes = [
+    /\b(?:use\s+(?:o\s+)?)?cupom\s*[:\-–—]\s*([A-Z0-9][A-Z0-9_\-]{3,39})(?=\s|$|[^A-Z0-9_\-])/i,
+    /\buse\s+(?:o\s+)?cupom\s+([A-Z0-9][A-Z0-9_\-]{3,39})(?=\s|$|[^A-Z0-9_\-])/i,
+    /\bcupom\s+([A-Z0-9][A-Z0-9_\-]{3,39})(?=\s|$|[^A-Z0-9_\-])/i,
+  ];
+
+  const termosGenericos = new Set([
+    "DESCONTO",
+    "VALIDO",
+    "VÁLIDO",
+    "APLICAVEL",
+    "APLICÁVEL",
+    "PESSOAL",
+    "EXCLUSIVO",
+    "PROMOCAO",
+    "PROMOÇÃO",
+  ]);
+
+  for (const regex of regexes) {
+    const match = textoLimpo.match(regex);
+    const candidato = match?.[1]?.trim().toLocaleUpperCase("pt-BR");
+    if (candidato && !termosGenericos.has(candidato)) return candidato;
+  }
+
+  return undefined;
+}
+
 export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
   const valores: Partial<OfertaFormValues> = {};
   const detectados: string[] = [];
@@ -284,10 +329,10 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("capacidade");
   }
 
-  const cupom = primeiroMatch(texto, [/(?:cupom|use o cupom)\s*:?\s*([A-Z0-9_-]{4,30})/i]);
-  if (cupom) {
-    valores.cupom = cupom.toLocaleUpperCase("pt-BR");
-    detectados.push("cupom");
+  const cupom = detectarCupomOferta(texto);
+  if (cupom !== undefined) {
+    valores.cupom = cupom;
+    detectados.push(cupom ? "cupom" : "sem cupom");
   }
 
   if (/frete\s+grátis|frete\s+gratis/i.test(texto)) {
