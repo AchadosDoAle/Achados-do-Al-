@@ -28,7 +28,10 @@ export async function generateMetadata({
   const oferta = await buscar(params.slug);
   if (!oferta) return {};
 
-  const descricao = `${oferta.loja} · por ${oferta.precoAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`;
+  const precoMeta = oferta.precoPix ?? oferta.precoAtual;
+  const descricao = precoMeta != null
+    ? `${oferta.loja} · por ${precoMeta.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+    : `${oferta.loja} · confira a promoção no Achado do Alê`;
 
   return {
     title: `${oferta.titulo} — Achado do Alê`,
@@ -68,7 +71,9 @@ export default async function PaginaOferta({
   // e por isso é usado como referência para o percentual de desconto.
   const precoParaDesconto = oferta.precoPix ?? oferta.precoAtual;
   const desconto =
-    oferta.precoAntigo && oferta.precoAntigo > precoParaDesconto
+    precoParaDesconto != null &&
+    oferta.precoAntigo &&
+    oferta.precoAntigo > precoParaDesconto
       ? Math.round(
           ((oferta.precoAntigo - precoParaDesconto) / oferta.precoAntigo) * 100
         )
@@ -128,41 +133,64 @@ export default async function PaginaOferta({
               {oferta.titulo}
             </h1>
 
-            <div className="mt-4 flex items-end gap-3">
+            <div className="mt-4">
               {oferta.precoAntigo && (
-                <span className="text-base text-text-muted line-through">
+                <span className="block text-base text-text-muted line-through">
                   {formatarPreco(oferta.precoAntigo)}
                 </span>
               )}
-              <span className={`text-3xl font-bold ${expirada ? "text-text-muted" : "text-gold"}`}>
-                {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoAtual)}
-              </span>
+
+              {oferta.precoPix != null ? (
+                <div className="mt-2 rounded-xl2 border border-trust/30 bg-trust/10 px-4 py-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-trust">
+                    💸 Preço no Pix
+                  </p>
+                  <p
+                    className={`mt-1 font-display text-4xl font-extrabold ${
+                      expirada ? "text-text-muted" : "text-trust"
+                    }`}
+                  >
+                    {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoPix)}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">Melhor preço à vista</p>
+                </div>
+              ) : oferta.precoAtual != null ? (
+                <p
+                  className={`mt-2 font-display text-3xl font-bold ${
+                    expirada ? "text-text-muted" : "text-gold"
+                  }`}
+                >
+                  {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoAtual)}
+                </p>
+              ) : (
+                <p className="mt-2 text-base font-semibold text-text-muted">
+                  Consulte o preço atualizado no site da loja
+                </p>
+              )}
+
+              {oferta.precoPix != null && oferta.precoAtual != null && (
+                <p className="mt-3 text-sm text-text-muted">
+                  {oferta.ofereceParcelamento ? "Preço total parcelado" : "Preço atual"}: {" "}
+                  <span className="font-semibold text-text">{formatarPreco(oferta.precoAtual)}</span>
+                </p>
+              )}
+
+              {oferta.ofereceParcelamento && oferta.parcelas && oferta.valorParcela && (
+                <p className="mt-2 text-sm text-text-muted">
+                  {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}{" "}
+                  <span
+                    className={
+                      oferta.parcelamentoSemJuros
+                        ? "font-semibold text-trust"
+                        : "font-semibold text-text-muted"
+                    }
+                  >
+                    {oferta.parcelamentoSemJuros ? "sem juros" : "com juros"}
+                  </span>
+                </p>
+              )}
             </div>
 
-            {oferta.precoPix && (
-              <div className="mt-3 rounded-xl2 border border-trust/25 bg-trust/10 px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-trust">
-                  💸 Melhor preço à vista no Pix
-                </p>
-                <p className={`mt-1 font-display text-2xl font-extrabold ${expirada ? "text-text-muted" : "text-trust"}`}>
-                  {formatarPreco(oferta.precoPix)}
-                </p>
-              </div>
-            )}
-            {oferta.parcelas && oferta.valorParcela && (
-              <p className="mt-2 text-sm text-text-muted">
-                ou {oferta.parcelas}x de {formatarPreco(oferta.valorParcela)}{" "}
-                <span
-                  className={
-                    oferta.parcelamentoSemJuros
-                      ? "font-semibold text-trust"
-                      : "font-semibold text-text-muted"
-                  }
-                >
-                  {oferta.parcelamentoSemJuros ? "sem juros" : "com juros"}
-                </span>
-              </p>
-            )}
             {(oferta.freteGratis || oferta.freteCondicao) && (
               <div className="mt-3 rounded-xl2 border border-trust/20 bg-trust/10 p-3">
                 <p className="text-sm font-semibold text-trust">

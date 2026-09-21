@@ -32,8 +32,9 @@ export type Oferta = {
 
   // Preço e pagamento
   precoAntigo?: number;
-  precoAtual: number;
+  precoAtual?: number;
   precoPix?: number;
+  ofereceParcelamento?: boolean;
   parcelas?: number;
   valorParcela?: number;
   parcelamentoSemJuros?: boolean;

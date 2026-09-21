@@ -91,6 +91,7 @@ export const OFERTAS_EXEMPLO: Oferta[] = [
     imagemPrincipal: "/placeholder-produto.png",
     precoAntigo: 349.9,
     precoAtual: 219.9,
+    ofereceParcelamento: true,
     parcelas: 6,
     valorParcela: 36.65,
     parcelamentoSemJuros: true,

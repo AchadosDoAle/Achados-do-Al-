@@ -112,9 +112,19 @@ export default function ListaOfertasPage() {
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/60">
-                <div className="rounded-full bg-cream px-3 py-1">
-                  Atual: {oferta.precoAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                </div>
+                {oferta.precoPix != null && (
+                  <div className="rounded-full bg-trust/10 px-3 py-1 text-trust">
+                    Pix: {oferta.precoPix.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </div>
+                )}
+                {oferta.precoAtual != null && (
+                  <div className="rounded-full bg-cream px-3 py-1">
+                    Atual: {oferta.precoAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </div>
+                )}
+                {oferta.precoPix == null && oferta.precoAtual == null && (
+                  <div className="rounded-full bg-cream px-3 py-1">Preço não informado</div>
+                )}
                 {oferta.precoAntigo ? (
                   <div className="rounded-full bg-brand/5 px-3 py-1">
                     Antes: {oferta.precoAntigo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}

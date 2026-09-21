@@ -33,8 +33,9 @@ const VALORES_INICIAIS: OfertaFormValues = {
   marca: "",
   modelo: "",
   precoAntigo: undefined,
-  precoAtual: 0,
+  precoAtual: undefined,
   precoPix: undefined,
+  ofereceParcelamento: false,
   parcelas: undefined,
   valorParcela: undefined,
   parcelamentoSemJuros: false,
@@ -129,9 +130,23 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       const precoAtual =
         parcelas && parcelas > 0 && valorParcela && valorParcela > 0
           ? Math.round(parcelas * valorParcela * 100) / 100
-          : atual.precoAtual;
+          : undefined;
       return { ...atual, parcelas, valorParcela, precoAtual };
     });
+  }
+
+  function atualizarOfereceParcelamento(oferece: boolean) {
+    setValores((atual) => ({
+      ...atual,
+      ofereceParcelamento: oferece,
+      ...(oferece
+        ? {}
+        : {
+            parcelas: undefined,
+            valorParcela: undefined,
+            parcelamentoSemJuros: false,
+          }),
+    }));
   }
 
   function reconhecerTexto() {
@@ -180,7 +195,6 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     if (categoriaSelecionada === CATEGORIA_OUTROS && !categoriaPersonalizada.trim()) {
       novosErros.categoria = "Informe a categoria manualmente.";
     } else if (!valores.categoria) novosErros.categoria = "Escolha a categoria.";
-    if (!valores.precoAtual || valores.precoAtual <= 0) novosErros.precoAtual = "Informe o preço atual.";
     if (!valores.linkProduto.trim()) novosErros.linkProduto = "Cole o link do produto.";
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
@@ -371,26 +385,189 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
 
         <section id="etapa-preco" className={`${classeCard} scroll-mt-28`}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div><h2 className="font-display text-lg font-bold text-ink">Preço e pagamento</h2><p className="text-sm text-ink/55">Revise preços e parcelamento.</p></div>
+            <div>
+              <h2 className="font-display text-lg font-bold text-ink">Preço e pagamento</h2>
+              <p className="text-sm text-ink/55">Priorize o preço no Pix e informe parcelamento apenas quando existir.</p>
+            </div>
             <span className="rounded-full bg-discount/25 px-3 py-1 text-xs font-semibold text-ink">Etapa 3</span>
           </div>
-          <div className="flex flex-col gap-4">
+
+          <div className="flex flex-col gap-5">
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Preço antigo (R$)"><input type="number" step="0.01" className={classeInput} value={valores.precoAntigo ?? ""} onChange={(e) => atualizarCampo("precoAntigo", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
-              <Campo rotulo="Preço atual (R$)" obrigatorio erro={erros.precoAtual}><input type="number" step="0.01" className={classeInput} value={valores.precoAtual || ""} onChange={(e) => atualizarCampo("precoAtual", Number(e.target.value))} /></Campo>
+              <Campo rotulo="Preço antigo (R$)">
+                <input
+                  type="number"
+                  step="0.01"
+                  className={classeInput}
+                  value={valores.precoAntigo ?? ""}
+                  onChange={(e) =>
+                    atualizarCampo(
+                      "precoAntigo",
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
+                />
+              </Campo>
+
+              <Campo rotulo="Preço no Pix (R$)">
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`${classeInput} border-trust/40 bg-trust/5 font-semibold`}
+                  value={valores.precoPix ?? ""}
+                  onChange={(e) =>
+                    atualizarCampo(
+                      "precoPix",
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
+                  placeholder="Preço preferencial à vista"
+                />
+              </Campo>
             </div>
-            <Campo rotulo="Preço no Pix (R$)"><input type="number" step="0.01" className={classeInput} value={valores.precoPix ?? ""} onChange={(e) => atualizarCampo("precoPix", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Quantidade de parcelas"><input type="number" min="1" className={classeInput} value={valores.parcelas ?? ""} onChange={(e) => atualizarParcelamento("parcelas", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
-              <Campo rotulo="Valor de cada parcela (R$)"><input type="number" min="0" step="0.01" className={classeInput} value={valores.valorParcela ?? ""} onChange={(e) => atualizarParcelamento("valorParcela", e.target.value ? Number(e.target.value) : undefined)} /></Campo>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-semibold text-ink">Parcelamento</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${!valores.parcelamentoSemJuros ? "border-brand bg-brand/5 text-brand ring-2 ring-brand/10" : "border-ink/10"}`}><input type="radio" name="juros" checked={!valores.parcelamentoSemJuros} onChange={() => atualizarCampo("parcelamentoSemJuros", false)} />Com juros</label>
-                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${valores.parcelamentoSemJuros ? "border-trust bg-trust/5 text-trust ring-2 ring-trust/10" : "border-ink/10"}`}><input type="radio" name="juros" checked={Boolean(valores.parcelamentoSemJuros)} onChange={() => atualizarCampo("parcelamentoSemJuros", true)} />Sem juros</label>
+
+            <div className="rounded-2xl border border-ink/10 bg-cream p-4">
+              <p className="text-sm font-semibold text-ink">O site oferece parcelamento?</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${
+                    valores.ofereceParcelamento
+                      ? "border-trust bg-trust/5 text-trust ring-2 ring-trust/10"
+                      : "border-ink/10 bg-white"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="oferece-parcelamento"
+                    checked={Boolean(valores.ofereceParcelamento)}
+                    onChange={() => atualizarOfereceParcelamento(true)}
+                  />
+                  Sim
+                </label>
+
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${
+                    !valores.ofereceParcelamento
+                      ? "border-brand bg-brand/5 text-brand ring-2 ring-brand/10"
+                      : "border-ink/10 bg-white"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="oferece-parcelamento"
+                    checked={!valores.ofereceParcelamento}
+                    onChange={() => atualizarOfereceParcelamento(false)}
+                  />
+                  Não
+                </label>
               </div>
             </div>
+
+            {valores.ofereceParcelamento && (
+              <div className="rounded-2xl border border-brand/10 bg-brand/5 p-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Campo rotulo="Quantidade de parcelas">
+                    <input
+                      type="number"
+                      min="1"
+                      className={classeInput}
+                      value={valores.parcelas ?? ""}
+                      onChange={(e) =>
+                        atualizarParcelamento(
+                          "parcelas",
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    />
+                  </Campo>
+                  <Campo rotulo="Valor de cada parcela (R$)">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className={classeInput}
+                      value={valores.valorParcela ?? ""}
+                      onChange={(e) =>
+                        atualizarParcelamento(
+                          "valorParcela",
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    />
+                  </Campo>
+                </div>
+
+                <div className="mt-4">
+                  <p className="mb-2 text-sm font-semibold text-ink">O parcelamento tem juros?</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${
+                        !valores.parcelamentoSemJuros
+                          ? "border-brand bg-white text-brand ring-2 ring-brand/10"
+                          : "border-ink/10 bg-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="juros"
+                        checked={!valores.parcelamentoSemJuros}
+                        onChange={() => atualizarCampo("parcelamentoSemJuros", false)}
+                      />
+                      Com juros
+                    </label>
+                    <label
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${
+                        valores.parcelamentoSemJuros
+                          ? "border-trust bg-white text-trust ring-2 ring-trust/10"
+                          : "border-ink/10 bg-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="juros"
+                        checked={Boolean(valores.parcelamentoSemJuros)}
+                        onChange={() => atualizarCampo("parcelamentoSemJuros", true)}
+                      />
+                      Sem juros
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Campo rotulo="Preço atual / total parcelado (R$)">
+                    <input
+                      type="number"
+                      step="0.01"
+                      className={`${classeInput} bg-white font-semibold`}
+                      value={valores.precoAtual ?? ""}
+                      readOnly
+                      placeholder="Calculado automaticamente pelas parcelas"
+                    />
+                    <p className="mt-1 text-xs text-ink/50">
+                      Calculado automaticamente: quantidade de parcelas × valor da parcela.
+                    </p>
+                  </Campo>
+                </div>
+              </div>
+            )}
+
+            {!valores.ofereceParcelamento && (
+              <Campo rotulo="Preço atual (R$)">
+                <input
+                  type="number"
+                  step="0.01"
+                  className={classeInput}
+                  value={valores.precoAtual ?? ""}
+                  onChange={(e) =>
+                    atualizarCampo(
+                      "precoAtual",
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
+                  placeholder="Opcional, use se houver preço diferente do Pix"
+                />
+              </Campo>
+            )}
           </div>
         </section>
 

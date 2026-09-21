@@ -10,8 +10,10 @@ function formatarPreco(valor: number) {
 }
 
 function calcularDesconto(oferta?: Oferta) {
-  if (!oferta?.precoAntigo || oferta.precoAntigo <= oferta.precoAtual) return null;
-  return Math.round((1 - oferta.precoAtual / oferta.precoAntigo) * 100);
+  if (!oferta?.precoAntigo) return null;
+  const precoPrincipal = oferta.precoPix ?? oferta.precoAtual;
+  if (precoPrincipal == null || oferta.precoAntigo <= precoPrincipal) return null;
+  return Math.round((1 - precoPrincipal / oferta.precoAntigo) * 100);
 }
 
 export default function Hero({ ofertaDestaque }: { ofertaDestaque?: Oferta }) {
@@ -126,9 +128,17 @@ export default function Hero({ ofertaDestaque }: { ofertaDestaque?: Oferta }) {
                     </h2>
 
                     <div className="mt-3 flex flex-wrap items-end gap-x-2 gap-y-1">
-                      <span className="font-display text-2xl font-bold leading-none text-text">
-                        {formatarPreco(ofertaDestaque.precoAtual)}
-                      </span>
+                      {ofertaDestaque.precoPix != null ? (
+                        <span className="font-display text-2xl font-bold leading-none text-trust">
+                          {formatarPreco(ofertaDestaque.precoPix)} <span className="text-xs font-semibold">no Pix</span>
+                        </span>
+                      ) : ofertaDestaque.precoAtual != null ? (
+                        <span className="font-display text-2xl font-bold leading-none text-text">
+                          {formatarPreco(ofertaDestaque.precoAtual)}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-semibold text-text-muted">Consulte o preço</span>
+                      )}
                       {ofertaDestaque.precoAntigo ? (
                         <span className="text-xs text-text-muted line-through">
                           {formatarPreco(ofertaDestaque.precoAntigo)}

@@ -290,9 +290,14 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
 
   const parcelasMatch = texto.match(/\b(\d{1,2})\s*x\s*(?:de\s*)?R\$\s*([\d.]+,\d{2})/i);
   if (parcelasMatch) {
+    valores.ofereceParcelamento = true;
     valores.parcelas = Number(parcelasMatch[1]);
     valores.valorParcela = moedaParaNumero(parcelasMatch[2]);
     valores.parcelamentoSemJuros = /sem\s+juros/i.test(texto);
+    if (valores.valorParcela != null) {
+      valores.precoAtual =
+        Math.round(Number(parcelasMatch[1]) * valores.valorParcela * 100) / 100;
+    }
     detectados.push("parcelamento");
   }
 

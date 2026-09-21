@@ -18,10 +18,13 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
     setFavorito(ehFavorito(oferta.id));
   }, [oferta.id]);
 
-  const precoParaDesconto = oferta.precoPix ?? oferta.precoAtual;
+  const precoPrincipal = oferta.precoPix ?? oferta.precoAtual;
   const desconto =
-    !expirada && oferta.precoAntigo && oferta.precoAntigo > precoParaDesconto
-      ? Math.round(((oferta.precoAntigo - precoParaDesconto) / oferta.precoAntigo) * 100)
+    !expirada &&
+    precoPrincipal != null &&
+    oferta.precoAntigo &&
+    oferta.precoAntigo > precoPrincipal
+      ? Math.round(((oferta.precoAntigo - precoPrincipal) / oferta.precoAntigo) * 100)
       : null;
 
   return (
@@ -63,13 +66,27 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
                 {formatarPreco(oferta.precoAntigo)}
               </span>
             )}
-            <span className={`text-lg font-bold ${expirada ? "text-text-muted" : "text-gold"}`}>
-              {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoAtual)}
-            </span>
-            {oferta.precoPix && (
-              <span className={`mt-1 block text-sm font-bold ${expirada ? "text-text-muted/60" : "text-trust"}`}>
-                {formatarPreco(oferta.precoPix)} no Pix
+
+            {oferta.precoPix != null ? (
+              <>
+                <span className={`block text-lg font-bold ${expirada ? "text-text-muted" : "text-trust"}`}>
+                  {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoPix)}
+                </span>
+                <span className={`block text-[11px] font-semibold ${expirada ? "text-text-muted/50" : "text-trust/80"}`}>
+                  no Pix
+                </span>
+                {oferta.precoAtual != null && (
+                  <span className="mt-1 block text-xs text-text-muted">
+                    {formatarPreco(oferta.precoAtual)}{oferta.ofereceParcelamento ? " parcelado" : " preço atual"}
+                  </span>
+                )}
+              </>
+            ) : oferta.precoAtual != null ? (
+              <span className={`text-lg font-bold ${expirada ? "text-text-muted" : "text-gold"}`}>
+                {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoAtual)}
               </span>
+            ) : (
+              <span className="text-sm font-semibold text-text-muted">Consulte o preço no site</span>
             )}
           </div>
 
