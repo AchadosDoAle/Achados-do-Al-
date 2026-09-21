@@ -135,7 +135,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   }
 
   function reconhecerTexto() {
-    const texto = valores.textoPublicacao.trim();
+    const texto = (valores.textoPublicacao ?? "").trim();
     if (!texto) {
       setResultadoLeitura("Cole primeiro o texto da oferta.");
       return;
