@@ -44,8 +44,12 @@ export default function Footer({
     (rede) => rede.nome.toLowerCase() === "instagram"
   );
 
+  const redesRodape = destacarInstagramProjeto
+    ? REDES_SOCIAIS.filter((rede) => rede.nome.toLowerCase() !== "instagram")
+    : REDES_SOCIAIS;
+
   const links = [
-    ...REDES_SOCIAIS,
+    ...redesRodape,
     { nome: "WhatsApp", url: LINK_CANAL_WHATSAPP },
   ];
 
