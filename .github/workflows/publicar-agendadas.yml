@@ -1,0 +1,20 @@
+name: Publicar ofertas agendadas
+
+on:
+  schedule:
+    - cron: '2-57/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Verificar ofertas agendadas
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error --retry 2 --max-time 30 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "https://achadosdoale.com/api/cron/publicar-agendadas"
