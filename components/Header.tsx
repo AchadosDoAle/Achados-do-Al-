@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import Script from "next/script";
 import Container from "./Container";
 
 function CampoBusca({ className }: { className: string }) {
@@ -35,6 +36,21 @@ function CampoBusca({ className }: { className: string }) {
 export default function Header() {
   return (
     <header className="sticky top-0 z-20 bg-bg-secondary/95 backdrop-blur">
+      {/* Google Analytics (gtag.js) */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-ZZPY0JEKB9"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-ZZPY0JEKB9');
+        `}
+      </Script>
+
       <Container className="px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 shrink-0">
