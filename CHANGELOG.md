@@ -22,3 +22,10 @@
 - Painel administrativo ganha atalho “Reativar na Home” para ofertas encerradas.
 - Botões, CTAs, navegação e cards receberam hover, feedback de clique, brilho e foco acessível.
 - Navegação desktop/mobile ganha acesso ao arquivo de promoções.
+
+## 2026-09-22 — Google Consent Mode v2
+- Google tag agora é carregada globalmente para permitir detecção pelo Google/Tag Assistant.
+- Consentimento padrão mantém Analytics e publicidade em `denied`.
+- Ao aceitar o banner, apenas `analytics_storage` muda para `granted`.
+- Tags de publicidade permanecem negadas.
+- Pageviews completos continuam sendo enviados apenas após o aceite do usuário.

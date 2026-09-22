@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Baloo_2, Inter } from "next/font/google";
 import AnalyticsConsentGate from "@/components/AnalyticsConsentGate";
 import { NOME_MARCA, URL_SITE } from "@/lib/seo-brand";
@@ -79,6 +80,37 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${baloo.variable} ${inter.variable}`}>
+      {GA_ID ? (
+        <>
+          <Script id="ga4-consent-default" strategy="beforeInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              window.gtag = gtag;
+              gtag('consent', 'default', {
+                analytics_storage: 'denied',
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied',
+                wait_for_update: 500
+              });
+            `}
+          </Script>
+          <Script
+            id="ga4-library"
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga4-init" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+              window.gtag('js', new Date());
+              window.gtag('config', '${GA_ID}', { send_page_view: false });
+            `}
+          </Script>
+        </>
+      ) : null}
       <body className="font-sans">
         {children}
         <AnalyticsConsentGate measurementId={GA_ID} />

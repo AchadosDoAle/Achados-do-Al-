@@ -1,0 +1,30 @@
+ACHADO DO ALÊ — GOOGLE ANALYTICS / CONSENT MODE V2
+
+1. Na Vercel, confirme a variável:
+   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-ZZPY0JEKB9
+   Tipo: Config
+   Ambiente: Production (e Preview, se desejar medir previews)
+
+2. Substitua os arquivos do projeto pelos deste pacote.
+   Preserve sua pasta .git e o arquivo .env.local local.
+
+3. Na raiz do projeto, rode:
+   npm run typecheck
+   npm run build
+
+4. Se ambos passarem:
+   git add -A
+   git commit -m "Implementa Google Consent Mode v2"
+   git push
+
+5. Aguarde o deploy da Vercel ficar Ready.
+
+6. Teste em janela anônima:
+   - abra https://achadosdoale.com
+   - a tag do Google agora carrega mesmo antes do aceite, com analytics_storage=denied
+   - ao clicar em "Aceitar métricas", analytics_storage muda para granted
+   - ad_storage, ad_user_data e ad_personalization permanecem denied
+
+7. Volte ao Google Analytics e clique em "Faça o teste novamente".
+
+Não cole manualmente outro snippet gtag.js no projeto: este pacote já contém a implementação global.
