@@ -9,6 +9,7 @@ import OfferCard from "@/components/OfferCard";
 import { Oferta } from "@/lib/types";
 import { criarClientePublico } from "@/lib/supabase/public";
 import { listarFavoritos } from "@/lib/favoritos";
+import { listarOfertasPorIds } from "@/lib/offers-repo";
 
 export default function FavoritosPage() {
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
@@ -22,29 +23,7 @@ export default function FavoritosPage() {
         return;
       }
       const supabase = criarClientePublico();
-      const { data } = await supabase.from("offers").select("*").in("id", ids);
-      setOfertas(
-        (data ?? []).map((linha: any) => ({
-          id: linha.id,
-          slug: linha.slug,
-          titulo: linha.titulo,
-          loja: linha.loja,
-          categoria: linha.categoria,
-          precoAntigo: linha.preco_antigo == null ? undefined : Number(linha.preco_antigo),
-          precoAtual: linha.preco_atual == null ? undefined : Number(linha.preco_atual),
-          precoPix: linha.preco_pix == null ? undefined : Number(linha.preco_pix),
-          ofereceParcelamento: linha.oferece_parcelamento ?? Boolean(linha.parcelas && linha.valor_parcela),
-          parcelas: linha.parcelas ?? undefined,
-          valorParcela: linha.valor_parcela ?? undefined,
-          parcelamentoSemJuros: linha.parcelamento_sem_juros ?? false,
-          cupom: linha.cupom ?? undefined,
-          linkProduto: linha.link_produto,
-          imagemPrincipal: linha.imagem_principal ?? undefined,
-          status: linha.status,
-          criadoEm: linha.criado_em,
-          atualizadoEm: linha.atualizado_em,
-        }))
-      );
+      setOfertas(await listarOfertasPorIds(supabase, ids));
       setCarregando(false);
     }
     carregar();

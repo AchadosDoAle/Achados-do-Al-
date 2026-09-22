@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { usuarioEhAdmin } from "@/lib/admin-auth";
 import { criarClienteServidor } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -349,6 +350,9 @@ async function baixarImagem(resultado: ResultadoPagina) {
 }
 
 export async function POST(req: Request) {
+  if (!(await usuarioEhAdmin())) {
+    return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
+  }
   const { link } = await req.json();
   if (!link || typeof link !== "string" || !urlHttpValida(link)) {
     return NextResponse.json({ erro: "Link inválido." }, { status: 400 });

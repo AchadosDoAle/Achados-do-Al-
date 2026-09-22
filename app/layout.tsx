@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Baloo_2, Inter } from "next/font/google";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
+import AnalyticsConsentGate from "@/components/AnalyticsConsentGate";
 import { NOME_MARCA, URL_SITE } from "@/lib/seo-brand";
 import "./globals.css";
 
@@ -82,8 +81,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${baloo.variable} ${inter.variable}`}>
       <body className="font-sans">
         {children}
-        <AnalyticsTracker />
-        {GA_ID ? <GoogleAnalytics measurementId={GA_ID} /> : null}
+        <AnalyticsConsentGate measurementId={GA_ID} />
       </body>
     </html>
   );

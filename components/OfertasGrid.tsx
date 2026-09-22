@@ -12,6 +12,8 @@ import {
 import CategoryChips from "./CategoryChips";
 import OfferCard from "./OfferCard";
 import Container from "./Container";
+import { normalizarBusca } from "@/lib/texto";
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 const ITENS_POR_PAGINA = 25; // 5 colunas x 5 linhas no desktop
 
@@ -21,10 +23,14 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
   const [selecionada, setSelecionada] = useState(categoriaInicial);
   const [lojaSelecionada, setLojaSelecionada] = useState("Todas");
   const [pagina, setPagina] = useState(1);
+  const [soComCupom, setSoComCupom] = useState(false);
+  const [soFreteGratis, setSoFreteGratis] = useState(false);
+  const [soPix, setSoPix] = useState(false);
+  const [soAtivas, setSoAtivas] = useState(false);
   const topoRef = useRef<HTMLDivElement>(null);
   // A busca é lida direto da URL a cada renderização, para reagir
   // imediatamente quando alguém pesquisa pelo campo do cabeçalho.
-  const busca = (params.get("busca") ?? "").trim().toLowerCase();
+  const busca = normalizarBusca(params.get("busca") ?? "");
 
   const lojasComOfertas = useMemo(() => {
     const lojasPersonalizadas = Array.from(
@@ -82,20 +88,21 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
 
     if (busca) {
       resultado = resultado.filter((o) =>
-        [o.titulo, o.loja, o.cupom ?? "", o.categoria]
-          .join(" ")
-          .toLowerCase()
-          .includes(busca)
+        normalizarBusca([o.titulo, o.loja, o.cupom ?? "", o.categoria, o.marca ?? "", o.modelo ?? ""].join(" ")).includes(busca)
       );
     }
+    if (soComCupom) resultado = resultado.filter((o) => Boolean(o.cupom));
+    if (soFreteGratis) resultado = resultado.filter((o) => Boolean(o.freteGratis));
+    if (soPix) resultado = resultado.filter((o) => o.precoPix != null);
+    if (soAtivas) resultado = resultado.filter((o) => !ofertaEstaExpirada(o));
 
     return resultado;
-  }, [ofertas, selecionada, lojaSelecionada, busca]);
+  }, [ofertas, selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix, soAtivas]);
 
   // Sempre que o filtro muda, volta pra primeira página.
   useEffect(() => {
     setPagina(1);
-  }, [selecionada, lojaSelecionada, busca]);
+  }, [selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix, soAtivas]);
 
   const totalPaginas = Math.max(
     1,
@@ -153,6 +160,19 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
               </button>
             )}
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            { rotulo: "Com cupom", ativo: soComCupom, setter: setSoComCupom },
+            { rotulo: "Frete grátis", ativo: soFreteGratis, setter: setSoFreteGratis },
+            { rotulo: "Preço no Pix", ativo: soPix, setter: setSoPix },
+            { rotulo: "Somente ativas", ativo: soAtivas, setter: setSoAtivas },
+          ].map(({ rotulo, ativo, setter }) => (
+            <button key={rotulo} type="button" onClick={() => setter(!ativo)}
+              className={`rounded-full px-3 py-2 text-xs font-semibold ring-1 transition ${ativo ? "bg-gold text-bg ring-gold" : "bg-card text-text-muted ring-white/10 hover:text-text"}`}>
+              {ativo ? "✓ " : ""}{rotulo}
+            </button>
+          ))}
         </div>
       </Container>
 

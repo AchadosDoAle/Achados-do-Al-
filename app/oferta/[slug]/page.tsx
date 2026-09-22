@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Container from "@/components/Container";
 import ReportarOferta from "@/components/ReportarOferta";
+import OfertaCompraFixa from "@/components/OfertaCompraFixa";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
@@ -47,9 +48,7 @@ export async function generateMetadata({
       type: "website",
       title: oferta.titulo,
       description: descricao,
-      images: oferta.imagemPrincipal
-        ? [{ url: oferta.imagemPrincipal, alt: oferta.titulo }]
-        : undefined,
+      images: [{ url: `${url}/opengraph-image`, width: 1200, height: 630, alt: oferta.titulo }],
       url,
       siteName: "Achado do Alê",
       locale: "pt_BR",
@@ -58,7 +57,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: oferta.titulo,
       description: descricao,
-      images: oferta.imagemPrincipal ? [oferta.imagemPrincipal] : undefined,
+      images: [`${url}/opengraph-image`],
     },
   };
 }
@@ -68,11 +67,9 @@ function formatarPreco(valor: number) {
 }
 
 function formatarData(data: string) {
-  try {
-    return new Date(data).toLocaleDateString("pt-BR");
-  } catch {
-    return data;
-  }
+  const iso = data.slice(0, 10);
+  const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : data;
 }
 
 export default async function PaginaOferta({
@@ -97,16 +94,14 @@ export default async function PaginaOferta({
         )
       : null;
 
-  const linkFinal = oferta.usarLinkRedirecionamento
-    ? `${URL_SITE}/r/${oferta.id}`
-    : oferta.linkProduto;
+  // Todos os cliques de saída passam pelo redirecionador para alimentar os relatórios.
+  const linkFinal = `${URL_SITE}/r/${oferta.id}`;
 
   const precoEstruturado = oferta.precoPix ?? oferta.precoAtual;
   const imagemEstruturada = oferta.imagemPrincipal
     ? new URL(oferta.imagemPrincipal, URL_SITE).toString()
     : `${URL_SITE}/icon.png`;
-  const jsonLd = {
-    "@context": "https://schema.org",
+  const produtoJsonLd = {
     "@type": "Product",
     name: oferta.titulo,
     image: [imagemEstruturada],
@@ -136,6 +131,21 @@ export default async function PaginaOferta({
         }
       : {}),
   };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      produtoJsonLd,
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Início", item: `${URL_SITE}/` },
+          { "@type": "ListItem", position: 2, name: oferta.categoria, item: `${URL_SITE}/categoria/${oferta.categoria.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}` },
+          { "@type": "ListItem", position: 3, name: oferta.titulo, item: `${URL_SITE}/oferta/${oferta.slug}` },
+        ],
+      },
+    ],
+  };
+
 
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
@@ -310,12 +320,6 @@ export default async function PaginaOferta({
               </div>
             )}
 
-            {oferta.observacoes && (
-              <p className="mt-3 text-xs text-text-muted">
-                {oferta.observacoes}
-              </p>
-            )}
-
             <div className="mt-6 flex flex-col gap-2 sm:flex-row">
               <a
                 href={linkFinal}
@@ -345,6 +349,11 @@ export default async function PaginaOferta({
         </div>
       </Container>
 
+      <OfertaCompraFixa
+        href={linkFinal}
+        expirada={expirada}
+        preco={oferta.precoPix ?? oferta.precoAtual}
+      />
       <Footer />
       <BottomNav />
     </main>

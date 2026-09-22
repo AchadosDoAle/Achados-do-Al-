@@ -7,7 +7,7 @@ import OfertasGrid from "@/components/OfertasGrid";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import { criarClientePublico } from "@/lib/supabase/public";
-import { listarOfertas } from "@/lib/offers-repo";
+import { listarOfertasResumo } from "@/lib/offers-repo";
 
 export const revalidate = 0;
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const supabase = criarClientePublico();
-  const ofertas = await listarOfertas(supabase, { apenasPublicadas: true });
+  const ofertas = await listarOfertasResumo(supabase);
 
   const jsonLd = {
     "@context": "https://schema.org",

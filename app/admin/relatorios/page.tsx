@@ -12,6 +12,7 @@ type OfertaResumo = {
   loja: string;
   categoria: string;
   status: string;
+  validade_promocao?: string | null;
 };
 
 type LinhaClique = {
@@ -66,6 +67,12 @@ function inicioPeriodo(periodo: Periodo) {
   if (periodo === "todos") return null;
   const horas = periodo === "24h" ? 24 : periodo === "7d" ? 24 * 7 : 24 * 30;
   return new Date(Date.now() - horas * 60 * 60 * 1000).toISOString();
+}
+
+function validadePassou(validade?: string | null) {
+  if (!validade) return false;
+  const hoje = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  return validade.slice(0, 10) < hoje;
 }
 
 function contarPor<T>(itens: T[], obter: (item: T) => string | null | undefined) {
@@ -153,7 +160,7 @@ export default function RelatoriosPage() {
     }
 
     const [resOfertas, resPageviews, resSessoes, resCliques, resPublicacoes] = await Promise.all([
-      supabase.from("offers").select("id,slug,titulo,loja,categoria,status"),
+      supabase.from("offers").select("id,slug,titulo,loja,categoria,status,validade_promocao"),
       consultaPageviews,
       consultaSessoes,
       consultaCliques,
@@ -196,12 +203,14 @@ export default function RelatoriosPage() {
     pageviews.filter((item) => item.utm_campaign),
     (item) => item.utm_campaign
   );
+  const acessosPorDia = contarPor(pageviews, (item) => new Date(item.criado_em).toLocaleDateString("pt-BR"));
+  const cliquesPorDia = contarPor(cliques, (item) => new Date(item.criado_em).toLocaleDateString("pt-BR"));
   const cliquesPorLoja = contarPor(cliques, (item) => item.offers?.loja);
   const cliquesPorCategoria = contarPor(cliques, (item) => item.offers?.categoria);
   const cliquesPorOferta = contarPor(cliques, (item) => item.offers?.titulo ?? "Oferta removida");
 
-  const publicadas = ofertas.filter((o) => o.status === "publicada").length;
-  const expiradas = ofertas.filter((o) => o.status === "expirada").length;
+  const publicadas = ofertas.filter((o) => o.status === "publicada" && !validadePassou(o.validade_promocao)).length;
+  const expiradas = ofertas.filter((o) => o.status === "expirada" || validadePassou(o.validade_promocao)).length;
   const enviados = publicacoes.filter((p) => p.status === "enviado").length;
   const falhas = publicacoes.filter((p) => p.status === "erro").length;
   const ctr = pageviews.length > 0 ? (cliques.length / pageviews.length) * 100 : 0;
@@ -228,7 +237,11 @@ export default function RelatoriosPage() {
       ...Object.entries(fontes).map(([item, valor]) => ["Origem dos acessos", item, valor]),
       ...Object.entries(dispositivos).map(([item, valor]) => ["Dispositivos", item, valor]),
       ...Object.entries(paginas).map(([item, valor]) => ["Páginas mais acessadas", item, valor]),
+      ...Object.entries(acessosPorDia).map(([item, valor]) => ["Acessos por dia", item, valor]),
+      ...Object.entries(cliquesPorDia).map(([item, valor]) => ["Cliques por dia", item, valor]),
       ...Object.entries(cliquesPorLoja).map(([item, valor]) => ["Cliques por loja", item, valor]),
+      ...demografia.age.map((item) => ["Faixa de idade (GA4)", item.label, item.users]),
+      ...demografia.gender.map((item) => ["Gênero (GA4)", item.label, item.users]),
       ...Object.entries(cliquesPorCategoria).map(([item, valor]) => ["Cliques por categoria", item, valor]),
     ];
 
@@ -291,6 +304,8 @@ export default function RelatoriosPage() {
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
+        <ListaContagem titulo="Acessos por dia" subtitulo="Evolução das visualizações no período selecionado." dados={acessosPorDia} total={pageviews.length} limite={14} />
+        <ListaContagem titulo="Cliques por dia" subtitulo="Evolução dos cliques de saída para as lojas." dados={cliquesPorDia} total={cliques.length} limite={14} />
         <ListaContagem titulo="De onde vêm os acessos" subtitulo="Referrer e UTMs registrados pelo próprio site." dados={fontes} total={pageviews.length} />
         <ListaContagem titulo="Dispositivos" subtitulo="Tipo de aparelho usado nos acessos." dados={dispositivos} total={pageviews.length} />
         <ListaContagem titulo="Páginas mais acessadas" subtitulo="Visualizações por página neste período." dados={paginas} total={pageviews.length} limite={8} />

@@ -21,7 +21,7 @@ import { linkParecePertencerALoja } from "@/lib/validar-link";
 import { interpretarTextoOferta } from "@/lib/parse-oferta-texto";
 import PreviaWhatsApp from "./PreviaWhatsApp";
 
-const STATUS_OPCOES = Object.keys(STATUS_LABEL) as StatusOferta[];
+const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
 const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
 const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
@@ -51,7 +51,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   tamanho: "",
   capacidade: "",
   linkProduto: "",
-  usarLinkRedirecionamento: false,
+  usarLinkRedirecionamento: true,
   textoOriginal: "",
   textoPublicacao: "",
   observacoes: "",
@@ -84,6 +84,9 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const router = useRouter();
   const supabase = criarClienteNavegador();
   const [valores, setValores] = useState<OfertaFormValues>(ofertaExistente ?? VALORES_INICIAIS);
+  const statusOpcoes = STATUS_OPCOES_BASE.includes(valores.status)
+    ? STATUS_OPCOES_BASE
+    : [valores.status, ...STATUS_OPCOES_BASE];
 
   const lojaExistente = ofertaExistente?.loja ?? LOJAS[0];
   const lojaExistenteEhAfiliada = LOJAS_AFILIADAS.includes(lojaExistente);
@@ -179,6 +182,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       }
     }
 
+    if (resultado.valores.linkProduto && !valores.imagemPrincipal) {
+      void buscarImagemAutomaticamente(resultado.valores.linkProduto);
+    }
+
     setResultadoLeitura(
       resultado.camposDetectados.length
         ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}. Revise os campos antes de salvar.`
@@ -226,8 +233,9 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     }
   }
 
-  async function buscarImagemAutomaticamente() {
-    if (!valores.linkProduto.trim()) {
+  async function buscarImagemAutomaticamente(linkOverride?: string) {
+    const linkBusca = linkOverride || valores.linkProduto;
+    if (!linkBusca.trim()) {
       setStatusImagemAuto("Cole o link do produto antes de buscar a imagem.");
       return;
     }
@@ -237,7 +245,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       const resposta = await fetch("/api/buscar-imagem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ link: valores.linkProduto }),
+        body: JSON.stringify({ link: linkBusca }),
       });
       const dados = await resposta.json();
       if (dados.imagemUrl) {
@@ -598,12 +606,15 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             <div><h2 className="font-display text-lg font-bold text-ink">Detalhes e imagem</h2><p className="text-sm text-ink/55">Só revise o que for relevante para o produto.</p></div>
             <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">Etapa 5</span>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Campo rotulo="Voltagem"><input className={`${classeInput} uppercase`} value={valores.voltagem} onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))} /></Campo>
-            <Campo rotulo="Cor"><input className={`${classeInput} uppercase`} value={valores.cor} onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))} /></Campo>
-            <Campo rotulo="Tamanho"><input className={`${classeInput} uppercase`} value={valores.tamanho} onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))} /></Campo>
-            <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))} /></Campo>
-          </div>
+          <details className="rounded-2xl border border-ink/10 bg-cream/70 p-4">
+            <summary className="cursor-pointer text-sm font-semibold text-ink">Características opcionais</summary>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Campo rotulo="Voltagem"><input className={`${classeInput} uppercase`} value={valores.voltagem} onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Cor"><input className={`${classeInput} uppercase`} value={valores.cor} onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Tamanho"><input className={`${classeInput} uppercase`} value={valores.tamanho} onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))} /></Campo>
+            </div>
+          </details>
           <div className="mt-4 rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
             <Campo rotulo="Imagem principal"><input type="file" accept="image/*" onChange={aoEscolherImagem} /></Campo>
             {enviandoImagem && <p className="mt-2 text-xs text-ink/50">Enviando imagem...</p>}
@@ -620,15 +631,15 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <Campo rotulo="Link do produto" obrigatorio erro={erros.linkProduto}><input className={classeInput} value={valores.linkProduto} onChange={(e) => atualizarCampo("linkProduto", e.target.value)} /></Campo>
-              <button type="button" onClick={buscarImagemAutomaticamente} disabled={buscandoImagemAuto} className="w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
+              <button type="button" onClick={() => buscarImagemAutomaticamente()} disabled={buscandoImagemAuto} className="w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
               {statusImagemAuto && <p className="text-xs text-ink/60">{statusImagemAuto}</p>}
               {valores.linkProduto && !linkParecePertencerALoja(valores.linkProduto, valores.loja) && <p className="rounded-xl bg-accent/10 px-3 py-2 text-xs text-accent-dark">⚠️ Confira se o link pertence à loja selecionada.</p>}
-              <label className="flex items-start gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink"><input type="checkbox" className="mt-0.5" checked={valores.usarLinkRedirecionamento} onChange={(e) => atualizarCampo("usarLinkRedirecionamento", e.target.checked)} /><span>Usar link de redirecionamento próprio para registrar cliques.</span></label>
+
             </div>
             <div className="flex flex-col gap-4">
               <Campo rotulo="Observações internas"><textarea className={`${classeInput} uppercase`} rows={3} value={valores.observacoes} onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))} /></Campo>
               <div className="grid gap-4 md:grid-cols-2">
-                <Campo rotulo="Status da publicação" obrigatorio><select className={classeInput} value={valores.status} onChange={(e) => atualizarCampo("status", e.target.value as StatusOferta)}>{STATUS_OPCOES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></Campo>
+                <Campo rotulo="Status da publicação" obrigatorio><select className={classeInput} value={valores.status} onChange={(e) => atualizarCampo("status", e.target.value as StatusOferta)}>{statusOpcoes.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></Campo>
                 {valores.status === "agendada" && <Campo rotulo="Agendar para"><input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} /></Campo>}
               </div>
             </div>

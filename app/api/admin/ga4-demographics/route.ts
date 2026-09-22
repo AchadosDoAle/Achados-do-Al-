@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSign } from "crypto";
 import { criarClienteServidor } from "@/lib/supabase/server";
+import { usuarioEhAdmin } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
@@ -101,6 +102,7 @@ async function consultarDimensao(
 }
 
 export async function GET(req: NextRequest) {
+  if (!(await usuarioEhAdmin())) return NextResponse.json({ configured: false, error: "Não autorizado", age: [], gender: [] }, { status: 401 });
   const supabase = criarClienteServidor();
   const {
     data: { user },

@@ -68,6 +68,11 @@ function FormularioLogin() {
           Achado do Alê
         </h1>
         <p className="mt-1 text-sm text-ink/60">Entre para acessar o painel</p>
+        {params.get("erro") === "sem_acesso" && (
+          <p className="mt-3 rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent-dark">
+            Esta conta não tem permissão de administrador.
+          </p>
+        )}
 
         <label className="mt-5 block text-sm font-medium text-ink">
           E-mail

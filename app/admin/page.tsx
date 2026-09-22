@@ -5,6 +5,7 @@ import Link from "next/link";
 import { listarOfertas } from "@/lib/offers-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { Oferta } from "@/lib/types";
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 export default function AdminHomePage() {
   const supabase = criarClienteNavegador();
@@ -15,8 +16,9 @@ export default function AdminHomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const contagem = (status: string) =>
-    ofertas.filter((o) => o.status === status).length;
+  const publicadasAtivas = ofertas.filter((o) => o.status === "publicada" && !ofertaEstaExpirada(o)).length;
+  const expiradas = ofertas.filter((o) => ofertaEstaExpirada(o)).length;
+  const contagem = (status: string) => ofertas.filter((o) => o.status === status).length;
 
   return (
     <div>
@@ -43,7 +45,7 @@ export default function AdminHomePage() {
         <div className="rounded-xl2 bg-white p-4 ring-1 ring-ink/10">
           <p className="text-xs text-ink/50">Publicadas</p>
           <p className="text-2xl font-bold text-ink">
-            {contagem("publicada")}
+            {publicadasAtivas}
           </p>
         </div>
         <div className="rounded-xl2 bg-white p-4 ring-1 ring-ink/10">
@@ -56,7 +58,7 @@ export default function AdminHomePage() {
         </div>
         <div className="rounded-xl2 bg-white p-4 ring-1 ring-ink/10">
           <p className="text-xs text-ink/50">Expiradas</p>
-          <p className="text-2xl font-bold text-ink">{contagem("expirada")}</p>
+          <p className="text-2xl font-bold text-ink">{expiradas}</p>
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import { normalizarNomeLoja } from "./mock-data";
 // O banco usa snake_case (como no modelo que você pediu); o app usa
 // camelCase. Estas duas funções fazem a conversão nos dois sentidos.
 
-function linhaParaOferta(linha: any): Oferta {
+export function linhaParaOferta(linha: any): Oferta {
   return {
     id: linha.id,
     slug: linha.slug,
@@ -41,11 +41,30 @@ function linhaParaOferta(linha: any): Oferta {
     observacoes: linha.observacoes ?? undefined,
     imagemPrincipal: linha.imagem_principal ?? undefined,
     status: linha.status,
-    agendadoPara: linha.agendado_para ?? undefined,
+    agendadoPara: isoParaDatetimeLocalBrasilia(linha.agendado_para),
     criadoEm: linha.criado_em,
     atualizadoEm: linha.atualizado_em,
     publicadoEm: linha.publicado_em ?? undefined,
   };
+}
+
+function datetimeLocalBrasiliaParaIso(valor?: string) {
+  if (!valor) return null;
+  if (/Z$|[+-]\d{2}:?\d{2}$/.test(valor)) return new Date(valor).toISOString();
+  const data = new Date(`${valor}:00-03:00`);
+  return Number.isNaN(data.getTime()) ? null : data.toISOString();
+}
+
+function isoParaDatetimeLocalBrasilia(valor?: string) {
+  if (!valor) return undefined;
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return valor.slice(0, 16);
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(data);
+  const get = (tipo: string) => partes.find((p) => p.type === tipo)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
 function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
@@ -80,7 +99,7 @@ function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
     observacoes: valores.observacoes || null,
     imagem_principal: valores.imagemPrincipal || null,
     status: valores.status,
-    agendado_para: valores.agendadoPara || null,
+    agendado_para: datetimeLocalBrasiliaParaIso(valores.agendadoPara),
   };
 }
 
@@ -108,6 +127,33 @@ export async function listarOfertas(
   if (filtros?.apenasPublicadas) consulta = consulta.in("status", ["publicada", "expirada"]);
 
   const { data, error } = await consulta;
+  if (error) throw error;
+  return (data ?? []).map(linhaParaOferta);
+}
+
+
+const CAMPOS_CARD = [
+  "id", "slug", "titulo", "loja", "categoria", "marca",
+  "preco_antigo", "preco_atual", "preco_pix", "oferece_parcelamento",
+  "parcelas", "valor_parcela", "parcelamento_sem_juros", "cupom",
+  "frete_gratis", "validade_promocao", "link_produto", "imagem_principal",
+  "status", "criado_em", "atualizado_em"
+].join(",");
+
+export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {
+  const { data, error } = await supabase
+    .from("offers")
+    .select(CAMPOS_CARD)
+    .in("status", ["publicada", "expirada"])
+    .order("criado_em", { ascending: false })
+    .limit(500);
+  if (error) throw error;
+  return (data ?? []).map(linhaParaOferta);
+}
+
+export async function listarOfertasPorIds(supabase: SupabaseClient, ids: string[]): Promise<Oferta[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from("offers").select(CAMPOS_CARD).in("id", ids).limit(100);
   if (error) throw error;
   return (data ?? []).map(linhaParaOferta);
 }

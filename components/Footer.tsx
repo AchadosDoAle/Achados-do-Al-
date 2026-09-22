@@ -98,6 +98,12 @@ export default function Footer({
           </div>
         )}
 
+        <div className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-text-muted">
+          <Link href="/sobre" className="hover:text-gold">Sobre</Link>
+          <Link href="/afiliados" className="hover:text-gold">Afiliados</Link>
+          <Link href="/privacidade" className="hover:text-gold">Privacidade</Link>
+          <Link href="/termos" className="hover:text-gold">Termos</Link>
+        </div>
         <p className="mt-4 text-xs text-text-muted">
           © {new Date().getFullYear()} Achado do Alê. Ofertas sujeitas a
           disponibilidade e alteração de preço pela loja parceira.

@@ -1,0 +1,102 @@
+ACHADO DO ALÊ — PASSO A PASSO DA ATUALIZAÇÃO DE PROFISSIONALIZAÇÃO
+=================================================================
+
+IMPORTANTE: faça nesta ordem.
+
+1) FAÇA BACKUP
+- Mantenha uma cópia da pasta atual do projeto.
+- Não apague o projeto antigo antes de confirmar o novo deploy.
+
+2) SUPABASE — CADASTRE O ADMINISTRADOR
+- Abra Supabase > SQL Editor > New query.
+- Abra o arquivo: supabase/profissionalizacao.sql
+- LOCALIZE: SEU_EMAIL_ADMIN@EXEMPLO.COM
+- Troque pelo MESMO e-mail que você usa para entrar em /login.
+- Rode o SQL inteiro em Run.
+- Confirme que aparece Success.
+
+ATENÇÃO: faça isso ANTES de publicar o código. Se o e-mail não for trocado, o novo painel vai bloquear o acesso administrativo.
+
+3) VERCEL — VARIÁVEIS
+Confirme que já existem:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY (Secret)
+- NEXT_PUBLIC_SITE_URL=https://achadosdoale.com
+- CRON_SECRET (Secret)
+
+Crie também:
+- REPORT_FINGERPRINT_SALT (Secret)
+  Use uma sequência aleatória longa, com pelo menos 32 caracteres. Não coloque esse valor no GitHub.
+
+Mantenha, se você usa:
+- WHATSAPP_TOKEN (Secret)
+- WHATSAPP_PHONE_NUMBER_ID
+- NEXT_PUBLIC_GA_MEASUREMENT_ID
+- GA4_PROPERTY_ID
+- GA4_CLIENT_EMAIL
+- GA4_PRIVATE_KEY (Secret)
+- NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/achados.do.ale/
+
+4) SUBSTITUA O PROJETO
+- Descompacte o ZIP.
+- Substitua os arquivos da sua pasta local pelos arquivos desta versão.
+- Preserve a pasta oculta .git da sua cópia local se estiver substituindo manualmente.
+
+5) TESTE LOCAL (RECOMENDADO)
+No terminal, dentro da pasta:
+  npm install
+  npm run typecheck
+  npm run build
+Se os dois últimos comandos terminarem sem erro, prossiga.
+
+6) GITHUB DESKTOP
+Commit sugerido:
+  Profissionaliza segurança, desempenho e SEO do site
+Depois clique em Push origin.
+
+7) VERCEL
+- Aguarde o deploy ficar Ready.
+- Se a Vercel avisar que a frequência do Cron não é permitida no seu plano, ajuste a rotina de agendamento conforme o plano ou use um agendador externo. O código está preparado para execução horária.
+
+8) TESTES PÓS-DEPLOY
+Teste:
+[ ] Login de administrador
+[ ] Criar/editar uma oferta
+[ ] Criar/editar cupom
+[ ] Buscar imagem automaticamente
+[ ] Home e filtros
+[ ] Busca sem acentos (ex.: oleo deve encontrar ÓLEO)
+[ ] Favoritos
+[ ] Página de produto
+[ ] Botão Acessar promoção (deve redirecionar para a loja)
+[ ] Relatórios: o clique deve aparecer
+[ ] Aviso de promoção vencida
+[ ] Página /categoria/tecnologia (ou outra)
+[ ] /sitemap.xml
+[ ] /robots.txt
+[ ] /sobre /afiliados /privacidade /termos
+[ ] Banner de consentimento de métricas
+
+9) GOOGLE SEARCH CONSOLE
+- Não precisa reenviar sitemap se https://achadosdoale.com/sitemap.xml já está cadastrado.
+- Faça Inspeção de URL da Home após o deploy e solicite indexação.
+- As novas páginas de categoria entrarão automaticamente no sitemap.
+
+10) O QUE MUDOU
+- Admin protegido por papel real de administrador.
+- APIs administrativas protegidas.
+- Avisos de oferta validados no servidor e com limite de abuso.
+- Todos os cliques de saída passam pelo rastreador.
+- Agendamento tratado no fuso de Brasília.
+- Home envia menos dados e imagens carregam sob demanda.
+- Busca ignora acentos.
+- Novos filtros rápidos.
+- Favoritos usam a mesma regra de expiração da Home.
+- Páginas SEO por categoria.
+- Open Graph de promoção com card próprio.
+- CTA fixo no celular.
+- Páginas institucionais e transparência de afiliados.
+- Consentimento para analytics.
+- Código antigo de geração por IA removido.
+- SQL novo organizado em migrations.

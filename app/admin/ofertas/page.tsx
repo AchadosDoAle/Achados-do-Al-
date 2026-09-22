@@ -7,12 +7,11 @@ import {
   listarOfertas,
   duplicarOferta,
   excluirOferta,
-  atualizarOferta,
   reativarOfertaReportada,
 } from "@/lib/offers-repo";
-import { registrarPublicacao } from "@/lib/publications-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 export default function ListaOfertasPage() {
   const supabase = criarClienteNavegador();
@@ -35,20 +34,6 @@ export default function ListaOfertasPage() {
 
   async function aoDuplicar(id: string) {
     await duplicarOferta(supabase, id);
-    recarregar();
-  }
-
-  async function aoMarcarComoEnviada(oferta: Oferta) {
-    await registrarPublicacao(supabase, {
-      offerId: oferta.id,
-      canal: "whatsapp_manual",
-      status: "enviado",
-      textoPublicado: oferta.textoPublicacao,
-    });
-    await atualizarOferta(supabase, oferta.id, {
-      ...oferta,
-      status: "enviada_whatsapp",
-    });
     recarregar();
   }
 
@@ -77,7 +62,7 @@ export default function ListaOfertasPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Ofertas</h1>
           <p className="mt-1 text-sm text-ink/55">
-            Visual mais limpo para gerenciar produtos publicados, rascunhos e envios.
+            Gerencie rascunhos, agendamentos, publicações e ofertas vencidas.
           </p>
         </div>
         <Link
@@ -108,7 +93,7 @@ export default function ListaOfertasPage() {
                     {oferta.loja} · {oferta.categoria}
                   </p>
                 </div>
-                <StatusBadge status={oferta.status} />
+                <StatusBadge status={ofertaEstaExpirada(oferta) ? "expirada" : oferta.status} />
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/60">
@@ -140,20 +125,17 @@ export default function ListaOfertasPage() {
                 >
                   Editar
                 </Link>
+                {ofertaEstaExpirada(oferta) && oferta.status !== "expirada" && (
+                  <span className="rounded-xl bg-accent/10 px-3 py-2 text-accent-dark ring-1 ring-accent/20">
+                    Validade vencida — edite a data para reativar
+                  </span>
+                )}
                 {oferta.status === "expirada" && (
                   <button
                     onClick={() => aoReativar(oferta.id)}
                     className="rounded-xl bg-trust/10 px-3 py-2 text-trust ring-1 ring-trust/20"
                   >
                     Reativar oferta
-                  </button>
-                )}
-                {oferta.status === "aprovada" && (
-                  <button
-                    onClick={() => aoMarcarComoEnviada(oferta)}
-                    className="rounded-xl bg-trust/10 px-3 py-2 text-trust ring-1 ring-trust/20"
-                  >
-                    Marcar como enviada
                   </button>
                 )}
                 <button

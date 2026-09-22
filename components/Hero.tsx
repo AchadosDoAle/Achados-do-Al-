@@ -105,6 +105,8 @@ export default function Hero({ ofertaDestaque }: { ofertaDestaque?: Oferta }) {
                     {ofertaDestaque.imagemPrincipal ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
+                        loading="eager"
+                        decoding="async"
                         src={ofertaDestaque.imagemPrincipal}
                         alt={ofertaDestaque.titulo}
                         className="h-full w-full object-contain p-2 transition duration-300 group-hover:scale-105"

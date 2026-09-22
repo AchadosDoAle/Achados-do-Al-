@@ -46,6 +46,8 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
       <Link href={`/oferta/${oferta.slug}`} className="group block">
         <div className="relative aspect-[4/5] overflow-hidden bg-bg-secondary">
           <img
+            loading="lazy"
+            decoding="async"
             src={oferta.imagemPrincipal || "/icon.png"}
             alt={oferta.titulo}
             className={`h-full w-full transition-transform duration-300 group-hover:scale-110 ${
