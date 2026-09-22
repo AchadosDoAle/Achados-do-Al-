@@ -29,7 +29,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-gold/10 hover:ring-gold/30"
+      className="offer-card-modern relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
       style={{ animationDelay: `${Math.min(atraso, 8) * 0.05}s` }}
     >
       <button
@@ -38,7 +38,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           e.preventDefault();
           setFavorito(alternarFavorito(oferta.id).includes(oferta.id));
         }}
-        className={`absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm backdrop-blur ${favorito ? "bg-gold text-bg" : "bg-bg/60 text-text"}`}
+        className={`btn-icon-modern absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm backdrop-blur ${favorito ? "bg-gold text-bg" : "bg-bg/60 text-text"}`}
       >
         {favorito ? "♥" : "♡"}
       </button>
@@ -99,7 +99,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           )}
 
           <span className="text-xs text-text-muted">🏪 {oferta.loja}</span>
-          <span className={`mt-2 block rounded-lg py-2 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
+          <span className={`btn-modern mt-2 block rounded-lg py-2 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
             {expirada ? "Ver oferta esgotada" : "Acessar promoção"}
           </span>
         </div>

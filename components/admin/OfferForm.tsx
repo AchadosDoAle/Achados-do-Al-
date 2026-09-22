@@ -20,6 +20,7 @@ import { criarClienteNavegador } from "@/lib/supabase/client";
 import { linkParecePertencerALoja } from "@/lib/validar-link";
 import { interpretarTextoOferta } from "@/lib/parse-oferta-texto";
 import PreviaWhatsApp from "./PreviaWhatsApp";
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
@@ -121,9 +122,20 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const [buscandoImagemAuto, setBuscandoImagemAuto] = useState(false);
   const [statusImagemAuto, setStatusImagemAuto] = useState("");
   const [resultadoLeitura, setResultadoLeitura] = useState("");
+  const ofertaExistenteExpirada = ofertaExistente ? ofertaEstaExpirada(ofertaExistente) : false;
 
   function atualizarCampo<K extends keyof OfertaFormValues>(campo: K, valor: OfertaFormValues[K]) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  function prepararReativacaoNaHome() {
+    setValores((atual) => ({
+      ...atual,
+      status: "publicada",
+      validadePromocao: "",
+      agendadoPara: "",
+    }));
+    setErroSalvar("");
   }
 
   function atualizarParcelamento(campo: "parcelas" | "valorParcela", valor: number | undefined) {
@@ -294,6 +306,31 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
 
   return (
     <form onSubmit={aoEnviar} className="flex flex-col gap-5 pb-10">
+      {ofertaExistenteExpirada && (
+        <section className="rounded-[22px] border border-discount/50 bg-discount/10 p-5 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand/70">Arquivo de promoções</p>
+              <h2 className="mt-1 font-display text-lg font-bold text-ink">Esta oferta está em “Veja o que já perdeu!”</h2>
+              <p className="mt-1 max-w-2xl text-sm text-ink/60">
+                Se a promoção voltou, atualize preço, link e condições. O botão abaixo prepara a oferta para voltar à Home e remove a validade antiga.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={prepararReativacaoNaHome}
+              className="admin-btn-modern shrink-0 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white"
+            >
+              ↻ Reativar na Home
+            </button>
+          </div>
+          {valores.status === "publicada" && !valores.validadePromocao && (
+            <p className="mt-3 rounded-xl bg-trust/10 px-3 py-2 text-xs font-semibold text-trust">
+              ✓ Pronta para voltar à Home. Revise os dados e clique em Salvar alterações.
+            </p>
+          )}
+        </section>
+      )}
       <section className="rounded-[22px] border border-brand/10 bg-white p-3 shadow-sm sm:p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
@@ -332,7 +369,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         </Campo>
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <button type="button" onClick={reconhecerTexto} className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-light">
+          <button type="button" onClick={reconhecerTexto} className="admin-btn-modern rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-light">
             ✨ Reconhecer texto e preencher campos
           </button>
           <p className="text-xs text-ink/50">O reconhecimento acontece no próprio site e não altera o texto que você colou.</p>
@@ -631,7 +668,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <Campo rotulo="Link do produto" obrigatorio erro={erros.linkProduto}><input className={classeInput} value={valores.linkProduto} onChange={(e) => atualizarCampo("linkProduto", e.target.value)} /></Campo>
-              <button type="button" onClick={() => buscarImagemAutomaticamente()} disabled={buscandoImagemAuto} className="w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
+              <button type="button" onClick={() => buscarImagemAutomaticamente()} disabled={buscandoImagemAuto} className="admin-btn-modern w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
               {statusImagemAuto && <p className="text-xs text-ink/60">{statusImagemAuto}</p>}
               {valores.linkProduto && !linkParecePertencerALoja(valores.linkProduto, valores.loja) && <p className="rounded-xl bg-accent/10 px-3 py-2 text-xs text-accent-dark">⚠️ Confira se o link pertence à loja selecionada.</p>}
 
@@ -648,7 +685,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       </div>
 
       {erroSalvar && <p className="text-center text-sm text-accent-dark">{erroSalvar}</p>}
-      <button type="submit" disabled={salvando} className="rounded-[18px] bg-accent px-6 py-3 text-center font-semibold text-white shadow-sm disabled:opacity-60">{salvando ? "Salvando..." : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}</button>
+      <button type="submit" disabled={salvando} className="admin-btn-modern rounded-[18px] bg-accent px-6 py-3 text-center font-semibold text-white shadow-sm disabled:opacity-60">{salvando ? "Salvando..." : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}</button>
     </form>
   );
 }

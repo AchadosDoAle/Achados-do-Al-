@@ -21,6 +21,9 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const supabase = criarClientePublico();
   const ofertas = await listarOfertasResumo(supabase);
+  const ofertasAtivas = ofertas.filter(
+    (oferta) => oferta.status === "publicada" && !ofertaEstaExpirada(oferta)
+  );
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -72,13 +75,10 @@ export default async function HomePage() {
       />
       <Header />
       <Hero
-        ofertaDestaque={ofertas.find(
-          (oferta) =>
-            oferta.status === "publicada" && !ofertaEstaExpirada(oferta)
-        )}
+        ofertaDestaque={ofertasAtivas[0]}
       />
       <section id="ofertas" className="scroll-mt-24">
-        <OfertasGrid ofertas={ofertas} />
+        <OfertasGrid ofertas={ofertasAtivas} />
       </section>
       <Footer destacarInstagramProjeto />
       <BottomNav />

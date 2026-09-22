@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import Script from "next/script";
 import Container from "./Container";
 
 function CampoBusca({ className }: { className: string }) {
@@ -36,21 +35,6 @@ function CampoBusca({ className }: { className: string }) {
 export default function Header() {
   return (
     <header className="sticky top-0 z-20 bg-bg-secondary/95 backdrop-blur">
-      {/* Google Analytics (gtag.js) */}
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-ZZPY0JEKB9"
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', 'G-ZZPY0JEKB9');
-        `}
-      </Script>
-
       <Container className="px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -70,23 +54,26 @@ export default function Header() {
           </Suspense>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-text-muted md:flex">
-            <Link href="/" className="hover:text-gold">
+            <Link href="/" className="nav-link-modern">
               Início
             </Link>
-            <Link href="/categorias" className="hover:text-gold">
+            <Link href="/categorias" className="nav-link-modern">
               Categorias
             </Link>
-            <Link href="/cupons" className="hover:text-gold">
+            <Link href="/cupons" className="nav-link-modern">
               Cupons
             </Link>
-            <Link href="/favoritos" className="hover:text-gold">
+            <Link href="/favoritos" className="nav-link-modern">
               Favoritos
+            </Link>
+            <Link href="/perdeu" className="nav-link-modern text-gold/90">
+              Já perdeu?
             </Link>
             <a
               href="/grupo"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full bg-gold px-4 py-2 text-bg hover:bg-gold-light"
+              className="btn-modern rounded-full bg-gold px-4 py-2 text-bg hover:bg-gold-light"
             >
               Entrar no canal
             </a>
@@ -96,6 +83,21 @@ export default function Header() {
         <Suspense fallback={<div className="mt-3 h-11 md:hidden" />}>
           <CampoBusca className="mt-3 flex items-center gap-2 rounded-xl2 bg-card px-4 py-2.5 text-text md:hidden" />
         </Suspense>
+
+        <div className="mt-2 flex gap-2 overflow-x-auto pb-1 md:hidden">
+          <Link
+            href="/#ofertas"
+            className="btn-modern shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-text-muted"
+          >
+            🔥 Ofertas de agora
+          </Link>
+          <Link
+            href="/perdeu"
+            className="btn-modern shrink-0 rounded-full border border-gold/25 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold"
+          >
+            ⏳ Veja o que já perdeu!
+          </Link>
+        </div>
       </Container>
     </header>
   );

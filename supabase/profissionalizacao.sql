@@ -120,7 +120,7 @@ for select to authenticated using (user_id = auth.uid());
 
 -- CADASTRE O ADMIN. TROQUE O E-MAIL ABAIXO.
 insert into public.admin_users(user_id, email)
-select id, email from auth.users where lower(email) = lower('ale.nascimentolb1@hotmail.com')
+select id, email from auth.users where lower(email) = lower('SEU_EMAIL_ADMIN@EXEMPLO.COM')
 on conflict (user_id) do update set email = excluded.email;
 
 -- Ofertas

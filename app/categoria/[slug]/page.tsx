@@ -9,6 +9,7 @@ import { criarClientePublico } from "@/lib/supabase/public";
 import { listarOfertasResumo } from "@/lib/offers-repo";
 import { CATEGORIAS_ADMIN, CATEGORIA_OUTROS } from "@/lib/mock-data";
 import { slugificar } from "@/lib/texto";
+import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 function categoriaPorSlug(slug: string) {
   return CATEGORIAS_ADMIN.filter((c) => c !== CATEGORIA_OUTROS).find((c) => slugificar(c) === slug);
@@ -31,7 +32,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function CategoriaPage({ params }: { params: { slug: string } }) {
   const categoria = categoriaPorSlug(params.slug);
   if (!categoria) notFound();
-  const ofertas = (await listarOfertasResumo(criarClientePublico())).filter((o) => o.categoria === categoria);
+  const ofertas = (await listarOfertasResumo(criarClientePublico())).filter(
+    (o) => o.categoria === categoria && o.status === "publicada" && !ofertaEstaExpirada(o)
+  );
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
       <Header />

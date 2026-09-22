@@ -13,7 +13,6 @@ import CategoryChips from "./CategoryChips";
 import OfferCard from "./OfferCard";
 import Container from "./Container";
 import { normalizarBusca } from "@/lib/texto";
-import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
 const ITENS_POR_PAGINA = 25; // 5 colunas x 5 linhas no desktop
 
@@ -26,7 +25,6 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
   const [soComCupom, setSoComCupom] = useState(false);
   const [soFreteGratis, setSoFreteGratis] = useState(false);
   const [soPix, setSoPix] = useState(false);
-  const [soAtivas, setSoAtivas] = useState(false);
   const topoRef = useRef<HTMLDivElement>(null);
   // A busca é lida direto da URL a cada renderização, para reagir
   // imediatamente quando alguém pesquisa pelo campo do cabeçalho.
@@ -94,15 +92,14 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
     if (soComCupom) resultado = resultado.filter((o) => Boolean(o.cupom));
     if (soFreteGratis) resultado = resultado.filter((o) => Boolean(o.freteGratis));
     if (soPix) resultado = resultado.filter((o) => o.precoPix != null);
-    if (soAtivas) resultado = resultado.filter((o) => !ofertaEstaExpirada(o));
 
     return resultado;
-  }, [ofertas, selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix, soAtivas]);
+  }, [ofertas, selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix]);
 
   // Sempre que o filtro muda, volta pra primeira página.
   useEffect(() => {
     setPagina(1);
-  }, [selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix, soAtivas]);
+  }, [selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix]);
 
   const totalPaginas = Math.max(
     1,
@@ -154,7 +151,7 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
                   setSelecionada("Todos");
                   setLojaSelecionada("Todas");
                 }}
-                className="shrink-0 rounded-full px-3 py-2 text-xs font-semibold text-text-muted ring-1 ring-white/10 transition hover:text-text"
+                className="btn-modern shrink-0 rounded-full px-3 py-2 text-xs font-semibold text-text-muted ring-1 ring-white/10 hover:text-text"
               >
                 Limpar
               </button>
@@ -166,10 +163,9 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
             { rotulo: "Com cupom", ativo: soComCupom, setter: setSoComCupom },
             { rotulo: "Frete grátis", ativo: soFreteGratis, setter: setSoFreteGratis },
             { rotulo: "Preço no Pix", ativo: soPix, setter: setSoPix },
-            { rotulo: "Somente ativas", ativo: soAtivas, setter: setSoAtivas },
           ].map(({ rotulo, ativo, setter }) => (
             <button key={rotulo} type="button" onClick={() => setter(!ativo)}
-              className={`rounded-full px-3 py-2 text-xs font-semibold ring-1 transition ${ativo ? "bg-gold text-bg ring-gold" : "bg-card text-text-muted ring-white/10 hover:text-text"}`}>
+              className={`btn-modern rounded-full px-3 py-2 text-xs font-semibold ring-1 ${ativo ? "bg-gold text-bg ring-gold" : "bg-card text-text-muted ring-white/10 hover:text-text"}`}>
               {ativo ? "✓ " : ""}{rotulo}
             </button>
           ))}
@@ -203,7 +199,7 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
                 <button
                   onClick={() => irParaPagina(paginaSegura - 1)}
                   disabled={paginaSegura === 1}
-                  className="rounded-lg bg-card px-3 py-2 text-sm font-medium text-text ring-1 ring-white/10 disabled:opacity-30"
+                  className="btn-modern rounded-lg bg-card px-3 py-2 text-sm font-medium text-text ring-1 ring-white/10 disabled:opacity-30"
                 >
                   ← Anterior
                 </button>
@@ -213,7 +209,7 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
                 <button
                   onClick={() => irParaPagina(paginaSegura + 1)}
                   disabled={paginaSegura === totalPaginas}
-                  className="rounded-lg bg-card px-3 py-2 text-sm font-medium text-text ring-1 ring-white/10 disabled:opacity-30"
+                  className="btn-modern rounded-lg bg-card px-3 py-2 text-sm font-medium text-text ring-1 ring-white/10 disabled:opacity-30"
                 >
                   Próxima →
                 </button>

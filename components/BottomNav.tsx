@@ -22,7 +22,7 @@ export default function BottomNav() {
         <Link
           key={item.label}
           href={item.href}
-          className="flex flex-col items-center gap-0.5 px-2 py-1 text-[11px] text-text-muted"
+          className="nav-mobile-item flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[11px] text-text-muted"
         >
           <span aria-hidden="true" className="text-lg">
             {item.icone}

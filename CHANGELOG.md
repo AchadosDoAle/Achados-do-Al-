@@ -14,3 +14,11 @@
 - páginas Sobre, Afiliados, Privacidade e Termos
 - código antigo de geração por IA removido
 - SQL de segurança consolidado em supabase/profissionalizacao.sql
+
+## 2026-09-22 — Arquivo de promoções e microinterações
+- Home passa a exibir somente ofertas ativas e publicadas.
+- Nova página `/perdeu` (“Veja o que já perdeu!”) reúne promoções vencidas/expiradas.
+- Categorias também escondem promoções encerradas, mantendo o arquivo separado.
+- Painel administrativo ganha atalho “Reativar na Home” para ofertas encerradas.
+- Botões, CTAs, navegação e cards receberam hover, feedback de clique, brilho e foco acessível.
+- Navegação desktop/mobile ganha acesso ao arquivo de promoções.

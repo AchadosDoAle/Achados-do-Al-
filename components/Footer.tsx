@@ -69,7 +69,7 @@ export default function Footer({
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Abrir Instagram do Achado do Alê"
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-text transition hover:border-gold/50 hover:text-gold"
+              className="btn-modern mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-text hover:border-gold/50 hover:text-gold"
             >
               <InstagramIcon className="h-6 w-6" />
               @achados.do.ale
@@ -90,7 +90,7 @@ export default function Footer({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-text-muted transition hover:border-gold/40 hover:text-gold"
+                className="btn-modern rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-text-muted hover:border-gold/40 hover:text-gold"
               >
                 {link.nome}
               </a>
@@ -99,10 +99,11 @@ export default function Footer({
         )}
 
         <div className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-text-muted">
-          <Link href="/sobre" className="hover:text-gold">Sobre</Link>
-          <Link href="/afiliados" className="hover:text-gold">Afiliados</Link>
-          <Link href="/privacidade" className="hover:text-gold">Privacidade</Link>
-          <Link href="/termos" className="hover:text-gold">Termos</Link>
+          <Link href="/sobre" className="nav-link-modern">Sobre</Link>
+          <Link href="/afiliados" className="nav-link-modern">Afiliados</Link>
+          <Link href="/privacidade" className="nav-link-modern">Privacidade</Link>
+          <Link href="/termos" className="nav-link-modern">Termos</Link>
+          <Link href="/perdeu" className="nav-link-modern text-gold/80">Veja o que já perdeu!</Link>
         </div>
         <p className="mt-4 text-xs text-text-muted">
           © {new Date().getFullYear()} Achado do Alê. Ofertas sujeitas a
@@ -120,7 +121,7 @@ export default function Footer({
               rel="noopener noreferrer"
               aria-label="Instagram de Alexandre do Nascimento"
               title="Instagram de Alexandre do Nascimento"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-text-muted transition hover:border-gold/40 hover:text-gold"
+              className="btn-icon-modern inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-text-muted hover:border-gold/40 hover:text-gold"
             >
               <InstagramIcon />
             </a>
@@ -130,7 +131,7 @@ export default function Footer({
               rel="noopener noreferrer"
               aria-label="LinkedIn de Alexandre do Nascimento"
               title="LinkedIn de Alexandre do Nascimento"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-text-muted transition hover:border-gold/40 hover:text-gold"
+              className="btn-icon-modern inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-text-muted hover:border-gold/40 hover:text-gold"
             >
               <LinkedinIcon />
             </a>
