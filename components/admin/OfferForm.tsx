@@ -122,6 +122,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const [buscandoImagemAuto, setBuscandoImagemAuto] = useState(false);
   const [statusImagemAuto, setStatusImagemAuto] = useState("");
   const [resultadoLeitura, setResultadoLeitura] = useState("");
+  const [colandoAreaTransferencia, setColandoAreaTransferencia] = useState(false);
   const ofertaExistenteExpirada = ofertaExistente ? ofertaEstaExpirada(ofertaExistente) : false;
 
   function atualizarCampo<K extends keyof OfertaFormValues>(campo: K, valor: OfertaFormValues[K]) {
@@ -164,8 +165,8 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     }));
   }
 
-  function reconhecerTexto() {
-    const texto = (valores.textoPublicacao ?? "").trim();
+  function reconhecerTextoRecebido(textoBruto: string) {
+    const texto = textoBruto.trim();
     if (!texto) {
       setResultadoLeitura("Cole primeiro o texto da oferta.");
       return;
@@ -203,6 +204,42 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}. Revise os campos antes de salvar.`
         : "Não consegui identificar os dados principais. O texto foi mantido e você pode preencher os campos manualmente."
     );
+  }
+
+  function reconhecerTexto() {
+    reconhecerTextoRecebido(valores.textoPublicacao ?? "");
+  }
+
+  async function colarDaAreaTransferencia() {
+    if (!navigator.clipboard?.readText) {
+      setResultadoLeitura(
+        "Seu navegador não permitiu a leitura automática da área de transferência. Cole o texto manualmente na caixa abaixo."
+      );
+      return;
+    }
+
+    setColandoAreaTransferencia(true);
+    setResultadoLeitura("");
+    try {
+      const textoCopiado = await navigator.clipboard.readText();
+      if (!textoCopiado.trim()) {
+        setResultadoLeitura("A área de transferência está vazia.");
+        return;
+      }
+      reconhecerTextoRecebido(textoCopiado);
+    } catch (erro) {
+      console.error(erro);
+      setResultadoLeitura(
+        "Não consegui acessar a área de transferência. Autorize a permissão do navegador ou cole o texto manualmente."
+      );
+    } finally {
+      setColandoAreaTransferencia(false);
+    }
+  }
+
+  function limparTextoColado() {
+    atualizarCampo("textoPublicacao", "");
+    setResultadoLeitura("");
   }
 
   function validar() {
@@ -319,7 +356,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             <button
               type="button"
               onClick={prepararReativacaoNaHome}
-              className="admin-btn-modern shrink-0 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white"
+              className="admin-action admin-btn-modern shrink-0 rounded-xl border px-5 py-3 text-sm font-semibold"
             >
               ↻ Reativar na Home
             </button>
@@ -341,8 +378,8 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
           {etapas.map(([href, numero, nome]) => (
-            <a key={href} href={href} className="flex items-center gap-2 rounded-xl border border-ink/10 bg-cream/60 px-3 py-2 text-xs font-semibold text-ink/75 transition hover:border-brand/30 hover:bg-brand/5 hover:text-brand">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">{numero}</span>
+            <a key={href} href={href} className="admin-action-soft flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#D1A13A] text-[11px] font-bold text-ink">{numero}</span>
               <span className="truncate">{nome}</span>
             </a>
           ))}
@@ -359,6 +396,23 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         </div>
 
         <Campo rotulo="Texto da publicação">
+          <div className="mb-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={colarDaAreaTransferencia}
+              disabled={colandoAreaTransferencia}
+              className="admin-action rounded-xl border px-4 py-2 text-sm font-bold"
+            >
+              {colandoAreaTransferencia ? "COLANDO..." : "COLAR"}
+            </button>
+            <button
+              type="button"
+              onClick={limparTextoColado}
+              className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-bold"
+            >
+              LIMPAR
+            </button>
+          </div>
           <textarea
             className={classeInput}
             rows={12}
@@ -369,7 +423,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         </Campo>
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <button type="button" onClick={reconhecerTexto} className="admin-btn-modern rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-light">
+          <button type="button" onClick={reconhecerTexto} className="admin-action admin-btn-modern rounded-xl border px-5 py-3 text-sm font-semibold">
             ✨ Reconhecer texto e preencher campos
           </button>
           <p className="text-xs text-ink/50">O reconhecimento acontece no próprio site e não altera o texto que você colou.</p>
@@ -668,7 +722,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <Campo rotulo="Link do produto" obrigatorio erro={erros.linkProduto}><input className={classeInput} value={valores.linkProduto} onChange={(e) => atualizarCampo("linkProduto", e.target.value)} /></Campo>
-              <button type="button" onClick={() => buscarImagemAutomaticamente()} disabled={buscandoImagemAuto} className="admin-btn-modern w-fit rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
+              <button type="button" onClick={() => buscarImagemAutomaticamente()} disabled={buscandoImagemAuto} className="admin-action admin-btn-modern w-fit rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
               {statusImagemAuto && <p className="text-xs text-ink/60">{statusImagemAuto}</p>}
               {valores.linkProduto && !linkParecePertencerALoja(valores.linkProduto, valores.loja) && <p className="rounded-xl bg-accent/10 px-3 py-2 text-xs text-accent-dark">⚠️ Confira se o link pertence à loja selecionada.</p>}
 
@@ -685,7 +739,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       </div>
 
       {erroSalvar && <p className="text-center text-sm text-accent-dark">{erroSalvar}</p>}
-      <button type="submit" disabled={salvando} className="admin-btn-modern rounded-[18px] bg-accent px-6 py-3 text-center font-semibold text-white shadow-sm disabled:opacity-60">{salvando ? "Salvando..." : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}</button>
+      <button type="submit" disabled={salvando} className="admin-action admin-btn-modern rounded-[18px] border px-6 py-3 text-center font-semibold shadow-sm disabled:opacity-60">{salvando ? "Salvando..." : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}</button>
     </form>
   );
 }

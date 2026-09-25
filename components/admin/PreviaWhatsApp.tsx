@@ -48,14 +48,14 @@ export default function PreviaWhatsApp({ texto }: { texto: string }) {
         <button
           type="button"
           onClick={copiar}
-          className="flex-1 rounded-lg bg-trust/10 py-2 text-sm font-medium text-trust"
+          className="admin-action-soft flex-1 rounded-lg border py-2 text-sm font-semibold"
         >
           {copiado ? "Copiado!" : "Copiar publicação"}
         </button>
         <button
           type="button"
           onClick={compartilhar}
-          className="flex-1 rounded-lg bg-accent py-2 text-sm font-medium text-white"
+          className="admin-action flex-1 rounded-lg border py-2 text-sm font-semibold"
         >
           Enviar para WhatsApp
         </button>

@@ -48,7 +48,7 @@ export default function IntegracoesPage() {
         <button
           onClick={testarConexao}
           disabled={testando}
-          className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+          className="admin-action mt-4 rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {testando ? "Testando..." : "Testar conexão"}
         </button>

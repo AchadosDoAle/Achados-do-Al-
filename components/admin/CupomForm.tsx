@@ -331,7 +331,7 @@ export default function CupomForm({
                 <button
                   type="button"
                   onClick={reconhecerTextoCupom}
-                  className="w-fit rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-light"
+                  className="admin-action w-fit rounded-xl border px-4 py-2.5 text-sm font-semibold transition"
                 >
                   ✨ Reconhecer texto e preencher campos
                 </button>
@@ -457,7 +457,7 @@ export default function CupomForm({
       <button
         type="submit"
         disabled={salvando}
-        className="rounded-[18px] bg-accent px-6 py-3 text-center font-semibold text-white shadow-sm disabled:opacity-60"
+        className="admin-action rounded-[18px] border px-6 py-3 text-center font-semibold shadow-sm disabled:opacity-60"
       >
         {salvando
           ? "Salvando..."

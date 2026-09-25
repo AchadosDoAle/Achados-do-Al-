@@ -277,10 +277,10 @@ export default function RelatoriosPage() {
               <option key={item.valor} value={item.valor}>{item.rotulo}</option>
             ))}
           </select>
-          <button onClick={() => window.print()} className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-brand/15">
+          <button onClick={() => window.print()} className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-semibold">
             🖨️ Imprimir / PDF
           </button>
-          <button onClick={exportarCSV} className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white">
+          <button onClick={exportarCSV} className="admin-action rounded-xl border px-4 py-2 text-sm font-semibold">
             ↓ Exportar CSV
           </button>
         </div>

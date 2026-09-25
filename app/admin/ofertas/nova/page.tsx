@@ -20,7 +20,7 @@ export default function NovaOfertaPage() {
 
           <Link
             href="/admin/ofertas"
-            className="inline-flex w-fit items-center rounded-xl border border-ink/10 bg-cream px-4 py-2 text-sm font-semibold text-ink/70 transition hover:border-brand/25 hover:text-brand"
+            className="admin-action inline-flex w-fit items-center rounded-xl border px-4 py-2 text-sm font-semibold transition"
           >
             ← Voltar para ofertas
           </Link>

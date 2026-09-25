@@ -1,0 +1,12 @@
+ACHADO DO ALÊ — BACKUP DO PROJETO
+Data: 22/09/2026
+
+Inclui:
+- Página /perdeu para promoções vencidas/expiradas
+- UI e microinterações modernizadas
+- GitHub Actions para publicação de ofertas agendadas no plano Hobby
+- Google Consent Mode v2
+- Google Analytics Measurement ID: G-1SHEYDJB40
+
+Observação: por segurança, arquivos locais com segredos (como .env.local) e a pasta .git não fazem parte deste backup.
+As variáveis de ambiente devem continuar configuradas na Vercel.

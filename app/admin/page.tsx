@@ -29,13 +29,13 @@ export default function AdminHomePage() {
       <div className="mt-4 flex gap-2">
         <Link
           href="/admin/ofertas/nova"
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white"
+          className="admin-action rounded-lg border px-4 py-2 text-sm font-semibold"
         >
           Nova oferta
         </Link>
         <Link
           href="/admin/ofertas"
-          className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink/10"
+          className="admin-action-soft rounded-lg border px-4 py-2 text-sm font-semibold"
         >
           Ver ofertas
         </Link>

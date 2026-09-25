@@ -67,7 +67,7 @@ export default function ListaOfertasPage() {
         </div>
         <Link
           href="/admin/ofertas/nova"
-          className="rounded-[16px] bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+          className="admin-action rounded-[16px] border px-4 py-2.5 text-sm font-semibold shadow-sm"
         >
           + Nova oferta
         </Link>
@@ -121,7 +121,7 @@ export default function ListaOfertasPage() {
               <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">
                 <Link
                   href={`/admin/ofertas/${oferta.id}/editar`}
-                  className="rounded-xl bg-cream px-3 py-2 text-ink/80 ring-1 ring-ink/10"
+                  className="admin-action-soft rounded-xl border px-3 py-2"
                 >
                   Editar
                 </Link>
@@ -133,20 +133,20 @@ export default function ListaOfertasPage() {
                 {oferta.status === "expirada" && (
                   <button
                     onClick={() => aoReativar(oferta.id)}
-                    className="rounded-xl bg-trust/10 px-3 py-2 text-trust ring-1 ring-trust/20"
+                    className="admin-action rounded-xl border px-3 py-2"
                   >
                     Reativar oferta
                   </button>
                 )}
                 <button
                   onClick={() => aoDuplicar(oferta.id)}
-                  className="rounded-xl bg-cream px-3 py-2 text-ink/80 ring-1 ring-ink/10"
+                  className="admin-action-soft rounded-xl border px-3 py-2"
                 >
                   Duplicar
                 </button>
                 <button
                   onClick={() => aoExcluir(oferta.id)}
-                  className="rounded-xl bg-cream px-3 py-2 text-accent-dark ring-1 ring-ink/10"
+                  className="admin-action-soft rounded-xl border px-3 py-2"
                 >
                   Excluir
                 </button>

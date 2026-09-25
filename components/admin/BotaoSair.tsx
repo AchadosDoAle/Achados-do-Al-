@@ -14,7 +14,7 @@ export default function BotaoSair() {
   }
 
   return (
-    <button onClick={sair} className="text-sm font-medium text-white/80">
+    <button onClick={sair} className="admin-action rounded-xl border px-4 py-2 text-sm font-semibold">
       Sair
     </button>
   );

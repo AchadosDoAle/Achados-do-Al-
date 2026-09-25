@@ -1,0 +1,97 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DO PAINEL ADMINISTRATIVO
+Data: 25/09/2026
+
+ALTERAÇÕES DESTA VERSÃO
+- Fundo do painel administrativo alterado para cinza claro.
+- Botões e ações do painel padronizados em amarelo/mostarda clara.
+- Na Etapa 1 de Nova Oferta foram adicionados os botões COLAR e LIMPAR acima da caixa de texto.
+- COLAR lê o texto da área de transferência e, no mesmo clique, executa o reconhecimento automático já existente no sistema para preencher produto, loja, preços, link, cupom e outros campos que o parser conseguir identificar.
+- LIMPAR apaga apenas o conteúdo da caixa “Texto da publicação” e sua prévia/mensagem de reconhecimento. Ele não apaga os outros campos já preenchidos.
+- Não foi necessária nenhuma alteração no Supabase, banco de dados ou variáveis de ambiente.
+
+ARQUIVOS ALTERADOS
+app/globals.css
+app/admin/layout.tsx
+app/admin/page.tsx
+app/admin/ofertas/page.tsx
+app/admin/ofertas/nova/page.tsx
+app/admin/ofertas/[id]/editar/page.tsx
+app/admin/cupons/page.tsx
+app/admin/integracoes/page.tsx
+app/admin/relatorios/page.tsx
+components/admin/BotaoSair.tsx
+components/admin/CupomForm.tsx
+components/admin/OfferForm.tsx
+components/admin/PreviaWhatsApp.tsx
+
+COMO ATUALIZAR SEU REPOSITÓRIO LOCAL COM SEGURANÇA
+1. NÃO apague a pasta atual do projeto que já está conectada ao GitHub Desktop.
+2. Faça uma cópia de segurança da pasta atual do projeto antes de substituir arquivos.
+3. Extraia o ZIP desta atualização em uma pasta separada, por exemplo na Área de Trabalho.
+4. Abra o GitHub Desktop.
+5. Confira no topo se o repositório selecionado é o do Achado do Alê.
+6. No menu Repository, clique em Show in Explorer (ou Mostrar no Explorador).
+7. Isso abrirá a pasta REAL que o GitHub Desktop está acompanhando.
+8. Copie os arquivos/pastas da atualização para essa pasta, mantendo a mesma estrutura e escolhendo “Substituir os arquivos no destino” quando o Windows perguntar.
+9. Não apague nem substitua a pasta .git do seu repositório local.
+10. Se você tiver um arquivo .env.local com suas chaves do Supabase/Vercel, mantenha-o como está. Esta atualização não precisa mudar nenhuma variável de ambiente.
+
+TESTE LOCAL ANTES DE PUBLICAR
+1. Na pasta do projeto, abra o Terminal/PowerShell.
+2. Se as dependências já estiverem instaladas, rode:
+   npm run dev
+3. Se aparecer erro dizendo que faltam pacotes, rode primeiro:
+   npm install
+   e depois:
+   npm run dev
+4. Abra no navegador:
+   http://localhost:3000/admin/ofertas/nova
+5. Entre no painel administrativo.
+6. Confira se o fundo está cinza claro e se os botões estão em amarelo/mostarda.
+7. Copie para a área de transferência um texto completo de oferta.
+8. Clique em COLAR.
+9. O texto deve entrar na caixa imediatamente e o sistema deve preencher automaticamente os campos que reconhecer.
+10. Se o Chrome pedir permissão para acessar a área de transferência, clique em Permitir.
+11. Clique em LIMPAR e confirme que somente o texto da caixa é apagado.
+12. Para um teste técnico adicional, pare o servidor com Ctrl+C e rode:
+   npm run typecheck
+   npm run build
+   Se os dois terminarem sem erro, a atualização está pronta para publicação.
+
+SE O BOTÃO COLAR NÃO CONSEGUIR LER A ÁREA DE TRANSFERÊNCIA
+- No site publicado em HTTPS, o Chrome normalmente permite a leitura após um clique do usuário.
+- Se houver bloqueio, clique no ícone à esquerda do endereço do site > Configurações do site > Área de transferência/Clipboard > Permitir.
+- Recarregue a página e tente novamente.
+- Mesmo se o navegador bloquear a leitura automática, ainda é possível colar manualmente na caixa e usar “Reconhecer texto e preencher campos”.
+
+COMO FAZER O COMMIT NO GITHUB DESKTOP
+1. Volte ao GitHub Desktop depois dos testes.
+2. Na aba Changes, confira os arquivos alterados.
+3. Não marque arquivos pessoais, .env.local, senhas, chaves ou arquivos que você não queira enviar.
+4. No campo Summary, coloque exatamente:
+   Atualiza painel admin e colagem automática
+5. No campo Description (opcional), você pode colar:
+   Fundo cinza claro e botões em mostarda no painel administrativo. Adiciona COLAR e LIMPAR na Etapa 1 das ofertas, com reconhecimento automático do conteúdo da área de transferência.
+6. Clique em Commit to main. Se sua branch principal tiver outro nome, o botão mostrará o nome dela.
+7. Depois que o commit terminar, clique em Push origin no topo do GitHub Desktop.
+8. Aguarde o envio terminar. Quando não houver mais alterações pendentes, o código já estará no GitHub.
+
+PUBLICAÇÃO DO SITE
+Pelo projeto, o site está preparado para trabalhar com Vercel. Se o seu repositório GitHub já estiver conectado ao projeto da Vercel, o Push origin normalmente inicia um novo deploy automaticamente.
+
+Depois do Push:
+1. Aguarde alguns minutos.
+2. Abra https://achadosdoale.com/admin/ofertas/nova
+3. Atualize com Ctrl+F5 para evitar cache.
+4. Teste novamente COLAR e LIMPAR no site no ar.
+5. Confira também a Home, a página de Ofertas e a página de Cupons do painel.
+
+SE A VERCEL MOSTRAR ERRO
+Não faça outro commit às cegas. Abra o deploy com erro na Vercel e copie a mensagem do Build Log. A mensagem indica exatamente o arquivo/linha que precisa ser corrigido.
+
+COMMIT RECOMENDADO
+Summary:
+Atualiza painel admin e colagem automática
+
+Description:
+Fundo cinza claro e botões em mostarda no painel administrativo. Adiciona COLAR e LIMPAR na Etapa 1 das ofertas, com reconhecimento automático do conteúdo da área de transferência.

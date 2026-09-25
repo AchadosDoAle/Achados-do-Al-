@@ -43,7 +43,7 @@ export default function ListaCuponsPage() {
         </div>
         <Link
           href="/admin/cupons/novo"
-          className="rounded-[16px] bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+          className="admin-action rounded-[16px] border px-4 py-2.5 text-sm font-semibold shadow-sm"
         >
           + Novo cupom
         </Link>
@@ -106,13 +106,13 @@ export default function ListaCuponsPage() {
                 <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">
                   <Link
                     href={`/admin/cupons/${cupom.id}/editar`}
-                    className="rounded-xl bg-cream px-3 py-2 text-ink/80 ring-1 ring-ink/10"
+                    className="admin-action-soft rounded-xl border px-3 py-2"
                   >
                     Editar
                   </Link>
                   <button
                     onClick={() => aoExcluir(cupom.id)}
-                    className="rounded-xl bg-cream px-3 py-2 text-accent-dark ring-1 ring-ink/10"
+                    className="admin-action-soft rounded-xl border px-3 py-2"
                   >
                     Excluir
                   </button>
