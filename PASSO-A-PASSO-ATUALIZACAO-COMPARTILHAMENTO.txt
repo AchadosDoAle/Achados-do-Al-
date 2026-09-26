@@ -1,0 +1,54 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DE COMPARTILHAMENTO
+Data: 26/09/2026
+
+O QUE MUDA
+- O botão Compartilhar passa a mandar nome do produto, preço, loja e link curto.
+- O link curto usa o formato: https://achadosdoale.com/p/CODIGO
+- Exemplo: um slug terminado em q7vw2 vira https://achadosdoale.com/p/q7vw2
+- Os metadados Open Graph foram reforçados para WhatsApp/Facebook/Telegram tentarem mostrar produto, preço e foto.
+- Não há alteração de banco de dados e NÃO é necessário executar SQL no Supabase.
+
+COMO PUBLICAR PELO GITHUB DESKTOP
+
+1. Faça um backup da pasta atual do site antes de substituir arquivos.
+
+2. No GitHub Desktop, selecione o repositório do Achado do Alê.
+
+3. Vá em Repository > Show in Explorer.
+
+4. Extraia o ZIP de arquivos alterados e copie o conteúdo para a raiz do projeto.
+   Quando o Windows perguntar, escolha Substituir os arquivos no destino.
+
+5. Abra um terminal na pasta do projeto e rode:
+   npm run typecheck
+
+6. Se não houver erro, rode:
+   npm run build
+
+7. Abra o GitHub Desktop e confira a aba Changes.
+
+8. No campo Summary use:
+   Melhora compartilhamento e adiciona links curtos
+
+9. No campo Description use:
+   Adiciona links curtos para ofertas, melhora a prévia social com produto, preço e foto e atualiza o botão Compartilhar para enviar nome, preço, loja e URL curta.
+
+10. Clique em Commit to main.
+
+11. Clique em Push origin.
+
+12. Aguarde o deploy automático da Vercel finalizar.
+
+13. Teste uma oferta no celular pelo botão Compartilhar.
+    O texto deverá ficar parecido com:
+
+    🔥 NOME DO PRODUTO
+    💰 R$ 199,90 no Pix
+    🏪 Loja
+
+    🔗 https://achadosdoale.com/p/q7vw2
+
+14. No WhatsApp, a prévia deverá tentar exibir a foto do produto, o nome e o preço.
+
+OBSERVAÇÃO SOBRE CACHE DO WHATSAPP
+O WhatsApp mantém prévias antigas em cache. Como agora o compartilhamento usa uma URL nova e curta (/p/CODIGO), a tendência é que a nova prévia seja consultada do zero. Se algum aparelho ainda mostrar uma versão antiga, teste o link curto em uma conversa nova ou aguarde a atualização do cache.

@@ -11,6 +11,13 @@ import Container from "@/components/Container";
 import ReportarOferta from "@/components/ReportarOferta";
 import OfertaCompraFixa from "@/components/OfertaCompraFixa";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import {
+  descricaoSocialDaOferta,
+  imagemAbsolutaDaOferta,
+  precoPrincipalDaOferta,
+  tituloSocialDaOferta,
+  urlCurtaDaOferta,
+} from "@/lib/oferta-share";
 
 const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 
@@ -29,13 +36,12 @@ export async function generateMetadata({
   const oferta = await buscar(params.slug);
   if (!oferta) return {};
 
-  const precoMeta = oferta.precoPix ?? oferta.precoAtual;
-  const descricao = precoMeta != null
-    ? `${oferta.loja} · por ${precoMeta.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
-    : `${oferta.loja} · confira a promoção no Achado do Alê`;
-
+  const descricao = descricaoSocialDaOferta(oferta);
+  const tituloSocial = tituloSocialDaOferta(oferta);
   const expirada = ofertaEstaExpirada(oferta);
   const url = `${URL_SITE}/oferta/${oferta.slug}`;
+  const imagemProduto = imagemAbsolutaDaOferta(oferta);
+  const imagemFallback = `${url}/opengraph-image`;
 
   return {
     title: oferta.titulo,
@@ -46,18 +52,23 @@ export async function generateMetadata({
       : { index: true, follow: true },
     openGraph: {
       type: "website",
-      title: oferta.titulo,
+      title: tituloSocial,
       description: descricao,
-      images: [{ url: `${url}/opengraph-image`, width: 1200, height: 630, alt: oferta.titulo }],
+      images: imagemProduto
+        ? [
+            { url: imagemProduto, alt: oferta.titulo },
+            { url: imagemFallback, width: 1200, height: 630, alt: oferta.titulo },
+          ]
+        : [{ url: imagemFallback, width: 1200, height: 630, alt: oferta.titulo }],
       url,
       siteName: "Achado do Alê",
       locale: "pt_BR",
     },
     twitter: {
       card: "summary_large_image",
-      title: oferta.titulo,
+      title: tituloSocial,
       description: descricao,
-      images: [`${url}/opengraph-image`],
+      images: [imagemProduto || imagemFallback],
     },
   };
 }
@@ -331,7 +342,10 @@ export default async function PaginaOferta({
               </a>
               <BotaoCompartilhar
                 titulo={oferta.titulo}
-                url={`${URL_SITE}/oferta/${oferta.slug}`}
+                loja={oferta.loja}
+                preco={precoPrincipalDaOferta(oferta)}
+                precoPix={oferta.precoPix != null}
+                url={urlCurtaDaOferta(oferta.slug)}
               />
             </div>
 

@@ -52,3 +52,11 @@
 - Reconhecimento de modelo ampliado para famílias e códigos comuns, ignorando especificações que poderiam ser confundidas com modelo.
 - Categoria, Marca e Modelo não reconhecidos recebem aviso visual para revisão antes da publicação.
 - Ícones públicos atualizados para as novas categorias.
+
+## 2026-09-26 — Compartilhamento com link curto e prévia social
+
+- Criada rota curta de compartilhamento no formato `/p/CODIGO` usando o código final do slug existente, sem alterar o banco de dados.
+- O botão **Compartilhar** agora envia nome do produto, preço, loja e o link curto no próprio texto, evitando mensagens que chegam apenas com a URL.
+- Metadados Open Graph das ofertas foram reforçados com título contendo produto + preço e descrição com preço/loja.
+- A foto cadastrada do produto passa a ser a primeira imagem social; o card Open Graph gerado pelo site fica como fallback.
+- A rota curta possui metadados próprios para WhatsApp, Facebook, Telegram e outros aplicativos de mensagem e redireciona o visitante para a página completa da oferta.

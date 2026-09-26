@@ -55,3 +55,12 @@ lib/mock-data.ts
 components/CategoryChips.tsx
 docs/MELHORIAS-CATEGORIA-MARCA-MODELO-2026-09-26.md
 CHANGELOG.md
+
+Atualização 2026-09-26 — compartilhamento social:
+- app/oferta/[slug]/page.tsx
+- components/OfertaAcoes.tsx
+- app/p/[code]/page.tsx (novo)
+- components/RedirecionarOferta.tsx (novo)
+- lib/oferta-share.ts (novo)
+- docs/COMPARTILHAMENTO-LINK-CURTO-2026-09-26.md (novo)
+- CHANGELOG.md
