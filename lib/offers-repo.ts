@@ -1,6 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Oferta, OfertaFormValues } from "./types";
 import { normalizarNomeLoja } from "./mock-data";
+import { dataPromocaoJaPassou } from "./oferta-status";
 
 // O banco usa snake_case (como no modelo que você pediu); o app usa
 // camelCase. Estas duas funções fazem a conversão nos dois sentidos.
@@ -234,6 +235,47 @@ export async function duplicarOferta(
 export async function excluirOferta(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("offers").delete().eq("id", id);
   if (error) throw error;
+}
+
+
+export async function publicarOfertaAgora(
+  supabase: SupabaseClient,
+  oferta: Oferta
+): Promise<Oferta> {
+  const agora = new Date().toISOString();
+
+  // Quando a oferta foi expirada pelos avisos dos visitantes, usamos a RPC
+  // existente para zerar a contagem antes de colocá-la no ar novamente.
+  if (oferta.status === "expirada") {
+    const { error: erroReativacao } = await supabase.rpc("reactivate_offer", {
+      p_offer_id: oferta.id,
+    });
+    if (erroReativacao) throw erroReativacao;
+  }
+
+  const atualizacoes: Record<string, unknown> = {
+    status: "publicada",
+    agendado_para: null,
+    publicado_em: agora,
+    atualizado_em: agora,
+  };
+
+  // Uma validade antiga faria a oferta continuar aparecendo como vencida
+  // imediatamente depois da republicação. Nesse caso, removemos somente a
+  // data que já passou. Validades futuras continuam intactas.
+  if (dataPromocaoJaPassou(oferta.validadePromocao)) {
+    atualizacoes.validade_promocao = null;
+  }
+
+  const { data, error } = await supabase
+    .from("offers")
+    .update(atualizacoes)
+    .eq("id", oferta.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return linhaParaOferta(data);
 }
 
 

@@ -1,3 +1,20 @@
+## 2026-09-26 — Publicar e republicar direto da lista administrativa
+
+- Ofertas em `rascunho` ganham botão **PUBLICAR** ao lado de **Excluir**.
+- Ofertas `expiradas`, `arquivadas` ou com validade vencida ganham botão **REPUBLICAR** ao lado de **Excluir**.
+- A publicação/republicação acontece direto na listagem, sem precisar abrir a tela de edição.
+- Ao republicar uma oferta cuja validade já passou, a validade antiga é removida para evitar que ela continue aparecendo como vencida.
+- Ofertas expiradas por avisos de visitantes zeram os avisos anteriores antes de voltar ao ar.
+- A republicação atualiza `publicado_em`, remove agendamento pendente e mantém os demais dados da oferta.
+
+
+## 2026-09-26 — Correção do owner inicial
+
+- Corrigido bloqueio em que o único administrador cadastrado podia permanecer com papel `admin` e ficar sem acesso ao Gerenciador de Usuários.
+- Quando existe exatamente um administrador, o backend garante automaticamente que ele seja `owner`.
+- Adicionada migration de reparo para bancos já publicados.
+- A migration original do Gerenciador de Usuários agora promove somente um owner inicial quando necessário, em vez de elevar todos os admins.
+
 # Changelog
 
 ## Profissionalização 2026-09-21

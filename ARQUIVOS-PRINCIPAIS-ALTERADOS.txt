@@ -64,3 +64,9 @@ Atualização 2026-09-26 — compartilhamento social:
 - lib/oferta-share.ts (novo)
 - docs/COMPARTILHAMENTO-LINK-CURTO-2026-09-26.md (novo)
 - CHANGELOG.md
+
+Atualização 2026-09-26 — publicar/republicar na lista administrativa:
+- app/admin/ofertas/page.tsx
+- lib/offers-repo.ts
+- docs/PUBLICAR-REPUBLICAR-OFERTAS-2026-09-26.md (novo)
+- CHANGELOG.md

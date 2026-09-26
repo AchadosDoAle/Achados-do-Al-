@@ -1,0 +1,19 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DOS BOTÕES PUBLICAR / REPUBLICAR
+
+1. Faça um backup da pasta atual do projeto.
+2. Extraia o ZIP de arquivos alterados.
+3. Copie o conteúdo para a raiz do projeto e aceite substituir os arquivos existentes.
+4. Não altere o .env.local.
+5. Não é necessário executar SQL no Supabase.
+6. Para testar localmente, abra o terminal na pasta do projeto e rode: npm run dev
+7. Acesse http://localhost:3000/admin/ofertas
+8. Confira:
+   - oferta em RASCUNHO -> botão PUBLICAR ao lado de Excluir;
+   - oferta EXPIRADA, ARQUIVADA ou com validade vencida -> botão REPUBLICAR ao lado de Excluir.
+9. Teste os botões e confirme que a oferta passa para Publicada no site.
+10. No GitHub Desktop, confira a aba Changes.
+11. Summary sugerido: Adiciona publicação rápida de ofertas
+12. Description sugerida: Adiciona botões PUBLICAR e REPUBLICAR na lista administrativa de ofertas, com tratamento de rascunhos, expiradas, arquivadas e ofertas com validade vencida.
+13. Clique em Commit to main.
+14. Clique em Push origin.
+15. Aguarde o deploy automático da Vercel e teste em https://achadosdoale.com/admin/ofertas
