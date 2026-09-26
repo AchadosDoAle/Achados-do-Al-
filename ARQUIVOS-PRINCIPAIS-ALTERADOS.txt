@@ -39,3 +39,19 @@ supabase/migrations/20260921_profissionalizacao.sql
 README.md
 CHANGELOG.md
 PASSO-A-PASSO-PROFISSIONALIZACAO.txt
+
+Gerenciador de usuários — 2026-09-26:
+app/admin/layout.tsx
+app/admin/usuarios/page.tsx
+app/api/admin/usuarios/route.ts
+app/api/admin/usuarios/[id]/route.ts
+lib/admin-auth.ts
+supabase/migrations/20260926_gerenciador_usuarios.sql
+
+Cadastro rápido de ofertas — 2026-09-26:
+components/admin/OfferForm.tsx
+lib/parse-oferta-texto.ts
+lib/mock-data.ts
+components/CategoryChips.tsx
+docs/MELHORIAS-CATEGORIA-MARCA-MODELO-2026-09-26.md
+CHANGELOG.md

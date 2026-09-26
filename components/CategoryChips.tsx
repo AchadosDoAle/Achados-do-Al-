@@ -4,8 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const ICONE_POR_CATEGORIA: Record<string, string> = {
   Todos: "▦",
+  Acessórios: "👜",
   Casa: "🏠",
   Eletrodomésticos: "🔌",
+  Eletroportáteis: "☕",
+  Eletrônicos: "🔋",
   Cozinha: "🍳",
   Beleza: "💄",
   Perfumaria: "🧴",
@@ -19,7 +22,8 @@ const ICONE_POR_CATEGORIA: Record<string, string> = {
   Esporte: "🏃",
   Ferramentas: "🔧",
   Automotivo: "🚗",
-  Infantil: "🧸",
+  Infantil: "🧒",
+  Brinquedos: "🧸",
   Bebês: "🍼",
   Mercado: "🛒",
   Saúde: "🩺",
@@ -28,8 +32,11 @@ const ICONE_POR_CATEGORIA: Record<string, string> = {
   Móveis: "🛋️",
   Decoração: "🪴",
   Papelaria: "✏️",
+  Jardim: "🌿",
   Livros: "📚",
+  Relógios: "⌚",
   Utilidades: "✨",
+  Viagem: "🧳",
 };
 
 export default function CategoryChips({

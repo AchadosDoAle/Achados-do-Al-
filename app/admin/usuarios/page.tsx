@@ -168,7 +168,7 @@ export default function GerenciadorUsuariosPage() {
           <button
             type="submit"
             disabled={enviando}
-            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
+            className="admin-action w-full rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm disabled:opacity-60"
           >
             {enviando ? "Adicionando..." : "+ Adicionar usuário"}
           </button>
@@ -225,7 +225,7 @@ export default function GerenciadorUsuariosPage() {
                 </select>
                 <button
                   onClick={() => removerUsuario(usuario.user_id, usuario.email)}
-                  className="rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-dark"
+                  className="admin-action-soft rounded-lg border px-3 py-1.5 text-xs font-semibold"
                 >
                   Remover
                 </button>

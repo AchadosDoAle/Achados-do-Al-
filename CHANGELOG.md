@@ -29,3 +29,26 @@
 - Ao aceitar o banner, apenas `analytics_storage` muda para `granted`.
 - Tags de publicidade permanecem negadas.
 - Pageviews completos continuam sendo enviados apenas após o aceite do usuário.
+
+## 2026-09-26 — Gerenciador de usuários administrativos
+- Nova página `/admin/usuarios` para gerenciar quem pode acessar o painel administrativo e o app.
+- Dois níveis de permissão: `owner` e `admin`.
+- Usuários `owner` podem listar, adicionar, alterar o papel e remover o acesso de outros administradores.
+- Criação de usuário pelo painel com senha temporária quando o e-mail ainda não existe no Supabase Auth.
+- Contas já existentes no Supabase Auth podem receber acesso administrativo sem troca de senha.
+- Proteção para impedir a remoção ou o rebaixamento do último `owner`.
+- Novas rotas protegidas em `/api/admin/usuarios` e `/api/admin/usuarios/[id]`.
+- `lib/admin-auth.ts` ampliado para identificar o administrador logado e seu papel.
+- Migration `20260926_gerenciador_usuarios.sql` adicionada para `nome`, `role`, índice e função `is_owner()`.
+- Navegação do painel passa a incluir o atalho “Usuários”.
+- Integração preserva o tema atual do painel: fundo cinza-claro e botões mostarda.
+
+## 2026-09-26 — Cadastro rápido: categorias, marca e modelo
+- Lista administrativa ampliada para 34 categorias e reorganizada em ordem alfabética.
+- Seletor de categoria substituído por radio buttons pesquisáveis, com busca sem acentos.
+- Novas ofertas não recebem mais uma categoria padrão silenciosa; se a detecção falhar, a categoria fica vazia e precisa ser escolhida antes de salvar.
+- Reconhecimento automático de categoria refeito com pontuação por palavras-chave e maior peso para o título do produto.
+- Reconhecimento de marca ampliado com dezenas de marcas conhecidas e regras para evitar inferências indevidas em acessórios.
+- Reconhecimento de modelo ampliado para famílias e códigos comuns, ignorando especificações que poderiam ser confundidas com modelo.
+- Categoria, Marca e Modelo não reconhecidos recebem aviso visual para revisão antes da publicação.
+- Ícones públicos atualizados para as novas categorias.

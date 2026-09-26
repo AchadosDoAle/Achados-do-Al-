@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Campo, classeInput } from "./Campo";
 import {
@@ -30,7 +30,7 @@ const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
 const VALORES_INICIAIS: OfertaFormValues = {
   titulo: "",
   loja: LOJAS[0],
-  categoria: CATEGORIAS_DISPONIVEIS[0] ?? "",
+  categoria: "",
   marca: "",
   modelo: "",
   precoAntigo: undefined,
@@ -100,18 +100,32 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       : ""
   );
 
-  const categoriaExistente = ofertaExistente?.categoria ?? CATEGORIAS_DISPONIVEIS[0] ?? "";
+  const categoriaExistente = ofertaExistente?.categoria ?? "";
   const categoriaExistenteNaLista = CATEGORIAS_DISPONIVEIS.includes(categoriaExistente);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(
-    categoriaExistenteNaLista
-      ? categoriaExistente
-      : ofertaExistente
-      ? CATEGORIA_OUTROS
-      : CATEGORIAS_DISPONIVEIS[0] ?? ""
+    categoriaExistenteNaLista ? categoriaExistente : ofertaExistente ? CATEGORIA_OUTROS : ""
   );
   const [categoriaPersonalizada, setCategoriaPersonalizada] = useState(
     ofertaExistente && !categoriaExistenteNaLista ? categoriaExistente : ""
   );
+  const [categoriaBusca, setCategoriaBusca] = useState("");
+  const [camposParaRevisar, setCamposParaRevisar] = useState<Array<"categoria" | "marca" | "modelo">>([]);
+
+  const categoriasFiltradas = useMemo(() => {
+    const busca = categoriaBusca
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("pt-BR")
+      .trim();
+    if (!busca) return CATEGORIAS_DISPONIVEIS;
+    return CATEGORIAS_DISPONIVEIS.filter((categoria) =>
+      categoria
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase("pt-BR")
+        .includes(busca)
+    );
+  }, [categoriaBusca]);
 
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
@@ -127,6 +141,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
 
   function atualizarCampo<K extends keyof OfertaFormValues>(campo: K, valor: OfertaFormValues[K]) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  function marcarCampoConferido(campo: "categoria" | "marca" | "modelo") {
+    setCamposParaRevisar((atuais) => atuais.filter((item) => item !== campo));
   }
 
   function prepararReativacaoNaHome() {
@@ -173,7 +191,23 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     }
 
     const resultado = interpretarTextoOferta(texto);
-    setValores((atual) => ({ ...atual, ...resultado.valores, textoPublicacao: texto }));
+    const naoReconhecidos = (["categoria", "marca", "modelo"] as const).filter(
+      (campo) => !String(resultado.valores[campo] ?? "").trim()
+    );
+    setCamposParaRevisar(naoReconhecidos);
+
+    setValores((atual) => ({
+      ...atual,
+      ...(!ofertaExistente
+        ? {
+            categoria: resultado.valores.categoria ?? "",
+            marca: resultado.valores.marca ?? "",
+            modelo: resultado.valores.modelo ?? "",
+          }
+        : {}),
+      ...resultado.valores,
+      textoPublicacao: texto,
+    }));
 
     if (resultado.valores.loja) {
       if (LOJAS_AFILIADAS.includes(resultado.valores.loja)) {
@@ -193,16 +227,25 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         setCategoriaSelecionada(CATEGORIA_OUTROS);
         setCategoriaPersonalizada(resultado.valores.categoria);
       }
+      setCategoriaBusca("");
+    } else if (!ofertaExistente) {
+      // Não deixa uma categoria padrão silenciosa quando a leitura falha.
+      // O usuário precisa escolher uma opção antes de conseguir publicar.
+      setCategoriaSelecionada("");
+      setCategoriaPersonalizada("");
     }
 
     if (resultado.valores.linkProduto && !valores.imagemPrincipal) {
       void buscarImagemAutomaticamente(resultado.valores.linkProduto);
     }
 
+    const avisoRevisao = naoReconhecidos.length
+      ? ` Atenção: não reconheci ${naoReconhecidos.join(", ")}; confira esses campos antes de publicar.`
+      : "";
     setResultadoLeitura(
       resultado.camposDetectados.length
-        ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}. Revise os campos antes de salvar.`
-        : "Não consegui identificar os dados principais. O texto foi mantido e você pode preencher os campos manualmente."
+        ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}.${avisoRevisao}`
+        : `Não consegui identificar os dados principais. O texto foi mantido e você pode preencher os campos manualmente.${avisoRevisao}`
     );
   }
 
@@ -240,6 +283,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   function limparTextoColado() {
     atualizarCampo("textoPublicacao", "");
     setResultadoLeitura("");
+    setCamposParaRevisar([]);
   }
 
   function validar() {
@@ -451,6 +495,12 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             <Campo rotulo="Nome do produto" obrigatorio erro={erros.titulo}>
               <input className={`${classeInput} uppercase`} value={valores.titulo} onChange={(e) => atualizarCampo("titulo", paraCaixaAlta(e.target.value))} />
             </Campo>
+            {camposParaRevisar.length > 0 && (
+              <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                <strong>⚠️ Confira antes de publicar:</strong> não consegui reconhecer automaticamente {camposParaRevisar.join(", ")}.
+                Os campos não reconhecidos ficam vazios para evitar cadastro incorreto.
+              </div>
+            )}
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Loja" obrigatorio erro={erros.loja}>
                 <div className="flex flex-col gap-2">
@@ -465,19 +515,101 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               </Campo>
               <Campo rotulo="Categoria" obrigatorio erro={erros.categoria}>
                 <div className="flex flex-col gap-2">
-                  <select className={classeInput} value={categoriaSelecionada} onChange={(e) => {
-                    const nova = e.target.value; setCategoriaSelecionada(nova);
-                    atualizarCampo("categoria", nova === CATEGORIA_OUTROS ? categoriaPersonalizada : nova);
-                  }}>
-                    {CATEGORIAS_DISPONIVEIS.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  {categoriaSelecionada === CATEGORIA_OUTROS && <input className={classeInput} value={categoriaPersonalizada} onChange={(e) => { setCategoriaPersonalizada(e.target.value); atualizarCampo("categoria", e.target.value); }} placeholder="Digite a categoria" />}
+                  <input
+                    type="search"
+                    className={classeInput}
+                    value={categoriaBusca}
+                    onChange={(e) => setCategoriaBusca(e.target.value)}
+                    placeholder="🔎 Pesquisar categoria..."
+                    aria-label="Pesquisar categoria"
+                  />
+                  <div
+                    role="radiogroup"
+                    aria-label="Categorias da oferta"
+                    className={`max-h-56 overflow-y-auto rounded-2xl border p-2 ${
+                      camposParaRevisar.includes("categoria") ? "border-amber-300 bg-amber-50/50" : "border-ink/10 bg-white"
+                    }`}
+                  >
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {categoriasFiltradas.map((categoria) => {
+                        const ativa = categoriaSelecionada === categoria;
+                        return (
+                          <label
+                            key={categoria}
+                            className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                              ativa
+                                ? "border-discount bg-discount/20 text-ink"
+                                : "border-ink/10 bg-white text-ink/75 hover:border-discount/60 hover:bg-discount/10"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="categoria-oferta"
+                              value={categoria}
+                              checked={ativa}
+                              onChange={() => {
+                                setCategoriaSelecionada(categoria);
+                                atualizarCampo("categoria", categoria === CATEGORIA_OUTROS ? categoriaPersonalizada : categoria);
+                                marcarCampoConferido("categoria");
+                              }}
+                              className="accent-amber-500"
+                            />
+                            <span>{categoria}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {categoriasFiltradas.length === 0 && (
+                      <p className="px-3 py-4 text-center text-sm text-ink/55">Nenhuma categoria encontrada.</p>
+                    )}
+                  </div>
+                  {!categoriaSelecionada && (
+                    <p className="text-xs font-medium text-amber-700">Selecione uma categoria antes de publicar.</p>
+                  )}
+                  {categoriaSelecionada === CATEGORIA_OUTROS && (
+                    <input
+                      className={classeInput}
+                      value={categoriaPersonalizada}
+                      onChange={(e) => {
+                        setCategoriaPersonalizada(e.target.value);
+                        atualizarCampo("categoria", e.target.value);
+                        if (e.target.value.trim()) marcarCampoConferido("categoria");
+                      }}
+                      placeholder="Digite a categoria"
+                    />
+                  )}
                 </div>
               </Campo>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Marca"><input className={`${classeInput} uppercase`} value={valores.marca} onChange={(e) => atualizarCampo("marca", paraCaixaAlta(e.target.value))} /></Campo>
-              <Campo rotulo="Modelo"><input className={`${classeInput} uppercase`} value={valores.modelo} onChange={(e) => atualizarCampo("modelo", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Marca">
+                <div className="flex flex-col gap-1.5">
+                  <input
+                    className={`${classeInput} uppercase ${camposParaRevisar.includes("marca") ? "border-amber-300 bg-amber-50/50" : ""}`}
+                    value={valores.marca}
+                    onChange={(e) => {
+                      atualizarCampo("marca", paraCaixaAlta(e.target.value));
+                      if (e.target.value.trim()) marcarCampoConferido("marca");
+                    }}
+                    placeholder="Ex.: SAMSUNG, MONDIAL, ADIDAS"
+                  />
+                  {camposParaRevisar.includes("marca") && <p className="text-xs font-medium text-amber-700">Marca não identificada automaticamente.</p>}
+                </div>
+              </Campo>
+              <Campo rotulo="Modelo">
+                <div className="flex flex-col gap-1.5">
+                  <input
+                    className={`${classeInput} uppercase ${camposParaRevisar.includes("modelo") ? "border-amber-300 bg-amber-50/50" : ""}`}
+                    value={valores.modelo}
+                    onChange={(e) => {
+                      atualizarCampo("modelo", paraCaixaAlta(e.target.value));
+                      if (e.target.value.trim()) marcarCampoConferido("modelo");
+                    }}
+                    placeholder="Ex.: GALAXY A55 5G, AFN-50"
+                  />
+                  {camposParaRevisar.includes("modelo") && <p className="text-xs font-medium text-amber-700">Modelo não identificado automaticamente.</p>}
+                </div>
+              </Campo>
             </div>
           </div>
         </section>

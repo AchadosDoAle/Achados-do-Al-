@@ -22,7 +22,7 @@ export default function AdminLayout({
 }) {
   return (
     <div
-      className="min-h-screen bg-[#F7F4FA] text-ink"
+      className="admin-area min-h-screen bg-[#F1F2F4] text-ink"
       style={{ colorScheme: "light" }}
     >
       <header className="sticky top-0 z-20 border-b border-brand/10 bg-white shadow-sm print:hidden">
@@ -45,7 +45,7 @@ export default function AdminLayout({
             <Link
               key={link.href}
               href={link.href}
-              className="shrink-0 rounded-full border border-brand/10 bg-[#F7F4FA] px-4 py-2 text-sm font-semibold text-ink/75 transition hover:border-brand/25 hover:bg-brand/5 hover:text-brand"
+              className="admin-action shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition"
             >
               {link.label}
             </Link>
