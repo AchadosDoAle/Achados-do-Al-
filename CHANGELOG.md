@@ -1,5 +1,13 @@
 ## 2026-09-26 — Publicar e republicar direto da lista administrativa
 
+## 2026-09-26 - Layout compacto no admin de ofertas e cupons
+
+- Em telas de tablet/desktop, título e ação principal ficam ao lado do campo de pesquisa, reduzindo espaço vertical.
+- Em dispositivos móveis, o layout continua empilhado e confortável para toque.
+- Grade de ofertas e cupons passa a usar duas colunas a partir de telas grandes (`lg`), aproveitando melhor notebooks e desktops.
+- Cards recebem espaçamento interno e vertical ligeiramente menores apenas fora do mobile.
+
+
 - Ofertas em `rascunho` ganham botão **PUBLICAR** ao lado de **Excluir**.
 - Ofertas `expiradas`, `arquivadas` ou com validade vencida ganham botão **REPUBLICAR** ao lado de **Excluir**.
 - A publicação/republicação acontece direto na listagem, sem precisar abrir a tela de edição.

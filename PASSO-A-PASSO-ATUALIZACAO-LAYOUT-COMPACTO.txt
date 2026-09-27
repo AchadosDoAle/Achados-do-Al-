@@ -1,0 +1,25 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DO LAYOUT COMPACTO DO ADMIN
+
+O que foi alterado
+- Admin > Ofertas: título/ação e pesquisa ficam lado a lado em telas de tablet/desktop.
+- Admin > Cupons: mesmo comportamento.
+- Mobile continua empilhado, como na versão anterior.
+- Resultados aproveitam duas colunas mais cedo em notebooks/desktops.
+- Cards ficam um pouco mais compactos apenas fora do mobile.
+- A busca continua aceitando Enter, partes do texto e ignorando acentos.
+
+COMO ATUALIZAR PELO GITHUB DESKTOP
+1. Abra o GitHub Desktop e selecione o repositório do Achado do Alê.
+2. Vá em Repository > Show in Explorer.
+3. Extraia o ZIP do patch e copie seu conteúdo para a pasta principal do projeto.
+4. Quando o Windows perguntar, escolha substituir os arquivos existentes.
+5. Abra o GitHub Desktop e confira a aba Changes.
+6. Em Summary use:
+   Compacta pesquisa no admin de ofertas e cupons
+7. Em Description use:
+   Reorganiza o topo das telas administrativas de ofertas e cupons para economizar espaço em desktop e tablet, mantendo o layout mobile empilhado. Também compacta os cards e antecipa a grade em duas colunas.
+8. Clique em Commit to main.
+9. Clique em Push origin.
+10. Aguarde o deploy da Vercel e depois faça Ctrl + F5 no navegador.
+
+Não é necessário executar SQL no Supabase para esta atualização.

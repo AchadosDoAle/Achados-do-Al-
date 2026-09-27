@@ -68,63 +68,65 @@ export default function ListaCuponsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col items-start gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Cupons</h1>
-          <p className="mt-1 text-sm text-ink/55">
-            Gerencie cupons com uma visualização mais atual e direta.
-          </p>
-        </div>
-        <Link
-          href="/admin/cupons/novo"
-          className="admin-action rounded-[16px] border px-4 py-2.5 text-sm font-semibold shadow-sm"
-        >
-          + Novo cupom
-        </Link>
-      </div>
-
-      <form
-        onSubmit={aoPesquisar}
-        className="mb-5 rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm"
-      >
-        <label htmlFor="pesquisa-cupons" className="text-sm font-semibold text-ink">
-          Pesquisar cupons
-        </label>
-        <p className="mt-1 text-xs text-ink/50">
-          Pesquise por parte do cupom, loja, descrição, desconto ou status. A busca ignora acentos.
-        </p>
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <input
-            id="pesquisa-cupons"
-            type="search"
-            value={buscaDigitada}
-            onChange={(evento) => setBuscaDigitada(evento.target.value)}
-            placeholder="Ex.: shopee, beleza20, inativo..."
-            autoComplete="off"
-            className="min-w-0 flex-1 rounded-[14px] border border-brand/20 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
-          />
-          <button
-            type="submit"
-            className="admin-action rounded-[14px] border px-4 py-3 text-sm font-semibold"
+      <div className="mb-5 grid gap-4 md:grid-cols-[minmax(230px,0.72fr)_minmax(0,1.55fr)] md:items-stretch">
+        <div className="flex flex-col items-start gap-3 md:justify-center md:pl-1">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-ink">Cupons</h1>
+            <p className="mt-1 text-sm text-ink/55">
+              Gerencie cupons com uma visualização mais atual e direta.
+            </p>
+          </div>
+          <Link
+            href="/admin/cupons/novo"
+            className="admin-action rounded-[16px] border px-4 py-2.5 text-sm font-semibold shadow-sm"
           >
-            Pesquisar
-          </button>
-          {(buscaDigitada || buscaAplicada) && (
-            <button
-              type="button"
-              onClick={limparBusca}
-              className="admin-action-soft rounded-[14px] border px-4 py-3 text-sm font-semibold"
-            >
-              Limpar
-            </button>
-          )}
+            + Novo cupom
+          </Link>
         </div>
-        {buscaAplicada && (
-          <p className="mt-3 text-xs text-ink/55">
-            {cuponsFiltrados.length} {cuponsFiltrados.length === 1 ? "resultado" : "resultados"} para <strong>“{buscaAplicada}”</strong>.
+
+        <form
+          onSubmit={aoPesquisar}
+          className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm md:p-3.5"
+        >
+          <label htmlFor="pesquisa-cupons" className="text-sm font-semibold text-ink">
+            Pesquisar cupons
+          </label>
+          <p className="mt-1 text-xs text-ink/50 md:truncate">
+            Pesquise por parte do cupom, loja, descrição, desconto ou status. A busca ignora acentos.
           </p>
-        )}
-      </form>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row md:mt-2">
+            <input
+              id="pesquisa-cupons"
+              type="search"
+              value={buscaDigitada}
+              onChange={(evento) => setBuscaDigitada(evento.target.value)}
+              placeholder="Ex.: shopee, beleza20, inativo..."
+              autoComplete="off"
+              className="min-w-0 flex-1 rounded-[14px] border border-brand/20 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 md:py-2.5"
+            />
+            <button
+              type="submit"
+              className="admin-action rounded-[14px] border px-4 py-3 text-sm font-semibold md:py-2.5"
+            >
+              Pesquisar
+            </button>
+            {(buscaDigitada || buscaAplicada) && (
+              <button
+                type="button"
+                onClick={limparBusca}
+                className="admin-action-soft rounded-[14px] border px-4 py-3 text-sm font-semibold md:py-2.5"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+          {buscaAplicada && (
+            <p className="mt-3 text-xs text-ink/55 md:mt-2">
+              {cuponsFiltrados.length} {cuponsFiltrados.length === 1 ? "resultado" : "resultados"} para <strong>“{buscaAplicada}”</strong>.
+            </p>
+          )}
+        </form>
+      </div>
 
       {carregando ? (
         <p className="text-sm text-ink/60">Carregando...</p>
@@ -137,13 +139,13 @@ export default function ListaCuponsPage() {
           Nenhum cupom encontrado para <strong>“{buscaAplicada}”</strong>. Tente outro termo ou limpe a pesquisa.
         </div>
       ) : (
-        <ul className="grid gap-4 xl:grid-cols-2">
+        <ul className="grid gap-4 lg:grid-cols-2 lg:gap-3">
           {cuponsFiltrados.map((cupom) => {
             const expirado = cupomExpirado(cupom);
             return (
               <li
                 key={cupom.id}
-                className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm"
+                className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm md:p-3.5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -166,7 +168,7 @@ export default function ListaCuponsPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/60">
+                <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/60 md:mt-3 md:gap-2">
                   {cupom.descontoPercentual ? (
                     <div className="rounded-full bg-discount/25 px-3 py-1 font-medium text-ink">
                       {cupom.descontoPercentual}% OFF
@@ -184,7 +186,7 @@ export default function ListaCuponsPage() {
                   )}
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium md:mt-3">
                   <Link
                     href={`/admin/cupons/${cupom.id}/editar`}
                     className="admin-action-soft rounded-xl border px-3 py-2"
