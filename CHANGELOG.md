@@ -77,3 +77,14 @@
 - Metadados Open Graph das ofertas foram reforçados com título contendo produto + preço e descrição com preço/loja.
 - A foto cadastrada do produto passa a ser a primeira imagem social; o card Open Graph gerado pelo site fica como fallback.
 - A rota curta possui metadados próprios para WhatsApp, Facebook, Telegram e outros aplicativos de mensagem e redireciona o visitante para a página completa da oferta.
+
+## 2026-09-26 — Pesquisa nas listagens administrativas
+
+- Adicionado campo de pesquisa na listagem de **Ofertas** do painel administrativo.
+- Adicionado campo de pesquisa na listagem de **Cupons** do painel administrativo.
+- A pesquisa pode ser executada pelo botão **Pesquisar** ou pela tecla **Enter**.
+- A busca ignora acentos, maiúsculas/minúsculas e pontuação.
+- É possível pesquisar usando apenas parte do texto; vários termos podem ser combinados.
+- Ofertas podem ser encontradas por título, loja, categoria, marca, modelo, cupom, status e outros dados cadastrados.
+- Cupons podem ser encontrados por código, loja, descrição, desconto, status e demais informações cadastradas.
+- Resultado da busca mantém os mesmos botões de edição, exclusão, publicação e republicação da listagem normal.

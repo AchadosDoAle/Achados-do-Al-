@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Oferta } from "@/lib/types";
 import {
@@ -12,6 +12,7 @@ import {
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { textoCorrespondeBusca } from "@/lib/admin-search";
 
 function podeRepublicar(oferta: Oferta) {
   if (oferta.status === "rascunho") return false;
@@ -28,6 +29,46 @@ export default function ListaOfertasPage() {
   const [carregando, setCarregando] = useState(true);
   const [acaoEmAndamento, setAcaoEmAndamento] = useState<string | null>(null);
   const [erroAcao, setErroAcao] = useState("");
+  const [buscaDigitada, setBuscaDigitada] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
+
+
+  const ofertasFiltradas = useMemo(() => {
+    if (!buscaAplicada.trim()) return ofertas;
+
+    return ofertas.filter((oferta) => {
+      const vencida = ofertaEstaExpirada(oferta);
+      return textoCorrespondeBusca(buscaAplicada, [
+        oferta.titulo,
+        oferta.loja,
+        oferta.categoria,
+        oferta.marca,
+        oferta.modelo,
+        oferta.cupom,
+        oferta.cupomDescricao,
+        oferta.status,
+        vencida ? "vencida expirada" : "",
+        oferta.textoOriginal,
+        oferta.textoPublicacao,
+        oferta.observacoes,
+        oferta.voltagem,
+        oferta.cor,
+        oferta.tamanho,
+        oferta.capacidade,
+        oferta.linkProduto,
+      ]);
+    });
+  }, [ofertas, buscaAplicada]);
+
+  function aoPesquisar(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    setBuscaAplicada(buscaDigitada.trim());
+  }
+
+  function limparBusca() {
+    setBuscaDigitada("");
+    setBuscaAplicada("");
+  }
 
   async function recarregar() {
     setCarregando(true);
@@ -105,15 +146,62 @@ export default function ListaOfertasPage() {
         </div>
       )}
 
+      <form
+        onSubmit={aoPesquisar}
+        className="mb-5 rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm"
+      >
+        <label htmlFor="pesquisa-ofertas" className="text-sm font-semibold text-ink">
+          Pesquisar ofertas
+        </label>
+        <p className="mt-1 text-xs text-ink/50">
+          Pesquise por parte do nome, loja, categoria, marca, modelo, cupom ou status. A busca ignora acentos.
+        </p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input
+            id="pesquisa-ofertas"
+            type="search"
+            value={buscaDigitada}
+            onChange={(evento) => setBuscaDigitada(evento.target.value)}
+            placeholder="Ex.: relogio casio, samsung, mercado livre..."
+            autoComplete="off"
+            className="min-w-0 flex-1 rounded-[14px] border border-brand/20 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+          />
+          <button
+            type="submit"
+            className="admin-action rounded-[14px] border px-4 py-3 text-sm font-semibold"
+          >
+            Pesquisar
+          </button>
+          {(buscaDigitada || buscaAplicada) && (
+            <button
+              type="button"
+              onClick={limparBusca}
+              className="admin-action-soft rounded-[14px] border px-4 py-3 text-sm font-semibold"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+        {buscaAplicada && (
+          <p className="mt-3 text-xs text-ink/55">
+            {ofertasFiltradas.length} {ofertasFiltradas.length === 1 ? "resultado" : "resultados"} para <strong>“{buscaAplicada}”</strong>.
+          </p>
+        )}
+      </form>
+
       {carregando ? (
         <p className="text-sm text-ink/60">Carregando...</p>
       ) : ofertas.length === 0 ? (
         <div className="rounded-[22px] border border-brand/10 bg-white p-5 text-sm text-ink/60 shadow-sm">
           Nenhuma oferta cadastrada ainda. Toque em <strong>Nova oferta</strong> para começar.
         </div>
+      ) : ofertasFiltradas.length === 0 ? (
+        <div className="rounded-[22px] border border-brand/10 bg-white p-5 text-sm text-ink/60 shadow-sm">
+          Nenhuma oferta encontrada para <strong>“{buscaAplicada}”</strong>. Tente outro termo ou limpe a pesquisa.
+        </div>
       ) : (
         <ul className="grid gap-4 xl:grid-cols-2">
-          {ofertas.map((oferta) => {
+          {ofertasFiltradas.map((oferta) => {
             const expirada = ofertaEstaExpirada(oferta);
             const republicavel = podeRepublicar(oferta);
             const executando = acaoEmAndamento === oferta.id;

@@ -1,0 +1,34 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DE PESQUISA NO PAINEL ADMINISTRATIVO
+Data: 26/09/2026
+
+ALTERAÇÕES
+- Campo de pesquisa em Admin > Ofertas.
+- Campo de pesquisa em Admin > Cupons.
+- Pesquisa pelo botão PESQUISAR ou pela tecla ENTER.
+- Busca sem diferença de acentos e maiúsculas/minúsculas.
+- Reconhecimento de partes do texto e múltiplos termos.
+- Botão LIMPAR para voltar à listagem completa.
+
+NÃO É NECESSÁRIO RODAR SQL NO SUPABASE.
+
+PUBLICAÇÃO COM GITHUB DESKTOP
+1. Faça backup da pasta atual do projeto.
+2. Copie os arquivos deste pacote por cima do projeto atual e escolha substituir quando o Windows perguntar.
+3. Abra o GitHub Desktop.
+4. Confira a aba Changes.
+5. Summary sugerido:
+   Adiciona pesquisa em ofertas e cupons
+6. Description sugerida:
+   Adiciona busca no painel administrativo de ofertas e cupons, com suporte a Enter, pesquisa por partes do texto e comparação sem acentos.
+7. Clique em Commit to main.
+8. Clique em Push origin.
+9. Aguarde o deploy automático da Vercel.
+10. Faça Ctrl + F5 no navegador depois do deploy.
+
+TESTES SUGERIDOS
+- Ofertas: pesquise por uma parte do nome de um produto.
+- Pesquise uma palavra com acento sem digitar o acento.
+- Pesquise por marca, categoria ou status.
+- Cupons: pesquise pelo código, loja e descrição.
+- Teste pressionando Enter e clicando no botão Pesquisar.
+- Clique em Limpar e confirme que todos os registros voltam a aparecer.

@@ -1,15 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Cupom } from "@/lib/types";
 import { listarCupons, excluirCupom, cupomExpirado } from "@/lib/coupons-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
+import { textoCorrespondeBusca } from "@/lib/admin-search";
 
 export default function ListaCuponsPage() {
   const supabase = criarClienteNavegador();
   const [cupons, setCupons] = useState<Cupom[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [buscaDigitada, setBuscaDigitada] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
+
+
+  const cuponsFiltrados = useMemo(() => {
+    if (!buscaAplicada.trim()) return cupons;
+
+    return cupons.filter((cupom) => {
+      const expirado = cupomExpirado(cupom);
+      return textoCorrespondeBusca(buscaAplicada, [
+        cupom.nomeCupom,
+        cupom.loja,
+        cupom.descricao,
+        cupom.observacoes,
+        cupom.valorCupom,
+        cupom.descontoPercentual,
+        cupom.validade,
+        cupom.ativo ? "ativo" : "inativo arquivado",
+        expirado ? "vencido vencida expirado expirada esgotado" : "",
+        cupom.linkProdutos,
+      ]);
+    });
+  }, [cupons, buscaAplicada]);
+
+  function aoPesquisar(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    setBuscaAplicada(buscaDigitada.trim());
+  }
+
+  function limparBusca() {
+    setBuscaDigitada("");
+    setBuscaAplicada("");
+  }
 
   async function recarregar() {
     setCarregando(true);
@@ -49,15 +83,62 @@ export default function ListaCuponsPage() {
         </Link>
       </div>
 
+      <form
+        onSubmit={aoPesquisar}
+        className="mb-5 rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm"
+      >
+        <label htmlFor="pesquisa-cupons" className="text-sm font-semibold text-ink">
+          Pesquisar cupons
+        </label>
+        <p className="mt-1 text-xs text-ink/50">
+          Pesquise por parte do cupom, loja, descrição, desconto ou status. A busca ignora acentos.
+        </p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input
+            id="pesquisa-cupons"
+            type="search"
+            value={buscaDigitada}
+            onChange={(evento) => setBuscaDigitada(evento.target.value)}
+            placeholder="Ex.: shopee, beleza20, inativo..."
+            autoComplete="off"
+            className="min-w-0 flex-1 rounded-[14px] border border-brand/20 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+          />
+          <button
+            type="submit"
+            className="admin-action rounded-[14px] border px-4 py-3 text-sm font-semibold"
+          >
+            Pesquisar
+          </button>
+          {(buscaDigitada || buscaAplicada) && (
+            <button
+              type="button"
+              onClick={limparBusca}
+              className="admin-action-soft rounded-[14px] border px-4 py-3 text-sm font-semibold"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+        {buscaAplicada && (
+          <p className="mt-3 text-xs text-ink/55">
+            {cuponsFiltrados.length} {cuponsFiltrados.length === 1 ? "resultado" : "resultados"} para <strong>“{buscaAplicada}”</strong>.
+          </p>
+        )}
+      </form>
+
       {carregando ? (
         <p className="text-sm text-ink/60">Carregando...</p>
       ) : cupons.length === 0 ? (
         <div className="rounded-[22px] border border-brand/10 bg-white p-5 text-sm text-ink/60 shadow-sm">
           Nenhum cupom cadastrado ainda.
         </div>
+      ) : cuponsFiltrados.length === 0 ? (
+        <div className="rounded-[22px] border border-brand/10 bg-white p-5 text-sm text-ink/60 shadow-sm">
+          Nenhum cupom encontrado para <strong>“{buscaAplicada}”</strong>. Tente outro termo ou limpe a pesquisa.
+        </div>
       ) : (
         <ul className="grid gap-4 xl:grid-cols-2">
-          {cupons.map((cupom) => {
+          {cuponsFiltrados.map((cupom) => {
             const expirado = cupomExpirado(cupom);
             return (
               <li
