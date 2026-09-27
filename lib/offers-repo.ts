@@ -115,6 +115,54 @@ function gerarSlug(titulo: string) {
   );
 }
 
+const CAMPOS_ADMIN_LISTA = [
+  "id", "slug", "titulo", "loja", "categoria", "marca", "modelo",
+  "preco_antigo", "preco_atual", "preco_pix", "cupom", "cupom_descricao",
+  "validade_promocao", "link_produto", "status", "criado_em", "atualizado_em",
+  "publicado_em"
+].join(",");
+
+const CAMPOS_ADMIN_BUSCA = [
+  CAMPOS_ADMIN_LISTA,
+  "texto_original", "texto_publicacao", "observacoes", "voltagem", "cor",
+  "tamanho", "capacidade"
+].join(",");
+
+export async function listarOfertasPaginadas(
+  supabase: SupabaseClient,
+  pagina = 1,
+  itensPorPagina = 30
+): Promise<{ itens: Oferta[]; total: number }> {
+  const paginaSegura = Math.max(1, pagina);
+  const limiteSeguro = Math.max(1, itensPorPagina);
+  const inicio = (paginaSegura - 1) * limiteSeguro;
+  const fim = inicio + limiteSeguro - 1;
+
+  const { data, error, count } = await supabase
+    .from("offers")
+    .select(CAMPOS_ADMIN_LISTA, { count: "exact" })
+    .order("criado_em", { ascending: false })
+    .range(inicio, fim);
+
+  if (error) throw error;
+  return {
+    itens: (data ?? []).map(linhaParaOferta),
+    total: count ?? 0,
+  };
+}
+
+export async function listarOfertasParaBuscaAdmin(
+  supabase: SupabaseClient
+): Promise<Oferta[]> {
+  const { data, error } = await supabase
+    .from("offers")
+    .select(CAMPOS_ADMIN_BUSCA)
+    .order("criado_em", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(linhaParaOferta);
+}
+
 export async function listarOfertas(
   supabase: SupabaseClient,
   filtros?: { status?: string; apenasPublicadas?: boolean }

@@ -40,6 +40,41 @@ export function cupomExpirado(cupom: Cupom): boolean {
   return new Date(cupom.validade).getTime() < Date.now();
 }
 
+export async function listarCuponsPaginados(
+  supabase: SupabaseClient,
+  pagina = 1,
+  itensPorPagina = 30
+): Promise<{ itens: Cupom[]; total: number }> {
+  const paginaSegura = Math.max(1, pagina);
+  const limiteSeguro = Math.max(1, itensPorPagina);
+  const inicio = (paginaSegura - 1) * limiteSeguro;
+  const fim = inicio + limiteSeguro - 1;
+
+  const { data, error, count } = await supabase
+    .from("coupons")
+    .select("*", { count: "exact" })
+    .order("criado_em", { ascending: false })
+    .range(inicio, fim);
+
+  if (error) throw error;
+  return {
+    itens: (data ?? []).map(linhaParaCupom),
+    total: count ?? 0,
+  };
+}
+
+export async function listarCuponsParaBuscaAdmin(
+  supabase: SupabaseClient
+): Promise<Cupom[]> {
+  const { data, error } = await supabase
+    .from("coupons")
+    .select("*")
+    .order("criado_em", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(linhaParaCupom);
+}
+
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {
   const { data, error } = await supabase
     .from("coupons")

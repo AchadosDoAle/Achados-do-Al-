@@ -1,0 +1,32 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DE PAGINAÇÃO NO PAINEL ADMINISTRATIVO
+
+O QUE FOI ALTERADO
+- Ofertas: máximo de 30 cards por página.
+- Cupons: máximo de 30 cards por página.
+- A listagem normal busca somente os 30 registros da página atual no Supabase.
+- Foram adicionados botões Anterior, páginas numeradas e Próxima.
+- No celular, a paginação fica mais compacta.
+- A pesquisa continua funcionando com Enter, sem acentos e por partes do texto.
+- Resultados de pesquisa também são exibidos em blocos de 30 cards.
+
+SUPABASE
+Não é necessário executar SQL nem criar tabela nova.
+
+COMO ATUALIZAR PELO GITHUB DESKTOP
+1. Faça backup da pasta atual do projeto.
+2. Extraia o ZIP de arquivos alterados.
+3. Copie as pastas/arquivos para a raiz do projeto e substitua os existentes.
+4. Abra o GitHub Desktop e confira a aba Changes.
+5. Se puder, teste localmente com: npm install (caso necessário) e npm run dev.
+6. Abra /admin/ofertas e /admin/cupons e teste a troca de páginas.
+7. No Summary do commit use:
+   Adiciona paginação no admin de ofertas e cupons
+8. Na Description use:
+   Limita as listagens administrativas a 30 cards por página, adiciona navegação paginada e reduz a quantidade de registros carregados do Supabase na visualização normal.
+9. Clique em Commit to main.
+10. Clique em Push origin.
+11. Aguarde o deploy automático da Vercel.
+12. No site publicado, use Ctrl + F5 e teste novamente.
+
+OBSERVAÇÃO TÉCNICA
+Na listagem normal, o Supabase/PostgREST utiliza range() e count exact para trazer somente os registros da página atual. A pesquisa tolerante a acentos continua preservada; a carga ampliada acontece apenas quando uma pesquisa é executada e os resultados são paginados em 30 cards.

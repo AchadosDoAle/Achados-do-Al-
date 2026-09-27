@@ -1,3 +1,13 @@
+## 2026-09-26 — Paginação no admin de ofertas e cupons
+
+- Listagens administrativas passam a exibir no máximo **30 cards por página**.
+- A listagem normal agora consulta somente os 30 registros da página atual no Supabase, reduzindo tráfego, renderização e peso do DOM.
+- Contagem total usa `count: exact` e paginação por intervalo (`range`) no PostgREST/Supabase.
+- Controles de **Anterior**, páginas numeradas e **Próxima** foram adicionados ao final das listagens.
+- Em dispositivos móveis, a paginação usa versão compacta com indicador `página/total`.
+- A pesquisa continua ignorando acentos e aceitando partes do texto; seus resultados também são divididos em páginas de 30 cards.
+- Ao excluir, duplicar, publicar ou republicar uma oferta, a página atual é recarregada sem voltar desnecessariamente ao início.
+
 ## 2026-09-26 — Publicar e republicar direto da lista administrativa
 
 ## 2026-09-26 - Layout compacto no admin de ofertas e cupons
