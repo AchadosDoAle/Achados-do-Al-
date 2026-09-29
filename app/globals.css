@@ -238,3 +238,22 @@ body {
   background: #ecd28e !important;
   border-color: #d8b95f !important;
 }
+
+/* Botão de visibilidade da senha no login: permanece centralizado e
+   não herda o deslocamento global de hover dos demais botões. */
+.login-eye-button {
+  transform: translateY(-50%) !important;
+  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, opacity 150ms ease !important;
+}
+
+.login-eye-button:hover {
+  transform: translateY(-50%) !important;
+  background-color: #f5f3f7;
+  color: #171124;
+  box-shadow: 0 0 0 1px rgba(239, 189, 69, 0.18);
+  filter: none !important;
+}
+
+.login-eye-button:active {
+  transform: translateY(-50%) scale(0.96) !important;
+}

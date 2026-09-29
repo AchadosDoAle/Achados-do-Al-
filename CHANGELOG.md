@@ -131,3 +131,9 @@
 - Reduzido o botão de mostrar/ocultar senha para 28x28 px.
 - Ícone centralizado verticalmente dentro do campo, sem ultrapassar os limites do input.
 - Reduzido o ícone do olho para 16x16 px e ajustado o espaço interno do campo de senha.
+
+## 2026-09-28 — Ajuste do botão de visibilidade da senha
+
+- Mantém o botão do olho fixo e centralizado dentro do campo de senha.
+- Remove o deslocamento vertical herdado da animação global de botões.
+- Mantém apenas uma interação sutil de cor/sombra no hover e leve escala no clique.

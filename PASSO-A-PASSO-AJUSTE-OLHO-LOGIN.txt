@@ -1,12 +1,11 @@
-AJUSTE DO BOTÃO MOSTRAR/OCULTAR SENHA — LOGIN ADMINISTRATIVO
+AJUSTE DO BOTÃO DE VISIBILIDADE DA SENHA — ACHADO DO ALÊ
 
 1. Extraia este ZIP.
-2. Copie os arquivos para a raiz do projeto, mantendo as pastas.
-3. Confirme a substituição de app/login/page.tsx e CHANGELOG.md.
-4. No GitHub Desktop, confira Changes.
-5. Summary sugerido: Corrige tamanho do botão de senha no login
-6. Description sugerida: Reduz e centraliza o ícone de mostrar/ocultar senha para mantê-lo totalmente dentro do campo de senha.
-7. Clique em Commit to main e depois Push origin.
-8. Aguarde o deploy da Vercel e atualize a página com Ctrl + F5.
+2. Copie as pastas/arquivos para a raiz do seu projeto atual e substitua quando solicitado.
+3. Abra o GitHub Desktop e confira as alterações.
+4. Summary sugerido: Ajusta animação do botão de senha
+5. Description sugerida: Mantém o botão de mostrar/ocultar senha fixo dentro do campo e aplica somente uma animação sutil de cor e sombra no hover.
+6. Faça Commit to main e Push origin.
+7. Aguarde o deploy da Vercel e atualize o login com Ctrl + F5.
 
-Não há alteração no Supabase nem SQL a executar.
+Nenhuma alteração de banco/Supabase é necessária.

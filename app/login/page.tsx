@@ -134,7 +134,7 @@ function FormularioLogin() {
               <button
                 type="button"
                 onClick={() => setMostrarSenha((valor) => !valor)}
-                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md border-0 bg-transparent p-0 text-[#746b7d] transition hover:bg-[#f5f3f7] hover:text-[#171124] focus:outline-none focus:ring-2 focus:ring-[#efbd45]/40"
+                className="login-eye-button absolute right-2 top-1/2 flex h-7 w-7 items-center justify-center rounded-md border-0 bg-transparent p-0 text-[#746b7d] focus:outline-none focus:ring-2 focus:ring-[#efbd45]/40"
                 aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                 title={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
               >
