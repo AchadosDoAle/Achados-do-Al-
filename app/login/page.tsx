@@ -128,13 +128,13 @@ function FormularioLogin() {
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="Digite sua senha"
                 style={estiloCampo}
-                className="w-full rounded-xl border border-[#d8d4dc] bg-white py-3 pl-3.5 pr-12 text-sm text-[#171124] caret-[#171124] outline-none transition placeholder:text-[#aaa3b0] focus:border-[#d9a51f] focus:ring-2 focus:ring-[#efbd45]/25"
+                className="w-full rounded-xl border border-[#d8d4dc] bg-white py-3 pl-3.5 pr-11 text-sm text-[#171124] caret-[#171124] outline-none transition placeholder:text-[#aaa3b0] focus:border-[#d9a51f] focus:ring-2 focus:ring-[#efbd45]/25"
               />
 
               <button
                 type="button"
                 onClick={() => setMostrarSenha((valor) => !valor)}
-                className="absolute inset-y-0 right-1.5 flex w-10 items-center justify-center rounded-lg text-[#746b7d] transition hover:bg-[#f5f3f7] hover:text-[#171124] focus:outline-none focus:ring-2 focus:ring-[#efbd45]/40"
+                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md border-0 bg-transparent p-0 text-[#746b7d] transition hover:bg-[#f5f3f7] hover:text-[#171124] focus:outline-none focus:ring-2 focus:ring-[#efbd45]/40"
                 aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                 title={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
               >
@@ -145,7 +145,7 @@ function FormularioLogin() {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.9"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.6 10.7a2 2 0 002.7 2.7" />
@@ -159,7 +159,7 @@ function FormularioLogin() {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.9"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                   >
                     <path
                       strokeLinecap="round"

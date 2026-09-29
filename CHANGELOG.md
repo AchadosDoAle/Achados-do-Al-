@@ -126,3 +126,8 @@
 - Correção dos campos de e-mail e senha para manter fundo claro e texto legível mesmo com `color-scheme: dark` global.
 - Adição de botão com ícone de olho para mostrar/ocultar a senha.
 - Melhoria de foco, placeholders, autofill/autocomplete e mensagens de erro/recuperação.
+
+## 2026-09-28 — Ajuste do ícone de senha no login administrativo
+- Reduzido o botão de mostrar/ocultar senha para 28x28 px.
+- Ícone centralizado verticalmente dentro do campo, sem ultrapassar os limites do input.
+- Reduzido o ícone do olho para 16x16 px e ajustado o espaço interno do campo de senha.
