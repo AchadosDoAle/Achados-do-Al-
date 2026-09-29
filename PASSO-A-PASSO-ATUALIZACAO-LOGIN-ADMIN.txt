@@ -1,0 +1,21 @@
+ATUALIZAÇÃO — LOGIN ADMINISTRATIVO
+
+1. Faça backup da pasta atual do projeto.
+2. Extraia o ZIP de atualização.
+3. Se estiver usando o projeto completo, substitua sua pasta de trabalho pela nova versão preservando seu .env.local.
+4. Se estiver usando apenas o patch, copie os arquivos mantendo a mesma estrutura de pastas.
+5. Teste localmente com: npm run dev
+6. Abra: http://localhost:3000/login
+7. Confira:
+   - texto digitado no e-mail aparece normalmente;
+   - texto/senha não fica com fundo preto;
+   - botão do olho mostra a senha;
+   - clicando novamente, a senha volta a ficar oculta;
+   - login e recuperação de senha continuam funcionando.
+8. Opcionalmente rode: npm run typecheck
+9. Rode: npm run build
+10. No GitHub Desktop, confira Changes.
+11. Commit sugerido: Melhora tela de login administrativo
+12. Push origin e aguarde o deploy da Vercel.
+
+Não é necessário executar SQL no Supabase.

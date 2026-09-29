@@ -120,3 +120,9 @@
 - Criada rota intermediária curta `/c/CODIGO` para cupons, com Open Graph próprio e redirecionamento para a página externa do cupom.
 - Compartilhamento de ofertas reformulado com nome em destaque, preço antigo, menor preço disponível, loja e link curto do site.
 - O preço social de ofertas agora usa o menor valor entre preço atual e Pix.
+
+## 2026-09-28 — Login administrativo
+- Reformulação visual da tela de login do painel administrativo.
+- Correção dos campos de e-mail e senha para manter fundo claro e texto legível mesmo com `color-scheme: dark` global.
+- Adição de botão com ícone de olho para mostrar/ocultar a senha.
+- Melhoria de foco, placeholders, autofill/autocomplete e mensagens de erro/recuperação.
