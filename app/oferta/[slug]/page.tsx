@@ -15,6 +15,7 @@ import {
   descricaoSocialDaOferta,
   imagemAbsolutaDaOferta,
   precoPrincipalDaOferta,
+  precoPrincipalEhPix,
   tituloSocialDaOferta,
   urlCurtaDaOferta,
 } from "@/lib/oferta-share";
@@ -343,8 +344,9 @@ export default async function PaginaOferta({
               <BotaoCompartilhar
                 titulo={oferta.titulo}
                 loja={oferta.loja}
+                precoAntigo={oferta.precoAntigo}
                 preco={precoPrincipalDaOferta(oferta)}
-                precoPix={oferta.precoPix != null}
+                precoPix={precoPrincipalEhPix(oferta)}
                 url={urlCurtaDaOferta(oferta.slug)}
               />
             </div>

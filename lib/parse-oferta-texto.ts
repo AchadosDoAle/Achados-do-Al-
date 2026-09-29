@@ -24,9 +24,18 @@ function limparMarkdown(texto: string) {
 
 function moedaParaNumero(valor?: string) {
   if (!valor) return undefined;
-  const normalizado = valor.replace(/\./g, "").replace(",", ".");
+  const limpo = valor.trim().replace(/\s/g, "");
+  // Formato brasileiro: 47 | 47,9 | 47,90 | 1.299 | 1.299,90.
+  // Pontos são tratados como separadores de milhar e a vírgula como decimal.
+  const normalizado = limpo.replace(/\./g, "").replace(",", ".");
   const numero = Number(normalizado);
   return Number.isFinite(numero) ? numero : undefined;
+}
+
+const VALOR_BR = String.raw`[\d.]+(?:,\d{1,2})?`;
+
+function matchMoeda(texto: string, expressoes: RegExp[]) {
+  return moedaParaNumero(primeiroMatch(texto, expressoes));
 }
 
 function primeiroMatch(texto: string, regexes: RegExp[]) {
@@ -38,6 +47,18 @@ function primeiroMatch(texto: string, regexes: RegExp[]) {
 }
 
 function detectarLoja(texto: string) {
+  const lojaExplicita = primeiroMatch(texto, [
+    /(?:^|\n)\s*(?:LOJA|SITE|VENDIDO\s+POR)\s*[:\-–—]\s*([^\n|•]{2,80})/i,
+  ]);
+  if (lojaExplicita) {
+    const limpa = limparMarkdown(lojaExplicita).replace(/[;,.]+$/, "").trim();
+    const normalizada = normalizarNomeLoja(limpa);
+    const afiliada = LOJAS_AFILIADAS.find(
+      (loja) => normalizarBusca(loja) === normalizarBusca(normalizada)
+    );
+    if (afiliada) return afiliada;
+  }
+
   const textoNormalizado = texto.toLocaleUpperCase("pt-BR");
 
   const aliases: Array<[string, string]> = [
@@ -89,19 +110,21 @@ type RegraCategoria = {
 };
 
 const REGRAS_CATEGORIA: RegraCategoria[] = [
-  { categoria: "Acessórios", termos: ["CAPA PARA CELULAR", "CAPA PARA IPHONE", "PELICULA CELULAR", "PELICULA", "BOLSA", "CARTEIRA", "CINTO", "BONÉ", "OCULOS", "MOCHILA", "POCHETE"] },
+  { categoria: "Acessórios", termos: ["CAPA PARA CELULAR", "CAPA PARA IPHONE", "PELICULA CELULAR", "PELICULA", "BOLSA", "CARTEIRA", "CINTO", "BONE", "OCULOS", "MOCHILA", "POCHETE"] },
   { categoria: "Automotivo", termos: ["PNEU", "CAPACETE", "OLEO MOTOR", "LIMPA VIDRO", "ASPIRADOR AUTOMOTIVO", "CENTRAL MULTIMIDIA", "CARRO", "MOTOCICLETA", "AUTOMOTIVO"] },
-  { categoria: "Bebês", termos: ["FRALDA", "MAMADEIRA", "CHUPETA", "CADEIRINHA BEBE", "CARRINHO DE BEBE", "BOLSA MATERNIDADE", "BERCO", "BEBE"] },
-  { categoria: "Beleza", termos: ["MAQUIAGEM", "BATOM", "BASE FACIAL", "MASCARA CILIOS", "SKINCARE", "SHAMPOO", "CONDICIONADOR", "CREME CAPILAR", "SECADOR DE CABELO", "CHAPINHA", "ESCOVA SECADORA"] },
+  { categoria: "Bebês", termos: ["FRALDA BEBE", "FRALDA INFANTIL", "MAMADEIRA", "CHUPETA", "CADEIRINHA BEBE", "CARRINHO DE BEBE", "BOLSA MATERNIDADE", "BERCO", "BEBE"] },
+  { categoria: "Bebidas", termos: ["REFRIGERANTE", "SUCO", "NECTAR", "AGUA MINERAL", "AGUA COM GAS", "ENERGETICO", "ISOTONICO", "CHA GELADO", "CAFE", "CAPSULA DE CAFE", "CERVEJA", "VINHO", "ESPUMANTE", "WHISKY", "VODKA", "GIN", "BEBIDA", "COCA COLA", "COCA-COLA", "PEPSI", "RED BULL", "MONSTER", "HEINEKEN", "BRAHMA", "SKOL"] },
+  { categoria: "Beleza", termos: ["MAQUIAGEM", "BATOM", "BASE FACIAL", "MASCARA CILIOS", "SKINCARE", "SERUM FACIAL", "CREME FACIAL", "SECADOR DE CABELO", "CHAPINHA", "ESCOVA SECADORA", "MODELADOR DE CACHOS"] },
   { categoria: "Brinquedos", termos: ["BRINQUEDO", "BONECA", "BONECO", "LEGO", "HOT WHEELS", "NERF", "MASSINHA", "QUEBRA CABECA", "CARRINHO CONTROLE", "JOGO INFANTIL"] },
   { categoria: "Calçados", termos: ["TENIS", "SAPATO", "SANDALIA", "CHINELO", "BOTA", "SAPATILHA"] },
   { categoria: "Casa", termos: ["CHUVEIRO", "TOALHA", "LENCOL", "EDREDOM", "TRAVESSEIRO", "ROUPA DE CAMA", "VARAL", "ORGANIZADOR", "LIMPEZA"] },
   { categoria: "Celulares", termos: ["SMARTPHONE", "CELULAR", "IPHONE", "GALAXY S", "GALAXY A", "GALAXY M", "MOTO G", "MOTO EDGE", "REDMI NOTE", "POCO X", "POCO F"] },
   { categoria: "Cozinha", termos: ["PANELA", "FRIGIDEIRA", "ASSADEIRA", "PRATO", "TALHER", "COPO", "JOGO DE JANTAR", "GARRAFA TERMICA", "FACA", "FORMA", "UTENSILIO COZINHA"] },
+  { categoria: "Cuidados Pessoais", termos: ["SHAMPOO", "CONDICIONADOR", "SABONETE", "CREME DENTAL", "PASTA DE DENTE", "ESCOVA DE DENTE", "FIO DENTAL", "ENXAGUANTE BUCAL", "DESODORANTE", "ANTITRANSPIRANTE", "ABSORVENTE", "PAPEL HIGIENICO", "BARBEADOR", "APARELHO DE BARBEAR", "GILLETTE", "HIGIENE PESSOAL", "HIDRATANTE CORPORAL", "COLGATE", "ORAL B", "ORAL-B", "REXONA", "NEUTROGENA", "ELSEVE", "SEDA", "HEAD SHOULDERS"] },
   { categoria: "Decoração", termos: ["QUADRO", "TAPETE", "CORTINA", "ALMOFADA", "ESPELHO", "VASO DECORATIVO", "DECORACAO", "ABAJUR"] },
   { categoria: "Eletrodomésticos", termos: ["GELADEIRA", "REFRIGERADOR", "FOGAO", "FREEZER", "MICRO ONDAS", "MICROONDAS", "LAVA E SECA", "MAQUINA DE LAVAR", "LAVA LOUCAS", "AR CONDICIONADO"] },
-  { categoria: "Eletroportáteis", termos: ["AIR FRYER", "FRITADEIRA", "CAFETEIRA", "LIQUIDIFICADOR", "BATEDEIRA", "MIXER", "SANDUICHEIRA", "TORRADEIRA", "ASPIRADOR", "VENTILADOR", "FERRO DE PASSAR", "PANELA ELETRICA"] },
   { categoria: "Eletrônicos", termos: ["TABLET", "E READER", "KINDLE", "PROJETOR", "CAMERA", "DRONE", "POWER BANK", "CARREGADOR", "CABO USB", "HUB USB", "FIRE TV", "CHROMECAST", "ECHO DOT", "ALEXA"] },
+  { categoria: "Eletroportáteis", termos: ["AIR FRYER", "FRITADEIRA", "CAFETEIRA", "LIQUIDIFICADOR", "BATEDEIRA", "MIXER", "SANDUICHEIRA", "TORRADEIRA", "ASPIRADOR", "VENTILADOR", "FERRO DE PASSAR", "PANELA ELETRICA"] },
   { categoria: "Esporte", termos: ["BICICLETA", "ACADEMIA", "HALTER", "KIT PESOS", "BOLA FUTEBOL", "BOLA VOLEI", "RAQUETE", "ESPORTIVO", "ESPORTIVA"] },
   { categoria: "Ferramentas", termos: ["FURADEIRA", "PARAFUSADEIRA", "SERRA", "MARTELO", "CHAVE DE IMPACTO", "ESMERILHADEIRA", "LIXADEIRA", "FERRAMENTA"] },
   { categoria: "Games", termos: ["PLAYSTATION", "PS5", "PS4", "XBOX", "NINTENDO SWITCH", "CONSOLE", "CONTROLE GAMER", "CADEIRA GAMER", "GAMER"] },
@@ -109,7 +132,7 @@ const REGRAS_CATEGORIA: RegraCategoria[] = [
   { categoria: "Infantil", termos: ["ROUPA INFANTIL", "CONJUNTO INFANTIL", "CAMISETA INFANTIL", "TENIS INFANTIL", "FANTASIA INFANTIL", "CRIANCA", "INFANTIL"] },
   { categoria: "Jardim", termos: ["MANGUEIRA", "CORTADOR DE GRAMA", "ROCADEIRA", "PODADOR", "JARDINAGEM", "JARDIM", "VASO PLANTA"] },
   { categoria: "Livros", termos: ["LIVRO", "BOX DE LIVROS", "LIVROS", "ROMANCE", "HQ ", "MANGA"] },
-  { categoria: "Mercado", termos: ["CAFE", "CHOCOLATE", "BISCOITO", "ALIMENTO", "BEBIDA", "REFRIGERANTE", "CERVEJA SEM ALCOOL", "AZEITE", "ARROZ", "FEIJAO"] },
+  { categoria: "Mercado", termos: ["CHOCOLATE", "BISCOITO", "ALIMENTO", "AZEITE", "ARROZ", "FEIJAO", "MACARRAO", "ACUCAR", "LEITE EM PO", "MOLHO", "TEMPERO"] },
   { categoria: "Moda", termos: ["CAMISA", "CAMISETA", "CALCA", "VESTIDO", "JAQUETA", "MOLETOM", "SHORT", "BERMUDA", "BLUSA", "ROUPA"] },
   { categoria: "Móveis", termos: ["SOFA", "MESA DE JANTAR", "MESA ESCRITORIO", "CADEIRA ESCRITORIO", "GUARDA ROUPA", "ESTANTE", "RACK", "CRIADO MUDO", "CAMA BOX", "CADEIRA", "MESA"] },
   { categoria: "Papelaria", termos: ["CADERNO", "CANETA", "LAPIS", "PAPELARIA", "ESTOJO", "MOCHILA ESCOLAR", "MARCA TEXTO"] },
@@ -175,6 +198,8 @@ const MARCAS_CONHECIDAS: Array<[string, string]> = [
   ["STANLEY", "STANLEY"], ["VONDER", "VONDER"], ["BOSCH", "BOSCH"], ["MAKITA", "MAKITA"], ["DEWALT", "DEWALT"], ["KARCHER", "KÄRCHER"],
   ["GOPRO", "GOPRO"], ["DJI", "DJI"], ["MAX TITANIUM", "MAX TITANIUM"], ["INTEGRALMEDICA", "INTEGRALMÉDICA"], ["GROWTH", "GROWTH"],
   ["NESTLE", "NESTLÉ"], ["LACTA", "LACTA"], ["GAROTO", "GAROTO"], ["3 CORACOES", "3 CORAÇÕES"],
+  ["COCA COLA", "COCA-COLA"], ["COCA-COLA", "COCA-COLA"], ["PEPSI", "PEPSI"], ["RED BULL", "RED BULL"], ["MONSTER", "MONSTER"], ["HEINEKEN", "HEINEKEN"], ["BRAHMA", "BRAHMA"], ["SKOL", "SKOL"],
+  ["COLGATE", "COLGATE"], ["ORAL B", "ORAL-B"], ["ORAL-B", "ORAL-B"], ["GILLETTE", "GILLETTE"], ["REXONA", "REXONA"], ["NEUTROGENA", "NEUTROGENA"], ["ELSEVE", "ELSEVE"], ["SEDA", "SEDA"], ["HEAD SHOULDERS", "HEAD & SHOULDERS"],
 ];
 
 function detectarMarca(titulo?: string, texto?: string, categoria?: string) {
@@ -211,8 +236,8 @@ function limparModeloCandidato(valor: string) {
   modelo = modelo
     .replace(/^[\s,:;\-–—]+|[\s,:;\-–—]+$/g, "")
     .replace(/^(?:SMARTPHONE|CELULAR|NOTEBOOK|TENIS|TÊNIS|RELOGIO|RELÓGIO|SMARTWATCH|TV|SMART TV)\s+/i, "")
-    .replace(/^(?:\d+(?:[.,]\d+)?\s*(?:GB|TB|MB|L|ML|KG|CM|MM)|\d+\s*(?:POLEGADAS?|\"))\s+/i, "")
-    .replace(/\s+(?:\d+(?:[.,]\d+)?\s*(?:GB|TB|MB|L|ML|KG)|BIVOLT|110V|127V|220V|PRETO|PRETA|BRANCO|BRANCA|AZUL|VERMELHO|VERMELHA|ROSA|VERDE|CINZA|MASCULINO|MASCULINA|FEMININO|FEMININA)(?:\s.*)?$/i, "")
+    .replace(/^(?:\d+(?:[.,]\d+)?\s*(?:GB|TB|MB|L|ML|KG|G|CM|MM)|\d+\s*(?:POLEGADAS?|\"))(?:\s+|$)/i, "")
+    .replace(/\s+(?:\d+(?:[.,]\d+)?\s*(?:GB|TB|MB|L|ML|KG|G)|BIVOLT|110V|127V|220V|PRETO|PRETA|BRANCO|BRANCA|AZUL|VERMELHO|VERMELHA|ROSA|VERDE|CINZA|MASCULINO|MASCULINA|FEMININO|FEMININA)(?:\s.*)?$/i, "")
     .replace(/\s+/g, " ")
     .trim();
   return modelo;
@@ -266,6 +291,8 @@ function detectarModelo(titulo?: string, texto?: string, marca?: string, categor
       const resto = tituloNormalizado.slice(indice + chaveNormalizada.length).trim();
       const candidato = limparModeloCandidato(resto).split(" ").slice(0, 6).join(" ");
       if (!candidato || candidato.length < 2 || candidato.length > 55) continue;
+      if (/^(?:ORIGINAL|TRADICIONAL|CLASSICO|CLÁSSICO|ZERO|LIGHT|DIET|KIT|PACK|UNIDADE|UNIDADES|SORTIDO|SORTIDA)$/i.test(candidato)) continue;
+      if (/^\d+(?:[.,]\d+)?\s*(?:GB|TB|MB|L|ML|KG|G|CM|MM|W|V)$/i.test(candidato)) continue;
       const temCodigo = /(?=.*[A-Z])(?=.*\d)[A-Z0-9][A-Z0-9+\-]{2,}/.test(candidato);
       const palavras = candidato.split(/\s+/).filter(Boolean);
       const temNomeCurtoDeModelo = palavras.length >= 1 && palavras.length <= 4 && !/^(PRO|PLUS|ULTRA|PRETO|BRANCO|AZUL|ROSA)$/i.test(candidato);
@@ -282,6 +309,13 @@ function detectarModelo(titulo?: string, texto?: string, marca?: string, categor
 }
 
 function detectarTitulo(texto: string, loja?: string) {
+  const tituloExplicito = primeiroMatch(texto, [
+    /(?:^|\n)\s*(?:PRODUTO|ITEM|OFERTA)\s*[:\-–—]\s*([^\n]{6,180})/i,
+  ]);
+  if (tituloExplicito && !/R\$\s*\d/i.test(tituloExplicito)) {
+    return limparMarkdown(tituloExplicito).replace(/[;,.]+$/, "");
+  }
+
   const linhas = texto
     .split(/\r?\n/)
     .map(limparMarkdown)
@@ -440,47 +474,44 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("modelo");
   }
 
-  // Para preços, removemos só a marcação visual (negrito/tachado) e
-  // normalizamos espaços. Assim frases como "~De R$ 414,47~",
-  // "DE: R$ 414,47" e "DE R$ 414,47" sempre alimentam Preço antigo.
+  // Leitura de preços tolerante a valores com ou sem centavos.
+  // Exemplos aceitos: DE R$ 129,90 | DE R$129 | POR R$ 89 | R$ 79,9 NO PIX.
+  // O preço antigo tem prioridade absoluta quando vier no padrão "DE R$...".
   const textoPrecos = texto
     .replace(/\u00A0/g, " ")
     .replace(/[\*_~`]/g, " ");
 
-  const precoAntigo = moedaParaNumero(
-    primeiroMatch(textoPrecos, [
-      /\bDE\s*:?\s*R\s*\$\s*([\d.]+,\d{2})/i,
-      /(?:preço|preco)\s*(?:antigo|de)\s*:?\s*R\s*\$\s*([\d.]+,\d{2})/i,
-    ])
-  );
+  const precoAntigo = matchMoeda(textoPrecos, [
+    new RegExp(`(?:^|\\s)DE\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})(?=\\s|$|[^0-9,])`, "i"),
+    new RegExp(`(?:preço|preco)\\s*(?:antigo|de)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
+  ]);
   if (precoAntigo != null) {
     valores.precoAntigo = precoAntigo;
     detectados.push("preço antigo");
   }
 
-  const precoPix = moedaParaNumero(
-    primeiroMatch(textoPrecos, [
-      /R\$\s*([\d.]+,\d{2})\s*(?:à\s*vista\s*)?(?:no\s*)?pix/i,
-      /pix\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
-    ])
-  );
+  const precoPix = matchMoeda(textoPrecos, [
+    new RegExp(`R\\s*\\$\\s*(${VALOR_BR})\\s*(?:à\\s*vista\\s*)?(?:no\\s*)?pix\\b`, "i"),
+    new RegExp(`\\bpix\\s*:?[\\s]*(?:por\\s*)?R\\s*\\$\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`\\bpor\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})[^\\n]{0,24}\\bpix\\b`, "i"),
+  ]);
   if (precoPix != null) {
     valores.precoPix = precoPix;
     detectados.push("preço no Pix");
   }
 
-  const precoAtual = moedaParaNumero(
-    primeiroMatch(textoPrecos, [
-      /(?:^|\n)[^\n]*?\bPor\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
-      /(?:preço|preco)\s*(?:atual|final)\s*:?\s*R\$\s*([\d.]+,\d{2})/i,
-    ])
-  );
+  const precoAtual = matchMoeda(textoPrecos, [
+    new RegExp(`(?:^|\\n)[^\\n]*?\\bPOR\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`(?:preço|preco)\\s*(?:atual|final)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
+  ]);
   if (precoAtual != null) {
     valores.precoAtual = precoAtual;
     detectados.push("preço atual");
   }
 
-  const parcelasMatch = texto.match(/\b(\d{1,2})\s*x\s*(?:de\s*)?R\$\s*([\d.]+,\d{2})/i);
+  const parcelasMatch = textoPrecos.match(
+    new RegExp(`\\b(\\d{1,2})\\s*x\\s*(?:de\\s*)?R\\s*\\$\\s*(${VALOR_BR})`, "i")
+  );
   if (parcelasMatch) {
     valores.ofereceParcelamento = true;
     valores.parcelas = Number(parcelasMatch[1]);

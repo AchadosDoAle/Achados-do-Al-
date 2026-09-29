@@ -5,30 +5,48 @@ import { criarClienteServidor } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 const USER_AGENTS = [
-  // Meta/WhatsApp costuma conseguir previews que uma requisição de servidor
-  // comum não recebe. Tentamos primeiro um crawler social.
+  // O WhatsApp/Meta costuma enxergar previews que uma requisição genérica não recebe.
+  "WhatsApp/2.24.20.89 A",
   "facebookexternalhit/1.1 (+https://www.facebook.com/externalhit_uatext.php)",
-  // Depois tentamos um navegador normal para páginas que bloqueiam crawlers.
+  "Facebot",
+  "TelegramBot (like TwitterBot)",
+  // Fallbacks de navegador para páginas que bloqueiam crawlers sociais.
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-  // Alguns redirecionadores entregam uma resposta diferente para mobile.
   "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36",
 ];
 
-const MAX_REDIRECTS = 8;
+const MAX_REDIRECTS = 10;
 
 function limparUrl(valor: string) {
   return valor
     .trim()
     .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&#x27;/gi, "'")
     .replace(/&#38;/gi, "&")
     .replace(/&#x2f;/gi, "/")
+    .replace(/\\u0026/gi, "&")
+    .replace(/\\u002f/gi, "/")
     .replace(/\\\//g, "/");
 }
 
 function urlHttpValida(valor: string) {
   try {
     const url = new URL(valor);
-    return url.protocol === "http:" || url.protocol === "https:";
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+    const host = url.hostname.toLowerCase();
+    // Evita acessos óbvios à própria máquina/rede local pelo endpoint administrativo.
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1" ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^169\.254\./.test(host)
+    ) {
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }
@@ -36,7 +54,8 @@ function urlHttpValida(valor: string) {
 
 function absoluta(valor: string, base: string): string | null {
   try {
-    return new URL(limparUrl(valor), base).href;
+    const url = new URL(limparUrl(valor), base).href;
+    return urlHttpValida(url) ? url : null;
   } catch {
     return null;
   }
@@ -57,21 +76,32 @@ function extrairMeta(html: string, chave: string) {
 
   for (const padrao of padroes) {
     const match = html.match(padrao);
-    if (match?.[1]) return match[1];
+    if (match?.[1]) return limparUrl(match[1]);
   }
   return null;
 }
 
-function procurarImagemEmJson(valor: unknown): string | null {
-  if (!valor) return null;
+function pareceImagemUtil(url: string) {
+  return !/(?:logo|favicon|sprite|avatar|pixel|tracking|badge|icon(?:-|_|\.)|placeholder|spacer)/i.test(
+    url
+  );
+}
+
+function procurarImagemEmJson(valor: unknown, profundidade = 0): string | null {
+  if (!valor || profundidade > 8) return null;
 
   if (typeof valor === "string") {
-    return /^https?:\/\//i.test(valor) ? valor : null;
+    const limpo = limparUrl(valor);
+    const pareceUrlDeImagem =
+      /^(?:https?:)?\/\//i.test(limpo) ||
+      /^\//.test(limpo) ||
+      /\.(?:jpe?g|png|webp|avif|gif)(?:[?#]|$)/i.test(limpo);
+    return pareceUrlDeImagem && pareceImagemUtil(limpo) ? limpo : null;
   }
 
   if (Array.isArray(valor)) {
     for (const item of valor) {
-      const achada = procurarImagemEmJson(item);
+      const achada = procurarImagemEmJson(item, profundidade + 1);
       if (achada) return achada;
     }
     return null;
@@ -80,20 +110,35 @@ function procurarImagemEmJson(valor: unknown): string | null {
   if (typeof valor === "object") {
     const obj = valor as Record<string, unknown>;
 
-    // Schema.org costuma guardar a imagem exatamente nestas propriedades.
-    for (const chave of ["image", "contentUrl", "thumbnailUrl"]) {
-      if (obj[chave]) {
-        const achada = procurarImagemEmJson(obj[chave]);
+    // Prioriza nomes que normalmente representam a imagem do produto.
+    const chavesImagem = [
+      "image",
+      "images",
+      "imageUrl",
+      "image_url",
+      "imageURL",
+      "secure_url",
+      "contentUrl",
+      "thumbnailUrl",
+      "thumbnail",
+      "picture",
+      "pictures",
+      "primaryImage",
+      "mainImage",
+    ];
+    for (const chave of chavesImagem) {
+      if (obj[chave] != null) {
+        const achada = procurarImagemEmJson(obj[chave], profundidade + 1);
         if (achada) return achada;
       }
     }
 
-    // Alguns sites encapsulam Product/Offer dentro de @graph.
-    for (const chave of ["@graph", "mainEntity", "itemListElement"]) {
-      if (obj[chave]) {
-        const achada = procurarImagemEmJson(obj[chave]);
-        if (achada) return achada;
-      }
+    // Depois percorre estruturas aninhadas (Next.js, GraphQL, schema.org etc.).
+    for (const [chave, item] of Object.entries(obj)) {
+      if (chavesImagem.includes(chave)) continue;
+      if (typeof item !== "object" || item == null) continue;
+      const achada = procurarImagemEmJson(item, profundidade + 1);
+      if (achada) return achada;
     }
   }
 
@@ -120,47 +165,101 @@ function extrairImagemJsonLd(html: string) {
   return null;
 }
 
+function extrairImagemDeScripts(html: string, urlBase: string) {
+  // Next.js, lojas SPA e páginas de afiliado frequentemente serializam o
+  // produto em JSON mesmo quando as tags Open Graph não vêm no HTML inicial.
+  const scriptsJson = html.matchAll(
+    /<script[^>]*(?:id=["']__NEXT_DATA__["']|type=["']application\/json["'])[^>]*>([\s\S]*?)<\/script>/gi
+  );
+  for (const script of scriptsJson) {
+    const conteudo = script[1]?.trim();
+    if (!conteudo) continue;
+    try {
+      const json = JSON.parse(conteudo);
+      const imagem = procurarImagemEmJson(json);
+      if (imagem) return absoluta(imagem, urlBase);
+    } catch {
+      // Continua para a busca textual abaixo.
+    }
+  }
+
+  const padroes = [
+    /["'](?:imageUrl|image_url|imageURL|primaryImage|mainImage|thumbnailUrl|secure_url)["']\s*:\s*["']([^"']+)["']/gi,
+    /["'](?:image|thumbnail|picture)["']\s*:\s*["'](https?:\\?\/\\?\/[^"']+)["']/gi,
+  ];
+  for (const padrao of padroes) {
+    for (const match of html.matchAll(padrao)) {
+      const url = match[1] ? absoluta(match[1], urlBase) : null;
+      if (url && pareceImagemUtil(url)) return url;
+    }
+  }
+
+  return null;
+}
+
+function maiorSrcset(valor: string, urlBase: string) {
+  const candidatos = valor
+    .split(",")
+    .map((parte) => parte.trim())
+    .map((parte) => {
+      const [src, descriptor = ""] = parte.split(/\s+/, 2);
+      const peso = Number(descriptor.replace(/[^0-9.]/g, "")) || 0;
+      return { url: absoluta(src, urlBase), peso };
+    })
+    .filter((item): item is { url: string; peso: number } => Boolean(item.url));
+
+  candidatos.sort((a, b) => b.peso - a.peso);
+  return candidatos[0]?.url ?? null;
+}
+
 function extrairImagemFallback(html: string, urlBase: string) {
   const candidatos: Array<{ url: string; pontos: number }> = [];
-  const imgs = html.matchAll(/<img\b[^>]*>/gi);
+  const tags = html.matchAll(/<(?:img|source)\b[^>]*>/gi);
 
-  for (const resultado of imgs) {
+  for (const resultado of tags) {
     const tag = resultado[0];
+    const srcsetMatch = tag.match(/(?:data-srcset|srcset)=["']([^"']+)["']/i);
     const srcMatch = tag.match(
-      /(?:data-zoom-image|data-old-hires|data-a-dynamic-image|data-src|data-lazy-src|src)=["']([^"']+)["']/i
+      /(?:data-zoom-image|data-old-hires|data-a-dynamic-image|data-src|data-lazy-src|data-original|src)=["']([^"']+)["']/i
     );
-    if (!srcMatch?.[1]) continue;
 
-    // data-a-dynamic-image da Amazon é um JSON dentro do atributo.
-    let valor = srcMatch[1];
-    if (valor.trim().startsWith("{")) {
-      try {
-        const json = JSON.parse(valor.replace(/&quot;/g, '"')) as Record<string, unknown>;
-        const primeira = Object.keys(json)[0];
-        if (primeira) valor = primeira;
-      } catch {
-        continue;
+    let url: string | null = null;
+    if (srcsetMatch?.[1]) url = maiorSrcset(srcsetMatch[1], urlBase);
+
+    if (!url && srcMatch?.[1]) {
+      let valor = srcMatch[1];
+      // data-a-dynamic-image da Amazon é um JSON dentro do atributo.
+      if (valor.trim().startsWith("{")) {
+        try {
+          const json = JSON.parse(valor.replace(/&quot;/g, '"')) as Record<string, unknown>;
+          const primeira = Object.keys(json)[0];
+          if (primeira) valor = primeira;
+        } catch {
+          valor = "";
+        }
       }
+      if (valor) url = absoluta(valor, urlBase);
     }
 
-    const url = absoluta(valor, urlBase);
-    if (!url || !/^https?:\/\//i.test(url)) continue;
+    if (!url || !pareceImagemUtil(url)) continue;
 
     const textoTag = tag.toLowerCase();
-    if (/(logo|icon|sprite|avatar|pixel|tracking|badge)/i.test(textoTag + url)) {
-      continue;
-    }
-
     let pontos = 0;
-    if (/(product|produto|gallery|galeria|main|principal|zoom|hero)/i.test(textoTag)) pontos += 5;
-    if (/(data-zoom-image|data-old-hires)/i.test(tag)) pontos += 6;
+    if (/(product|produto|gallery|galeria|main|principal|zoom|hero|primary)/i.test(textoTag)) pontos += 7;
+    if (/(data-zoom-image|data-old-hires|srcset)/i.test(tag)) pontos += 6;
 
     const largura = Number(tag.match(/width=["']?(\d+)/i)?.[1] || 0);
     const altura = Number(tag.match(/height=["']?(\d+)/i)?.[1] || 0);
     if (largura >= 300 || altura >= 300) pontos += 3;
-    if (largura >= 600 || altura >= 600) pontos += 2;
+    if (largura >= 600 || altura >= 600) pontos += 3;
 
     candidatos.push({ url, pontos });
+  }
+
+  const css = html.matchAll(/background(?:-image)?\s*:\s*url\(["']?([^"')]+)["']?\)/gi);
+  for (const match of css) {
+    const url = match[1] ? absoluta(match[1], urlBase) : null;
+    if (url && pareceImagemUtil(url)) candidatos.push({ url, pontos: 2 });
   }
 
   candidatos.sort((a, b) => b.pontos - a.pontos);
@@ -168,6 +267,7 @@ function extrairImagemFallback(html: string, urlBase: string) {
 }
 
 function extrairUrlImagem(html: string, urlBase: string): string | null {
+  const candidatosMeta: string[] = [];
   for (const chave of [
     "og:image:secure_url",
     "og:image:url",
@@ -179,16 +279,19 @@ function extrairUrlImagem(html: string, urlBase: string): string | null {
     const valor = extrairMeta(html, chave);
     if (valor) {
       const url = absoluta(valor, urlBase);
-      if (url) return url;
+      if (url) candidatosMeta.push(url);
     }
   }
+
+  const metaUtil = candidatosMeta.find(pareceImagemUtil);
+  if (metaUtil) return metaUtil;
 
   const imageSrc = html.match(
     /<link[^>]+rel=["'](?:image_src|preload)["'][^>]+href=["']([^"']+)["'][^>]*>/i
   );
   if (imageSrc?.[1]) {
     const url = absoluta(imageSrc[1], urlBase);
-    if (url) return url;
+    if (url && pareceImagemUtil(url)) return url;
   }
 
   const jsonLd = extrairImagemJsonLd(html);
@@ -197,7 +300,15 @@ function extrairUrlImagem(html: string, urlBase: string): string | null {
     if (url) return url;
   }
 
-  return extrairImagemFallback(html, urlBase);
+  const script = extrairImagemDeScripts(html, urlBase);
+  if (script) return script;
+
+  const fallback = extrairImagemFallback(html, urlBase);
+  if (fallback) return fallback;
+
+  // Se só havia uma meta genérica (ex.: URL com "logo" no nome), ainda é
+  // melhor devolvê-la como último recurso do que falhar sem qualquer imagem.
+  return candidatosMeta[0] ?? null;
 }
 
 function extrairRedirecionamentoHtml(html: string, urlBase: string): string | null {
@@ -226,10 +337,52 @@ function extrairRedirecionamentoHtml(html: string, urlBase: string): string | nu
 }
 
 function extrairCanonical(html: string, urlBase: string): string | null {
-  const match = html.match(
-    /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i
-  );
-  return match?.[1] ? absoluta(match[1], urlBase) : null;
+  const padroes = [
+    /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i,
+    /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i,
+  ];
+  for (const padrao of padroes) {
+    const match = html.match(padrao);
+    if (match?.[1]) return absoluta(match[1], urlBase);
+  }
+  return null;
+}
+
+function extrairDestinoDosParametros(link: string) {
+  const destinos: string[] = [];
+  try {
+    const url = new URL(link);
+    for (const chave of ["url", "u", "target", "dest", "destination", "redirect", "redirect_url", "redirect_uri", "deeplink", "link"]) {
+      const valor = url.searchParams.get(chave);
+      if (!valor) continue;
+      let atual = valor;
+      for (let i = 0; i < 2; i += 1) {
+        try {
+          atual = decodeURIComponent(atual);
+        } catch {
+          break;
+        }
+      }
+      const destino = absoluta(atual, link);
+      if (destino && destino !== link) destinos.push(destino);
+    }
+  } catch {
+    // Ignora URL inválida; a validação principal trata isso.
+  }
+  return destinos;
+}
+
+function extrairLinkProvavel(html: string, urlBase: string) {
+  for (const match of html.matchAll(/<a\b[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    const href = match[1];
+    const texto = match[2].replace(/<[^>]+>/g, " ");
+    if (!/(produto|product|oferta|comprar|continuar|abrir|ver item|ir para)/i.test(`${href} ${texto}`)) {
+      continue;
+    }
+    const url = absoluta(href, urlBase);
+    if (url && url !== urlBase) return url;
+  }
+  return null;
 }
 
 type ResultadoPagina = {
@@ -240,11 +393,12 @@ type ResultadoPagina = {
 
 async function procurarImagemNoFluxo(linkInicial: string): Promise<ResultadoPagina | null> {
   for (const userAgent of USER_AGENTS) {
-    let atual = linkInicial;
+    const fila = [linkInicial, ...extrairDestinoDosParametros(linkInicial)];
     const visitadas = new Set<string>();
 
-    for (let passo = 0; passo < MAX_REDIRECTS; passo += 1) {
-      if (!urlHttpValida(atual) || visitadas.has(atual)) break;
+    for (let passo = 0; passo < MAX_REDIRECTS && fila.length; passo += 1) {
+      const atual = fila.shift()!;
+      if (!urlHttpValida(atual) || visitadas.has(atual)) continue;
       visitadas.add(atual);
 
       let resposta: Response;
@@ -256,54 +410,47 @@ async function procurarImagemNoFluxo(linkInicial: string): Promise<ResultadoPagi
           headers: {
             "User-Agent": userAgent,
             Accept:
-              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/*,*/*;q=0.8",
             "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.7",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
           },
         });
       } catch {
-        break;
+        continue;
       }
 
       if (resposta.status >= 300 && resposta.status < 400) {
         const location = resposta.headers.get("location");
-        if (!location) break;
-        const destino = absoluta(location, atual);
-        if (!destino) break;
-        atual = destino;
+        if (location) {
+          const destino = absoluta(location, atual);
+          if (destino && !visitadas.has(destino)) fila.unshift(destino);
+        }
         continue;
       }
 
-      if (!resposta.ok) break;
+      if (!resposta.ok) continue;
 
       const contentType = resposta.headers.get("content-type") || "";
       if (contentType.startsWith("image/")) {
-        return { imagem: atual, pagina: atual, userAgent };
+        return { imagem: resposta.url || atual, pagina: atual, userAgent };
       }
 
       const html = await resposta.text();
       const paginaFinal = resposta.url || atual;
       const imagem = extrairUrlImagem(html, paginaFinal);
-      if (imagem) {
-        return { imagem, pagina: paginaFinal, userAgent };
-      }
+      if (imagem) return { imagem, pagina: paginaFinal, userAgent };
 
-      // Alguns encurtadores (especialmente links de app/afiliado) não fazem
-      // um 301/302 puro: entregam uma página que redireciona via HTML/JS.
-      const redirecionamentoHtml = extrairRedirecionamentoHtml(html, paginaFinal);
-      if (redirecionamentoHtml && !visitadas.has(redirecionamentoHtml)) {
-        atual = redirecionamentoHtml;
-        continue;
-      }
+      const proximos = [
+        extrairRedirecionamentoHtml(html, paginaFinal),
+        extrairCanonical(html, paginaFinal),
+        ...extrairDestinoDosParametros(paginaFinal),
+        extrairLinkProvavel(html, paginaFinal),
+      ].filter((item): item is string => Boolean(item));
 
-      // Se o link de tracking chegou a uma página sem preview, o canonical
-      // muitas vezes aponta para a página de produto limpa, que contém a imagem.
-      const canonical = extrairCanonical(html, paginaFinal);
-      if (canonical && canonical !== paginaFinal && !visitadas.has(canonical)) {
-        atual = canonical;
-        continue;
+      for (const destino of proximos) {
+        if (!visitadas.has(destino)) fila.push(destino);
       }
-
-      break;
     }
   }
 
@@ -311,48 +458,69 @@ async function procurarImagemNoFluxo(linkInicial: string): Promise<ResultadoPagi
 }
 
 function candidatosAdicionais(link: string) {
-  const candidatos: string[] = [];
+  const candidatos = extrairDestinoDosParametros(link);
   try {
     const url = new URL(link);
     const host = url.hostname.toLowerCase();
-    const ultimoTrecho = url.pathname.split("/").filter(Boolean).pop() || "";
+    const trechos = url.pathname.split("/").filter(Boolean);
+    const ultimoTrecho = trechos.at(-1) || "";
 
-    // Links de compartilhamento da Amazon podem parar num redirecionador
-    // intermediário. O trecho B0XXXXXXXX costuma ser o ASIN do produto.
-    if ((host === "link.amazon" || host.endsWith("amzlinks.in")) && /^[A-Z0-9]{10}$/i.test(ultimoTrecho)) {
+    // Links de compartilhamento da Amazon às vezes carregam o ASIN na URL.
+    const asin = trechos.find((trecho) => /^[A-Z0-9]{10}$/i.test(trecho));
+    if ((host.includes("amazon") || host.endsWith("amzlinks.in")) && asin) {
+      candidatos.push(`https://www.amazon.com.br/dp/${asin}`);
+    } else if ((host === "link.amazon" || host.endsWith("amzlinks.in")) && /^[A-Z0-9]{10}$/i.test(ultimoTrecho)) {
       candidatos.push(`https://www.amazon.com.br/dp/${ultimoTrecho}`);
     }
   } catch {
     // O link principal já será validado no fluxo normal.
   }
-  return candidatos;
+  return Array.from(new Set(candidatos));
 }
 
 async function baixarImagem(resultado: ResultadoPagina) {
-  const resposta = await fetch(resultado.imagem, {
-    redirect: "follow",
-    cache: "no-store",
-    headers: {
-      "User-Agent": resultado.userAgent,
-      Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-      Referer: resultado.pagina,
-    },
-  });
+  const tentativas = [
+    { userAgent: resultado.userAgent, referer: resultado.pagina },
+    { userAgent: USER_AGENTS[0], referer: resultado.pagina },
+    { userAgent: USER_AGENTS[1], referer: resultado.pagina },
+    { userAgent: USER_AGENTS[4], referer: resultado.pagina },
+    { userAgent: USER_AGENTS[4], referer: undefined },
+  ];
 
-  if (!resposta.ok) return null;
-  const tipo = resposta.headers.get("content-type") || "";
-  if (!tipo.startsWith("image/")) return null;
+  for (const tentativa of tentativas) {
+    try {
+      const headers: Record<string, string> = {
+        "User-Agent": tentativa.userAgent,
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      };
+      if (tentativa.referer) headers.Referer = tentativa.referer;
 
-  return {
-    bytes: await resposta.arrayBuffer(),
-    tipo,
-  };
+      const resposta = await fetch(resultado.imagem, {
+        redirect: "follow",
+        cache: "no-store",
+        headers,
+      });
+
+      if (!resposta.ok) continue;
+      const tipo = resposta.headers.get("content-type") || "";
+      if (!tipo.startsWith("image/")) continue;
+
+      const bytes = await resposta.arrayBuffer();
+      if (bytes.byteLength < 512) continue;
+      return { bytes, tipo };
+    } catch {
+      // Tenta o próximo conjunto de cabeçalhos.
+    }
+  }
+
+  return null;
 }
 
 export async function POST(req: Request) {
   if (!(await usuarioEhAdmin())) {
     return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
   }
+
   const { link } = await req.json();
   if (!link || typeof link !== "string" || !urlHttpValida(link)) {
     return NextResponse.json({ erro: "Link inválido." }, { status: 400 });
@@ -367,7 +535,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const tentativas = [link, ...candidatosAdicionais(link)];
+    const tentativas = Array.from(new Set([link, ...candidatosAdicionais(link)]));
     let resultado: ResultadoPagina | null = null;
 
     for (const candidato of tentativas) {
@@ -379,7 +547,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           erro:
-            "Não encontramos uma imagem automaticamente. O site da loja pode estar bloqueando robôs ou entregar o produto apenas pelo aplicativo. Você ainda pode enviar a foto manualmente.",
+            "Não encontramos uma imagem automaticamente. A loja pode entregar o produto apenas via JavaScript/app ou bloquear crawlers. Você ainda pode enviar a foto manualmente.",
         },
         { status: 200 }
       );
@@ -387,13 +555,13 @@ export async function POST(req: Request) {
 
     const imagem = await baixarImagem(resultado);
     if (!imagem) {
-      return NextResponse.json(
-        {
-          erro:
-            "Encontramos a imagem, mas a loja bloqueou o download automático. Envie a foto manualmente.",
-        },
-        { status: 200 }
-      );
+      // Se o WhatsApp consegue enxergar a imagem mas a loja bloqueia o download
+      // do nosso servidor, ainda usamos a URL pública encontrada como fallback.
+      return NextResponse.json({
+        imagemUrl: resultado.imagem,
+        origem: "externa",
+        aviso: "Imagem localizada no preview do link e usada diretamente.",
+      });
     }
 
     const extensao = imagem.tipo.includes("png")
@@ -404,23 +572,27 @@ export async function POST(req: Request) {
       ? "avif"
       : imagem.tipo.includes("gif")
       ? "gif"
+      : imagem.tipo.includes("svg")
+      ? "svg"
       : "jpg";
     const nomeArquivo = `${crypto.randomUUID()}-auto.${extensao}`;
 
-    const { error } = await supabase.storage
-      .from("ofertas")
-      .upload(nomeArquivo, imagem.bytes, {
-        contentType: imagem.tipo,
-        upsert: false,
-      });
+    const { error } = await supabase.storage.from("ofertas").upload(nomeArquivo, imagem.bytes, {
+      contentType: imagem.tipo,
+      upsert: false,
+    });
 
     if (error) {
-      return NextResponse.json({ erro: error.message }, { status: 200 });
+      // Mantém o cadastro ágil mesmo quando apenas o upload no Storage falhar.
+      return NextResponse.json({
+        imagemUrl: resultado.imagem,
+        origem: "externa",
+        aviso: "Imagem encontrada, mas não foi possível copiá-la para o Storage; usando a URL original.",
+      });
     }
 
     const { data } = supabase.storage.from("ofertas").getPublicUrl(nomeArquivo);
-
-    return NextResponse.json({ imagemUrl: data.publicUrl });
+    return NextResponse.json({ imagemUrl: data.publicUrl, origem: "storage" });
   } catch (erro) {
     console.error(erro);
     return NextResponse.json(

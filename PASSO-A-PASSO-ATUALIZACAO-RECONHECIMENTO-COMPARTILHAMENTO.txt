@@ -1,0 +1,27 @@
+ATUALIZAÇÃO — RECONHECIMENTO, IMAGENS E COMPARTILHAMENTO
+
+1. Faça backup da pasta atual do projeto.
+2. Extraia o ZIP desta atualização.
+3. Se estiver usando o ZIP de patch, copie as pastas/arquivos para a raiz do projeto e confirme a substituição.
+4. Não é necessário executar SQL no Supabase para esta atualização.
+5. Abra o GitHub Desktop e confira a aba Changes.
+6. Antes de publicar, no terminal da pasta do projeto, rode:
+   npm install
+   npm run typecheck
+   npm run build
+7. No GitHub Desktop use:
+   Summary: Melhora reconhecimento e compartilhamento
+   Description: Aprimora leitura de preços e categorias, busca automática de imagens e compartilhamento de ofertas e cupons com links do site.
+8. Clique em Commit to main.
+9. Clique em Push origin.
+10. Aguarde o deploy da Vercel.
+11. No site publicado, faça Ctrl + F5 e teste:
+   - colagem de oferta com preço inteiro e com centavos;
+   - preço antigo no padrão DE R$...;
+   - categorias Bebidas e Cuidados Pessoais;
+   - busca automática de foto;
+   - compartilhamento de oferta;
+   - compartilhamento de cupom e redirecionamento pela rota /c/.
+
+OBSERVAÇÃO SOBRE WHATSAPP:
+O WhatsApp mantém cache de previews. Um link que já foi compartilhado pode continuar mostrando uma prévia antiga por algum tempo. Links novos normalmente forçam uma nova leitura dos metadados.

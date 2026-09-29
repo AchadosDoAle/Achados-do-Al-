@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Campo, classeInput } from "./Campo";
 import {
@@ -108,24 +108,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const [categoriaPersonalizada, setCategoriaPersonalizada] = useState(
     ofertaExistente && !categoriaExistenteNaLista ? categoriaExistente : ""
   );
-  const [categoriaBusca, setCategoriaBusca] = useState("");
   const [camposParaRevisar, setCamposParaRevisar] = useState<Array<"categoria" | "marca" | "modelo">>([]);
-
-  const categoriasFiltradas = useMemo(() => {
-    const busca = categoriaBusca
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLocaleLowerCase("pt-BR")
-      .trim();
-    if (!busca) return CATEGORIAS_DISPONIVEIS;
-    return CATEGORIAS_DISPONIVEIS.filter((categoria) =>
-      categoria
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLocaleLowerCase("pt-BR")
-        .includes(busca)
-    );
-  }, [categoriaBusca]);
 
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
@@ -227,7 +210,6 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         setCategoriaSelecionada(CATEGORIA_OUTROS);
         setCategoriaPersonalizada(resultado.valores.categoria);
       }
-      setCategoriaBusca("");
     } else if (!ofertaExistente) {
       // Não deixa uma categoria padrão silenciosa quando a leitura falha.
       // O usuário precisa escolher uma opção antes de conseguir publicar.
@@ -344,7 +326,11 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       if (dados.imagemUrl) {
         atualizarCampo("imagemPrincipal", dados.imagemUrl);
         setPreviewImagem(dados.imagemUrl);
-        setStatusImagemAuto("✅ Imagem encontrada e adicionada!");
+        setStatusImagemAuto(
+          dados.origem === "externa"
+            ? `✅ Imagem encontrada pelo preview do link. ${dados.aviso || "Usando a imagem original da loja."}`
+            : "✅ Imagem encontrada, copiada para o Storage e adicionada!"
+        );
       } else {
         setStatusImagemAuto(`${dados.erro || "Não encontramos a imagem automaticamente."} Envie manualmente abaixo.`);
       }
@@ -515,56 +501,33 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               </Campo>
               <Campo rotulo="Categoria" obrigatorio erro={erros.categoria}>
                 <div className="flex flex-col gap-2">
-                  <input
-                    type="search"
-                    className={classeInput}
-                    value={categoriaBusca}
-                    onChange={(e) => setCategoriaBusca(e.target.value)}
-                    placeholder="🔎 Pesquisar categoria..."
-                    aria-label="Pesquisar categoria"
-                  />
-                  <div
-                    role="radiogroup"
-                    aria-label="Categorias da oferta"
-                    className={`max-h-56 overflow-y-auto rounded-2xl border p-2 ${
-                      camposParaRevisar.includes("categoria") ? "border-amber-300 bg-amber-50/50" : "border-ink/10 bg-white"
+                  <select
+                    className={`${classeInput} ${
+                      camposParaRevisar.includes("categoria") ? "border-amber-300 bg-amber-50/50" : ""
                     }`}
+                    value={categoriaSelecionada}
+                    onChange={(e) => {
+                      const categoria = e.target.value;
+                      setCategoriaSelecionada(categoria);
+                      atualizarCampo(
+                        "categoria",
+                        categoria === CATEGORIA_OUTROS ? categoriaPersonalizada : categoria
+                      );
+                      if (categoria) marcarCampoConferido("categoria");
+                    }}
+                    aria-label="Categoria da oferta"
                   >
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {categoriasFiltradas.map((categoria) => {
-                        const ativa = categoriaSelecionada === categoria;
-                        return (
-                          <label
-                            key={categoria}
-                            className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                              ativa
-                                ? "border-discount bg-discount/20 text-ink"
-                                : "border-ink/10 bg-white text-ink/75 hover:border-discount/60 hover:bg-discount/10"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="categoria-oferta"
-                              value={categoria}
-                              checked={ativa}
-                              onChange={() => {
-                                setCategoriaSelecionada(categoria);
-                                atualizarCampo("categoria", categoria === CATEGORIA_OUTROS ? categoriaPersonalizada : categoria);
-                                marcarCampoConferido("categoria");
-                              }}
-                              className="accent-amber-500"
-                            />
-                            <span>{categoria}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                    {categoriasFiltradas.length === 0 && (
-                      <p className="px-3 py-4 text-center text-sm text-ink/55">Nenhuma categoria encontrada.</p>
-                    )}
-                  </div>
+                    <option value="">Selecione uma categoria...</option>
+                    {CATEGORIAS_DISPONIVEIS.map((categoria) => (
+                      <option key={categoria} value={categoria}>
+                        {categoria}
+                      </option>
+                    ))}
+                  </select>
                   {!categoriaSelecionada && (
-                    <p className="text-xs font-medium text-amber-700">Selecione uma categoria antes de publicar.</p>
+                    <p className="text-xs font-medium text-amber-700">
+                      Selecione uma categoria antes de publicar.
+                    </p>
                   )}
                   {categoriaSelecionada === CATEGORIA_OUTROS && (
                     <input

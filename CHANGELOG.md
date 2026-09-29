@@ -106,3 +106,17 @@
 - Ofertas podem ser encontradas por título, loja, categoria, marca, modelo, cupom, status e outros dados cadastrados.
 - Cupons podem ser encontrados por código, loja, descrição, desconto, status e demais informações cadastradas.
 - Resultado da busca mantém os mesmos botões de edição, exclusão, publicação e republicação da listagem normal.
+
+## 2026-09-28 — Reconhecimento de ofertas, categorias, imagens e compartilhamento
+
+- Reconhecimento de preços ampliado para valores com ou sem centavos, incluindo `DE R$`, `POR R$`, Pix e parcelamento.
+- O padrão `DE R$...` passa a ter prioridade explícita para preencher o preço antigo.
+- Reconhecimento de título, loja, categoria, marca e modelo reforçado para textos de afiliados e publicações prontas.
+- Adicionadas as categorias **Bebidas** e **Cuidados Pessoais**.
+- Seletor administrativo de categoria convertido para lista suspensa (`select`), evitando textos estourando os botões.
+- Busca automática de imagem reforçada com user-agents sociais, Open Graph, Twitter Cards, JSON-LD, JSON serializado, `srcset`, lazy-loading, redirects HTML/JS, canonical e links de redirecionamento.
+- Quando a loja bloqueia o download da imagem, o painel pode usar diretamente a imagem pública descoberta no preview como fallback.
+- Compartilhamento de cupons reformulado com nome do cupom em destaque, benefício, loja, validade e link do Achado do Alê.
+- Criada rota intermediária curta `/c/CODIGO` para cupons, com Open Graph próprio e redirecionamento para a página externa do cupom.
+- Compartilhamento de ofertas reformulado com nome em destaque, preço antigo, menor preço disponível, loja e link curto do site.
+- O preço social de ofertas agora usa o menor valor entre preço atual e Pix.

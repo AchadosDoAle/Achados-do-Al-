@@ -15,7 +15,15 @@ export function urlCurtaDaOferta(slug: string) {
 }
 
 export function precoPrincipalDaOferta(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {
-  return oferta.precoPix ?? oferta.precoAtual;
+  const precos = [oferta.precoPix, oferta.precoAtual].filter(
+    (valor): valor is number => typeof valor === "number" && Number.isFinite(valor)
+  );
+  return precos.length ? Math.min(...precos) : undefined;
+}
+
+export function precoPrincipalEhPix(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {
+  const principal = precoPrincipalDaOferta(oferta);
+  return principal != null && oferta.precoPix != null && oferta.precoPix === principal;
 }
 
 export function formatarPrecoSocial(valor?: number) {
@@ -35,7 +43,7 @@ export function descricaoSocialDaOferta(
   oferta: Pick<Oferta, "loja" | "precoPix" | "precoAtual">
 ) {
   const preco = precoPrincipalDaOferta(oferta);
-  const condicao = oferta.precoPix != null ? " no Pix" : "";
+  const condicao = precoPrincipalEhPix(oferta) ? " no Pix" : "";
   return preco == null
     ? `🏪 ${oferta.loja} · confira a promoção no Achado do Alê`
     : `💰 ${formatarPrecoSocial(preco)}${condicao} · 🏪 ${oferta.loja}`;

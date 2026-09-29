@@ -24,24 +24,32 @@ export function BotaoCopiarCupom({ cupom }: { cupom: string }) {
 export function BotaoCompartilhar({
   titulo,
   loja,
+  precoAntigo,
   preco,
   precoPix,
   url,
 }: {
   titulo: string;
   loja: string;
+  precoAntigo?: number;
   preco?: number;
   precoPix?: boolean;
   url: string;
 }) {
   const [feedback, setFeedback] = useState("");
 
+  function formatar(valor: number) {
+    return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
   function montarTexto() {
-    const linhas = [`🔥 ${titulo}`];
+    const linhas = [`🛍️ *${titulo}*`];
     if (preco != null) {
-      linhas.push(
-        `💰 ${preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}${precoPix ? " no Pix" : ""}`
-      );
+      if (precoAntigo != null && precoAntigo > preco) {
+        linhas.push(`💰 ~DE ${formatar(precoAntigo)}~ - *POR ${formatar(preco)}*${precoPix ? " no Pix" : ""}`);
+      } else {
+        linhas.push(`💰 *POR ${formatar(preco)}*${precoPix ? " no Pix" : ""}`);
+      }
     }
     linhas.push(`🏪 ${loja}`);
     linhas.push("");

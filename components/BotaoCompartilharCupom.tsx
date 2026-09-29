@@ -2,44 +2,22 @@
 
 import { useState } from "react";
 import { Cupom } from "@/lib/types";
-import { cupomExpirado } from "@/lib/coupons-repo";
+import { beneficioCupom, formatarValidadeCupom, urlCurtaDoCupom } from "@/lib/cupom-share";
 
 function montarTextoCompartilhamento(cupom: Cupom) {
-  const partes: string[] = [];
-  partes.push(`🎟️ CUPOM ${cupom.nomeCupom}`);
-  partes.push(`🏪 Loja: ${cupom.loja}`);
+  const beneficio = beneficioCupom(cupom);
+  const linhas = [
+    `🎟️ *CUPOM LIBERADO: ${cupom.nomeCupom}*`,
+  ];
 
-  if (cupom.valorCupom) {
-    partes.push(`💸 Benefício: ${cupom.valorCupom}`);
-  } else if (cupom.descontoPercentual != null) {
-    partes.push(`💸 Benefício: ${cupom.descontoPercentual}% OFF`);
-  }
+  if (beneficio) linhas.push(`💸 ${beneficio}`);
+  linhas.push(`🏪 LOJA: *${cupom.loja}*`);
+  linhas.push(`⏰ VALIDADE: ${formatarValidadeCupom(cupom.validade)}`);
+  linhas.push(`🛒 USAR NA LOJA: ${cupom.loja}`);
+  linhas.push("");
+  linhas.push(`🔗 ${urlCurtaDoCupom(cupom.id)}`);
 
-  if (cupom.observacoes) {
-    const linhas = cupom.observacoes
-      .split(/\r?\n/)
-      .map((linha) => linha.trim())
-      .filter(Boolean)
-      .slice(0, 3);
-
-    if (linhas.length > 0) {
-      partes.push("📋 Informações importantes:");
-      for (const linha of linhas) {
-        partes.push(`- ${linha}`);
-      }
-    }
-  }
-
-  if (cupom.validade) {
-    const data = new Date(cupom.validade).toLocaleDateString("pt-BR");
-    partes.push(`${cupomExpirado(cupom) ? "⏳ Expirou em" : "⏰ Válido até"} ${data}`);
-  }
-
-  if (cupom.linkProdutos && /^https?:\/\//i.test(cupom.linkProdutos.trim())) {
-    partes.push(`🔗 ${cupom.linkProdutos.trim()}`);
-  }
-
-  return partes.join("\n");
+  return linhas.join("\n");
 }
 
 export default function BotaoCompartilharCupom({ cupom }: { cupom: Cupom }) {
@@ -51,13 +29,13 @@ export default function BotaoCompartilharCupom({ cupom }: { cupom: Cupom }) {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Cupom ${cupom.nomeCupom}`,
+          title: `Cupom liberado: ${cupom.nomeCupom}`,
           text: texto,
         });
-        setFeedback("compartilhado!");
+        setFeedback("Compartilhado!");
       } else {
         await navigator.clipboard.writeText(texto);
-        setFeedback("texto copiado!");
+        setFeedback("Texto copiado!");
       }
       setTimeout(() => setFeedback(""), 2000);
     } catch {
@@ -69,9 +47,9 @@ export default function BotaoCompartilharCupom({ cupom }: { cupom: Cupom }) {
     <button
       type="button"
       onClick={aoCompartilhar}
-      className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text transition hover:bg-white/10"
+      className="rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-sm font-semibold text-gold transition hover:bg-gold/20"
     >
-      {feedback ? `↗ ${feedback}` : "↗ Compartilhar"}
+      {feedback ? `📤 ${feedback}` : "📤 Compartilhar cupom"}
     </button>
   );
 }

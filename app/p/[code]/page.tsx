@@ -8,6 +8,7 @@ import {
   formatarPrecoSocial,
   imagemAbsolutaDaOferta,
   precoPrincipalDaOferta,
+  precoPrincipalEhPix,
   tituloSocialDaOferta,
 } from "@/lib/oferta-share";
 import { URL_SITE } from "@/lib/seo-brand";
@@ -88,7 +89,7 @@ export default async function PaginaLinkCurto({
         <h1 className="mt-2 font-display text-xl font-bold">{oferta.titulo}</h1>
         {preco != null ? (
           <p className="mt-2 text-lg font-bold text-trust">
-            {formatarPrecoSocial(preco)}{oferta.precoPix != null ? " no Pix" : ""}
+            {formatarPrecoSocial(preco)}{precoPrincipalEhPix(oferta) ? " no Pix" : ""}
           </p>
         ) : null}
         <p className="mt-2 text-sm text-text-muted">🏪 {oferta.loja}</p>
