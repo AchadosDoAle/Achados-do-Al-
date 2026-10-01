@@ -1,3 +1,15 @@
+## 2026-10-01 — Contagem básica de visualizações independente do consentimento
+
+- Corrigido o cenário em que o painel podia exibir cliques normalmente, mas `0` visualizações quando visitantes não aceitavam métricas avançadas.
+- Novo `BasicPageviewTracker` registra somente página + horário nas rotas públicas, sem criar identificador persistente.
+- Rotas `/admin` e `/login` continuam fora da contagem.
+- `track_basic_pageview(...)` grava os pageviews operacionais em `analytics_pageviews`, mantendo compatibilidade com relatórios existentes.
+- `track_analytics_visit(...)` passa a atualizar apenas sessões detalhadas, evitando dupla contagem quando o visitante aceita métricas.
+- Origem, dispositivo, campanhas UTM, presença online e Google Analytics continuam condicionados ao consentimento.
+- Relatório web atualizado para separar visualizações operacionais de métricas detalhadas.
+- Política de Privacidade e banner de consentimento atualizados para refletir a nova separação.
+- Migration `20261001_contagem_basica_visualizacoes.sql` adicionada sem apagar dados históricos.
+
 ## 2026-09-26 — Paginação no admin de ofertas e cupons
 
 - Listagens administrativas passam a exibir no máximo **30 cards por página**.

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AnalyticsTracker from "./AnalyticsTracker";
+import BasicPageviewTracker from "./BasicPageviewTracker";
 import GoogleAnalytics from "./GoogleAnalytics";
 
 const CHAVE = "achado_ale_consentimento_analytics";
@@ -46,6 +47,13 @@ export default function AnalyticsConsentGate({
 
   return (
     <>
+      {/*
+        Contador operacional sempre ativo: registra somente a página pública
+        acessada, sem cookie/ID persistente, referrer, dispositivo ou UTM.
+      */}
+      <BasicPageviewTracker />
+
+      {/* Métricas detalhadas continuam condicionadas ao consentimento. */}
       {consentimento === "aceito" && <AnalyticsTracker />}
       {consentimento === "aceito" && measurementId ? (
         <GoogleAnalytics measurementId={measurementId} />
@@ -55,9 +63,12 @@ export default function AnalyticsConsentGate({
         <div className="fixed bottom-20 left-3 right-3 z-[70] mx-auto max-w-xl rounded-2xl border border-white/10 bg-bg-secondary/95 p-4 text-text shadow-2xl backdrop-blur md:bottom-4">
           <p className="text-sm font-semibold">Privacidade e métricas</p>
           <p className="mt-1 text-xs leading-5 text-text-muted">
-            Podemos usar métricas anônimas para entender acessos e melhorar o
-            site. Você pode recusar sem perder nenhuma funcionalidade. O Google
-            Analytics permanece sem armazenamento de Analytics até você aceitar.{" "}
+            O site mantém uma contagem básica e anônima de páginas visualizadas,
+            sem criar identificador persistente. Com sua permissão, também podemos
+            usar métricas adicionais para entender origem dos acessos, dispositivo
+            e campanhas. Você pode recusar sem perder nenhuma funcionalidade. O
+            Google Analytics permanece sem armazenamento de Analytics até você
+            aceitar.{" "}
             <Link href="/privacidade" className="text-gold underline">
               Saiba mais
             </Link>

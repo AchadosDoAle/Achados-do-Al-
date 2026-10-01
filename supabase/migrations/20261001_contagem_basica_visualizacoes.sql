@@ -1,14 +1,17 @@
 -- ============================================================
--- ANALYTICS DO ACHADO DO ALÊ
--- Rode UMA VEZ no SQL Editor do Supabase em uma instalação nova.
+-- ACHADO DO ALÊ — CONTAGEM BÁSICA DE VISUALIZAÇÕES
+-- 2026-10-01
 --
--- A contagem básica registra somente página + horário e não usa identificador
--- persistente. Sessões, origem, dispositivo e UTM ficam separadas e só são
--- alimentadas quando o visitante aceita métricas avançadas no site.
+-- Objetivo:
+-- 1) contabilizar pageviews públicos mesmo sem aceite das métricas avançadas;
+-- 2) não criar identificador persistente nessa contagem básica;
+-- 3) manter sessões/origem/dispositivo/UTM somente para quem aceitou métricas;
+-- 4) evitar dupla contagem quando o visitante aceitou as métricas.
 -- ============================================================
 
 create extension if not exists "pgcrypto";
 
+-- Garante a estrutura, inclusive em instalações antigas.
 create table if not exists public.analytics_sessions (
   visitor_id text primary key,
   first_seen timestamptz not null default now(),
@@ -48,16 +51,9 @@ create index if not exists analytics_pageviews_visitor_idx
 alter table public.analytics_sessions enable row level security;
 alter table public.analytics_pageviews enable row level security;
 
-drop policy if exists "Admin lê sessões de analytics" on public.analytics_sessions;
-create policy "Admin lê sessões de analytics"
-  on public.analytics_sessions for select
-  using (auth.role() = 'authenticated');
-
-drop policy if exists "Admin lê pageviews de analytics" on public.analytics_pageviews;
-create policy "Admin lê pageviews de analytics"
-  on public.analytics_pageviews for select
-  using (auth.role() = 'authenticated');
-
+-- Contador operacional mínimo.
+-- Usa um valor sentinela fixo em visitor_id para manter compatibilidade com a
+-- tabela já existente sem identificar o visitante.
 create or replace function public.track_basic_pageview(
   p_path text
 )
@@ -67,13 +63,34 @@ security definer
 set search_path = public
 as $$
 begin
-  if p_path is null or length(trim(p_path)) = 0 then return; end if;
-  if trim(p_path) ~ '^/(admin|login)(/|[?]|$)' then return; end if;
+  if p_path is null or length(trim(p_path)) = 0 then
+    return;
+  end if;
+
+  -- Proteção adicional: não contabiliza rotas administrativas/login mesmo que
+  -- a função seja chamada manualmente pelo cliente.
+  if trim(p_path) ~ '^/(admin|login)(/|[?]|$)' then
+    return;
+  end if;
 
   insert into public.analytics_pageviews (
-    visitor_id, path, referrer, source, device_type, utm_source, utm_medium, utm_campaign
+    visitor_id,
+    path,
+    referrer,
+    source,
+    device_type,
+    utm_source,
+    utm_medium,
+    utm_campaign
   ) values (
-    'basic-pageview', left(trim(p_path), 1000), null, 'Contagem básica', 'Não coletado', null, null, null
+    'basic-pageview',
+    left(trim(p_path), 1000),
+    null,
+    'Contagem básica',
+    'Não coletado',
+    null,
+    null,
+    null
   );
 end;
 $$;
@@ -81,6 +98,9 @@ $$;
 revoke all on function public.track_basic_pageview(text) from public;
 grant execute on function public.track_basic_pageview(text) to anon, authenticated;
 
+-- Métricas detalhadas: passa a registrar/atualizar SOMENTE a sessão.
+-- O pageview já é gravado pela função track_basic_pageview, evitando que um
+-- visitante que aceitou métricas seja contado duas vezes.
 create or replace function public.track_analytics_visit(
   p_visitor_id text,
   p_path text,
@@ -98,18 +118,41 @@ security definer
 set search_path = public
 as $$
 begin
-  if p_visitor_id is null or length(trim(p_visitor_id)) < 8 then return; end if;
-  if p_path is null or length(trim(p_path)) = 0 then return; end if;
-  if trim(p_path) ~ '^/(admin|login)(/|[?]|$)' then return; end if;
+  if p_visitor_id is null or length(trim(p_visitor_id)) < 8 then
+    return;
+  end if;
+
+  if p_path is null or length(trim(p_path)) = 0 then
+    return;
+  end if;
+
+  if trim(p_path) ~ '^/(admin|login)(/|[?]|$)' then
+    return;
+  end if;
 
   insert into public.analytics_sessions (
-    visitor_id, first_seen, last_seen, landing_path, current_path,
-    first_referrer, source, device_type, utm_source, utm_medium, utm_campaign
+    visitor_id,
+    first_seen,
+    last_seen,
+    landing_path,
+    current_path,
+    first_referrer,
+    source,
+    device_type,
+    utm_source,
+    utm_medium,
+    utm_campaign
   ) values (
-    left(trim(p_visitor_id), 120), now(), now(), left(p_path, 1000), left(p_path, 1000),
-    left(coalesce(p_referrer, ''), 1500), left(coalesce(p_source, 'Direto'), 300),
+    left(trim(p_visitor_id), 120),
+    now(),
+    now(),
+    left(p_path, 1000),
+    left(p_path, 1000),
+    left(coalesce(p_referrer, ''), 1500),
+    left(coalesce(p_source, 'Direto'), 300),
     left(coalesce(p_device_type, 'Desconhecido'), 100),
-    left(coalesce(p_utm_source, ''), 300), left(coalesce(p_utm_medium, ''), 300),
+    left(coalesce(p_utm_source, ''), 300),
+    left(coalesce(p_utm_medium, ''), 300),
     left(coalesce(p_utm_campaign, ''), 500)
   )
   on conflict (visitor_id) do update set
@@ -120,6 +163,9 @@ begin
     utm_source = case when excluded.utm_source <> '' then excluded.utm_source else analytics_sessions.utm_source end,
     utm_medium = case when excluded.utm_medium <> '' then excluded.utm_medium else analytics_sessions.utm_medium end,
     utm_campaign = case when excluded.utm_campaign <> '' then excluded.utm_campaign else analytics_sessions.utm_campaign end;
+
+  -- p_is_heartbeat permanece na assinatura por compatibilidade com o front-end.
+  -- Pageviews NÃO são mais inseridos aqui para evitar dupla contagem.
 end;
 $$;
 

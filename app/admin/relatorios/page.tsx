@@ -40,6 +40,9 @@ type Sessao = {
   source: string | null;
   device_type: string | null;
   current_path: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
 };
 
 type LinhaRecente = {
@@ -136,7 +139,7 @@ export default function RelatoriosPage() {
 
     let consultaSessoes = supabase
       .from("analytics_sessions")
-      .select("visitor_id,last_seen,source,device_type,current_path")
+      .select("visitor_id,last_seen,source,device_type,current_path,utm_source,utm_medium,utm_campaign")
       .order("last_seen", { ascending: false })
       .limit(5000);
 
@@ -195,12 +198,15 @@ export default function RelatoriosPage() {
     return () => window.clearInterval(id);
   }, [carregarOnline]);
 
-  const visitantesUnicos = new Set(pageviews.map((item) => item.visitor_id)).size;
-  const fontes = contarPor(pageviews, (item) => item.source);
-  const dispositivos = contarPor(pageviews, (item) => item.device_type);
+  // A contagem básica de pageviews não cria identificador persistente.
+  // Visitantes, origem, dispositivo e UTMs vêm somente das sessões detalhadas
+  // de quem autorizou métricas adicionais.
+  const visitantesUnicos = sessoes.length;
+  const fontes = contarPor(sessoes, (item) => item.source);
+  const dispositivos = contarPor(sessoes, (item) => item.device_type);
   const paginas = contarPor(pageviews, (item) => tituloPagina(item.path, ofertas));
   const campanhas = contarPor(
-    pageviews.filter((item) => item.utm_campaign),
+    sessoes.filter((item) => item.utm_campaign),
     (item) => item.utm_campaign
   );
   const acessosPorDia = contarPor(pageviews, (item) => new Date(item.criado_em).toLocaleDateString("pt-BR"));
@@ -228,8 +234,8 @@ export default function RelatoriosPage() {
       ["Período", PERIODOS.find((p) => p.valor === periodo)?.rotulo ?? periodo, ""],
       ["Métrica", "Item", "Valor"],
       ["Resumo", "Visualizações", pageviews.length],
-      ["Resumo", "Visitantes únicos", visitantesUnicos],
-      ["Resumo", "Online agora", onlineAgora],
+      ["Resumo", "Visitantes com métricas", visitantesUnicos],
+      ["Resumo", "Online com métricas", onlineAgora],
       ["Resumo", "Cliques de saída", cliques.length],
       ["Resumo", "CTR aproximada", `${ctr.toFixed(1)}%`],
       ["Resumo", "Ofertas publicadas", publicadas],
@@ -293,9 +299,9 @@ export default function RelatoriosPage() {
       )}
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-        <Cartao rotulo="Online agora" valor={onlineAgora} destaque />
+        <Cartao rotulo="Online c/ métricas" valor={onlineAgora} destaque />
         <Cartao rotulo="Visualizações" valor={pageviews.length} />
-        <Cartao rotulo="Visitantes únicos" valor={visitantesUnicos} />
+        <Cartao rotulo="Visitantes c/ métricas" valor={visitantesUnicos} />
         <Cartao rotulo="Cliques de saída" valor={cliques.length} />
         <Cartao rotulo="CTR aprox." valor={`${ctr.toFixed(1)}%`} />
         <Cartao rotulo="Ofertas ativas" valor={publicadas} />
@@ -306,8 +312,8 @@ export default function RelatoriosPage() {
       <div className="grid gap-5 lg:grid-cols-2">
         <ListaContagem titulo="Acessos por dia" subtitulo="Evolução das visualizações no período selecionado." dados={acessosPorDia} total={pageviews.length} limite={14} />
         <ListaContagem titulo="Cliques por dia" subtitulo="Evolução dos cliques de saída para as lojas." dados={cliquesPorDia} total={cliques.length} limite={14} />
-        <ListaContagem titulo="De onde vêm os acessos" subtitulo="Referrer e UTMs registrados pelo próprio site." dados={fontes} total={pageviews.length} />
-        <ListaContagem titulo="Dispositivos" subtitulo="Tipo de aparelho usado nos acessos." dados={dispositivos} total={pageviews.length} />
+        <ListaContagem titulo="De onde vêm os acessos" subtitulo="Origem registrada somente nas sessões que autorizaram métricas adicionais." dados={fontes} total={sessoes.length} />
+        <ListaContagem titulo="Dispositivos" subtitulo="Tipo de aparelho disponível somente nas sessões com métricas autorizadas." dados={dispositivos} total={sessoes.length} />
         <ListaContagem titulo="Páginas mais acessadas" subtitulo="Visualizações por página neste período." dados={paginas} total={pageviews.length} limite={8} />
         <ListaContagem titulo="Ofertas que mais geraram cliques" subtitulo="Cliques no redirecionamento de afiliado." dados={cliquesPorOferta} total={cliques.length} limite={8} />
         <ListaContagem titulo="Cliques por loja" dados={cliquesPorLoja} total={cliques.length} limite={8} />
@@ -315,7 +321,7 @@ export default function RelatoriosPage() {
       </div>
 
       {Object.keys(campanhas).length > 0 && (
-        <ListaContagem titulo="Campanhas UTM" subtitulo="Campanhas identificadas por utm_campaign." dados={campanhas} total={pageviews.length} limite={10} />
+        <ListaContagem titulo="Campanhas UTM" subtitulo="Campanhas identificadas nas sessões que autorizaram métricas adicionais." dados={campanhas} total={sessoes.length} limite={10} />
       )}
 
       <section className="rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
@@ -381,7 +387,7 @@ export default function RelatoriosPage() {
       </section>
 
       <p className="text-xs leading-5 text-ink/45">
-        “Online agora” considera visitantes com atividade nos últimos 2 minutos e é atualizado a cada 10 segundos. O rastreamento próprio usa um identificador anônimo salvo no navegador e não grava nome, e-mail, telefone ou endereço IP.
+        “Visualizações” usa a contagem operacional básica das páginas públicas e funciona independentemente do aceite das métricas avançadas. Essa trilha não cria identificador persistente. “Online c/ métricas”, origem, dispositivo e campanhas usam apenas sessões de visitantes que autorizaram métricas adicionais.
       </p>
     </div>
   );

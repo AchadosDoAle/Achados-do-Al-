@@ -1,0 +1,85 @@
+ACHADO DO ALÊ — CORREÇÃO DA CONTAGEM DE VISUALIZAÇÕES
+Data: 01/10/2026
+
+O QUE ESTA ATUALIZAÇÃO FAZ
+---------------------------
+1. As visualizações das páginas públicas passam a ser contabilizadas mesmo quando o visitante recusa as métricas avançadas.
+2. Essa contagem básica não cria identificador persistente do visitante.
+3. Origem, dispositivo, UTM, sessão e Google Analytics continuam condicionados ao aceite das métricas.
+4. /admin e /login não entram na contagem.
+5. O sistema evita dupla contagem para quem aceitou as métricas.
+6. A tabela analytics_pageviews continua sendo usada, portanto consumidores existentes que apenas contam os registros continuam compatíveis.
+
+PASSO 1 — ATUALIZAR OS ARQUIVOS DO PROJETO
+-------------------------------------------
+Substitua os arquivos desta versão no seu projeto atual, ou use o ZIP completo como nova base principal.
+
+PASSO 2 — TESTAR LOCALMENTE (RECOMENDADO)
+-----------------------------------------
+Na pasta do projeto:
+
+npm install
+npm run typecheck
+npm run build
+
+Se você já tem node_modules atualizado, não precisa rodar npm install novamente.
+
+PASSO 3 — PUBLICAR PELO GITHUB DESKTOP
+---------------------------------------
+Abra o GitHub Desktop e confira a aba Changes.
+
+Summary sugerido:
+Corrige contagem de visualizações do site
+
+Description sugerida:
+Separa a contagem básica de pageviews das métricas avançadas, permitindo contabilizar visualizações públicas sem depender do aceite do Analytics e evitando dupla contagem.
+
+Depois:
+1. Commit to main
+2. Push origin
+3. Aguarde o deploy da Vercel terminar
+
+PASSO 4 — RODAR O SQL NO SUPABASE
+----------------------------------
+Depois que a nova versão estiver publicada, abra:
+Supabase > SQL Editor > New query
+
+Abra o arquivo:
+supabase/migrations/20261001_contagem_basica_visualizacoes.sql
+
+Copie TODO o conteúdo, cole no SQL Editor e clique em RUN.
+
+Esse SQL:
+- cria track_basic_pageview(...);
+- atualiza track_analytics_visit(...) para não duplicar pageviews;
+- preserva os dados antigos;
+- não apaga visualizações, sessões ou cliques existentes;
+- atualiza o cache de schema do PostgREST.
+
+PASSO 5 — TESTAR
+----------------
+1. Abra uma janela anônima do navegador.
+2. Acesse https://achadosdoale.com
+3. No aviso de privacidade, clique em RECUSAR.
+4. Abra duas ou três páginas públicas/ofertas.
+5. Espere alguns segundos.
+6. Abra o painel administrativo > Relatórios.
+7. Confira se Visualizações aumentou.
+
+Para confirmar diretamente no Supabase, rode:
+
+select path, source, device_type, criado_em
+from public.analytics_pageviews
+order by criado_em desc
+limit 20;
+
+Os novos registros básicos devem aparecer com:
+source = Contagem básica
+device_type = Não coletado
+visitor_id = basic-pageview
+
+IMPORTANTE
+----------
+O valor fixo "basic-pageview" NÃO identifica uma pessoa. Ele funciona apenas como um marcador técnico para manter compatibilidade com a coluna obrigatória existente no banco.
+
+As visualizações anteriores que não foram registradas não podem ser reconstruídas retroativamente. A contagem correta começa a partir da instalação desta atualização.

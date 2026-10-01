@@ -70,3 +70,15 @@ Atualização 2026-09-26 — publicar/republicar na lista administrativa:
 - lib/offers-repo.ts
 - docs/PUBLICAR-REPUBLICAR-OFERTAS-2026-09-26.md (novo)
 - CHANGELOG.md
+
+2026-10-01 — Contagem básica de visualizações
+- components/BasicPageviewTracker.tsx
+- components/AnalyticsConsentGate.tsx
+- app/admin/relatorios/page.tsx
+- app/privacidade/page.tsx
+- supabase/migrations/20261001_contagem_basica_visualizacoes.sql
+- supabase/analytics.sql
+- supabase/schema.sql
+- supabase/profissionalizacao.sql
+- docs/CONTAGEM-BASICA-VISUALIZACOES-2026-10-01.md
+- PASSO-A-PASSO-CORRECAO-VISUALIZACOES.txt
