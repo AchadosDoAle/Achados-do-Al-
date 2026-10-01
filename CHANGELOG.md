@@ -1,3 +1,12 @@
+## 2026-10-01 — Frete grátis com MELI+ e Amazon Prime
+
+- Adicionados dois radio buttons opcionais no cadastro de ofertas: **MELI+** e **AMAZON PRIME**.
+- Selecionar uma das opções ativa **Frete grátis** e preenche automaticamente **Detalhes do frete grátis**.
+- O campo permanece editável para condições manuais e nenhuma das opções é obrigatória.
+- Adicionado comando **Limpar seleção** para voltar ao estado sem benefício pré-selecionado.
+- Desmarcar Frete grátis remove somente condições automáticas MELI+/Amazon Prime, preservando textos manuais.
+- Nenhuma alteração de banco de dados é necessária; o fluxo reutiliza `freteCondicao`.
+
 ## 2026-10-01 — Contagem básica de visualizações independente do consentimento
 
 - Corrigido o cenário em que o painel podia exibir cliques normalmente, mas `0` visualizações quando visitantes não aceitavam métricas avançadas.

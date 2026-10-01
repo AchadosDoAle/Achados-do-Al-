@@ -166,6 +166,37 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     }));
   }
 
+  function selecionarBeneficioFrete(beneficio: "MELI+" | "AMAZON PRIME") {
+    setValores((atual) => ({
+      ...atual,
+      freteGratis: true,
+      freteCondicao: beneficio,
+    }));
+  }
+
+  function limparBeneficioFrete() {
+    setValores((atual) => {
+      const condicaoAtual = paraCaixaAlta((atual.freteCondicao || "").trim());
+      const veioDeBeneficio = condicaoAtual === "MELI+" || condicaoAtual === "AMAZON PRIME";
+      return {
+        ...atual,
+        freteCondicao: veioDeBeneficio ? "" : atual.freteCondicao,
+      };
+    });
+  }
+
+  function atualizarFreteGratis(ativo: boolean) {
+    setValores((atual) => {
+      const condicaoAtual = paraCaixaAlta((atual.freteCondicao || "").trim());
+      const veioDeBeneficio = condicaoAtual === "MELI+" || condicaoAtual === "AMAZON PRIME";
+      return {
+        ...atual,
+        freteGratis: ativo,
+        ...(!ativo && veioDeBeneficio ? { freteCondicao: "" } : {}),
+      };
+    });
+  }
+
   function reconhecerTextoRecebido(textoBruto: string) {
     const texto = textoBruto.trim();
     if (!texto) {
@@ -776,9 +807,69 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               <Campo rotulo="Link do cupom"><input type="url" className={classeInput} value={valores.linkCupom} onChange={(e) => atualizarCampo("linkCupom", e.target.value)} /></Campo>
             </div>
             <Campo rotulo="Descrição do cupom"><textarea className={`${classeInput} uppercase`} rows={2} value={valores.cupomDescricao} onChange={(e) => atualizarCampo("cupomDescricao", paraCaixaAlta(e.target.value))} /></Campo>
-            <div className="rounded-2xl bg-cream p-3">
-              <label className="flex items-center gap-2 text-sm font-medium text-ink"><input type="checkbox" checked={valores.freteGratis} onChange={(e) => atualizarCampo("freteGratis", e.target.checked)} />Frete grátis</label>
-              <div className="mt-3"><Campo rotulo="Condição do frete"><input className={`${classeInput} uppercase`} value={valores.freteCondicao ?? ""} onChange={(e) => atualizarCampo("freteCondicao", paraCaixaAlta(e.target.value))} /></Campo></div>
+            <div className="rounded-2xl bg-cream p-3 sm:p-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={valores.freteGratis}
+                  onChange={(e) => atualizarFreteGratis(e.target.checked)}
+                />
+                Frete grátis
+              </label>
+
+              <div className="mt-4">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Benefício de frete grátis</p>
+                    <p className="mt-0.5 text-xs text-ink/50">Opcional. Escolha somente se a oferta exigir um destes benefícios.</p>
+                  </div>
+                  {(paraCaixaAlta((valores.freteCondicao || "").trim()) === "MELI+" ||
+                    paraCaixaAlta((valores.freteCondicao || "").trim()) === "AMAZON PRIME") && (
+                    <button
+                      type="button"
+                      onClick={limparBeneficioFrete}
+                      className="rounded-lg px-2 py-1 text-xs font-semibold text-brand transition hover:bg-brand/5"
+                    >
+                      Limpar seleção
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label className="flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border border-ink/10 bg-white px-3 py-3 text-sm font-semibold text-ink transition hover:border-brand/25 hover:bg-brand/[0.025]">
+                    <input
+                      type="radio"
+                      name="beneficioFreteGratis"
+                      value="MELI+"
+                      checked={paraCaixaAlta((valores.freteCondicao || "").trim()) === "MELI+"}
+                      onChange={() => selecionarBeneficioFrete("MELI+")}
+                    />
+                    <span className="min-w-0 break-words">MELI+</span>
+                  </label>
+
+                  <label className="flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border border-ink/10 bg-white px-3 py-3 text-sm font-semibold text-ink transition hover:border-brand/25 hover:bg-brand/[0.025]">
+                    <input
+                      type="radio"
+                      name="beneficioFreteGratis"
+                      value="AMAZON PRIME"
+                      checked={paraCaixaAlta((valores.freteCondicao || "").trim()) === "AMAZON PRIME"}
+                      onChange={() => selecionarBeneficioFrete("AMAZON PRIME")}
+                    />
+                    <span className="min-w-0 break-words">AMAZON PRIME</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <Campo rotulo="Detalhes do frete grátis">
+                  <input
+                    className={`${classeInput} uppercase`}
+                    value={valores.freteCondicao ?? ""}
+                    onChange={(e) => atualizarCampo("freteCondicao", paraCaixaAlta(e.target.value))}
+                    placeholder="Ex.: acima de R$ 79, MELI+ ou AMAZON PRIME"
+                  />
+                </Campo>
+              </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Estoque"><input className={`${classeInput} uppercase`} value={valores.estoque} onChange={(e) => atualizarCampo("estoque", paraCaixaAlta(e.target.value))} /></Campo>

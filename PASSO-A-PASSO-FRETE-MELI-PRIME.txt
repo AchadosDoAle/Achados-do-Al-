@@ -1,0 +1,37 @@
+ATUALIZAÇÃO — FRETE GRÁTIS MELI+ / AMAZON PRIME
+Data: 01/10/2026
+
+O QUE FOI ALTERADO
+- Cadastro/edição de ofertas ganhou duas opções opcionais de frete grátis: MELI+ e AMAZON PRIME.
+- Ao selecionar MELI+, o campo "Detalhes do frete grátis" recebe MELI+.
+- Ao selecionar AMAZON PRIME, o campo recebe AMAZON PRIME.
+- A escolha ativa automaticamente o checkbox "Frete grátis".
+- Nenhuma opção é obrigatória.
+- O campo continua livre para digitar outras condições manualmente.
+- Há opção "Limpar seleção" quando MELI+ ou AMAZON PRIME estiver marcado.
+
+SUPABASE
+- NÃO precisa executar SQL.
+- NÃO precisa alterar tabela.
+- A atualização reutiliza o campo freteCondicao já existente.
+
+GITHUB DESKTOP
+1. Faça backup da pasta atual do projeto, se desejar.
+2. Extraia o ZIP da atualização.
+3. Copie os arquivos para a pasta do projeto e substitua os existentes.
+4. Abra o GitHub Desktop e confira a aba Changes.
+5. Em Summary use:
+   Adiciona opções MELI+ e Amazon Prime no frete
+6. Em Description use:
+   Adiciona radio buttons opcionais para MELI+ e AMAZON PRIME no cadastro de ofertas, preenchendo automaticamente os detalhes do frete grátis sem alterar o banco de dados.
+7. Clique em Commit to main.
+8. Clique em Push origin.
+9. Aguarde o deploy da Vercel.
+10. Faça Ctrl + F5 no painel administrativo e teste uma nova oferta.
+
+TESTE
+- Sem marcar nada: deve ser possível salvar normalmente.
+- Selecionar MELI+: Frete grátis deve ficar ativo e Detalhes do frete grátis deve mostrar MELI+.
+- Selecionar AMAZON PRIME: deve substituir por AMAZON PRIME.
+- Digitar outro texto manualmente: os radios devem ficar sem seleção.
+- Clicar em Limpar seleção: deve remover MELI+/AMAZON PRIME do campo.
