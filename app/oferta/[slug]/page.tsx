@@ -222,22 +222,18 @@ export default async function PaginaOferta({
                     : "object-contain p-16 opacity-70"
                 } ${expirada ? "grayscale opacity-60" : ""}`}
               />
-              {!expirada && (desconto || oferta.ofertaBlack) ? (
-                <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
-                  {desconto ? (
-                    <span className="rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg shadow-md">
-                      -{desconto}%
-                    </span>
-                  ) : null}
-                  {oferta.ofertaBlack ? (
-                    <span
-                      className="bg-black px-4 py-1.5 pr-5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#f6c843] shadow-lg"
-                      style={{ clipPath: "polygon(0 0, 100% 0, 90% 50%, 100% 100%, 0 100%)" }}
-                    >
-                      OFERTA BLACK
-                    </span>
-                  ) : null}
-                </div>
+              {!expirada && desconto ? (
+                <span className="absolute right-3 top-3 z-10 rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg shadow-md">
+                  -{desconto}%
+                </span>
+              ) : null}
+              {!expirada && oferta.ofertaBlack ? (
+                <span
+                  className={`absolute left-0 z-10 bg-black py-1.5 pl-4 pr-6 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#f6c843] shadow-lg ${desconto ? "top-14" : "top-3"}`}
+                  style={{ clipPath: "polygon(0 0, 100% 0, 90% 50%, 100% 100%, 0 100%)" }}
+                >
+                  OFERTA BLACK
+                </span>
               ) : null}
             </div>
             {detalhesProduto ? <div className="mt-4 hidden md:block">{detalhesProduto}</div> : null}

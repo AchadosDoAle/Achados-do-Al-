@@ -1,4 +1,8 @@
 ## 2026-10-01 — Carimbo imutável, Oferta Black e detalhes do produto
+## 2026-10-01 — Ajuste da faixa Oferta Black
+- A faixa `OFERTA BLACK` passou a ficar ancorada na borda esquerda da imagem da promoção, tanto nos cards públicos quanto na página de detalhes.
+- O selo de percentual de desconto continua no canto superior direito, evitando sobreposição e melhorando a leitura no mobile.
+
 
 - Ofertas passam a tratar `publicado_em` como carimbo imutável da primeira publicação; republicações preservam a data.
 - Cupons ganham `publicado_em` com proteção por trigger no Supabase.
