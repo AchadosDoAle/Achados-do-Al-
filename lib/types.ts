@@ -61,6 +61,7 @@ export type Oferta = {
   textoPublicacao?: string;
   observacoes?: string;
   imagemPrincipal?: string;
+  ofertaBlack?: boolean;
   status: StatusOferta;
   agendadoPara?: string;
 
@@ -72,7 +73,7 @@ export type Oferta = {
 
 export type OfertaFormValues = Omit<
   Oferta,
-  "id" | "slug" | "criadoEm" | "atualizadoEm"
+  "id" | "slug" | "criadoEm" | "atualizadoEm" | "publicadoEm"
 >;
 
 export type EstiloTexto =
@@ -112,9 +113,10 @@ export type Cupom = {
   ativo: boolean;
   criadoEm: string;
   atualizadoEm: string;
+  publicadoEm: string;
 };
 
-export type CupomFormValues = Omit<Cupom, "id" | "criadoEm" | "atualizadoEm">;
+export type CupomFormValues = Omit<Cupom, "id" | "criadoEm" | "atualizadoEm" | "publicadoEm">;
 
 export const PALETA_CORES_LOJA = [
   { nome: "Amarelo", cor: "#FFC93C" },

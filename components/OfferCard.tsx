@@ -54,8 +54,20 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
               oferta.imagemPrincipal ? "object-cover" : "object-contain p-8 opacity-70"
             } ${expirada ? "grayscale opacity-60" : ""}`}
           />
-          {desconto ? (
-            <span className="absolute right-2 top-2 rounded-full bg-gold px-2 py-1 text-xs font-bold text-bg">-{desconto}%</span>
+          {(desconto || oferta.ofertaBlack) && !expirada ? (
+            <div className="absolute right-2 top-2 flex flex-col items-end gap-1.5">
+              {desconto ? (
+                <span className="rounded-full bg-gold px-2 py-1 text-xs font-bold text-bg">-{desconto}%</span>
+              ) : null}
+              {oferta.ofertaBlack ? (
+                <span
+                  className="bg-black px-2.5 py-1 pr-3 text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#f6c843] shadow-md"
+                  style={{ clipPath: "polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%)" }}
+                >
+                  OFERTA BLACK
+                </span>
+              ) : null}
+            </div>
           ) : null}
         </div>
 

@@ -11,6 +11,7 @@ import Container from "@/components/Container";
 import ReportarOferta from "@/components/ReportarOferta";
 import OfertaCompraFixa from "@/components/OfertaCompraFixa";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { formatarDataPublicacao } from "@/lib/datas";
 import {
   descricaoSocialDaOferta,
   imagemAbsolutaDaOferta,
@@ -109,6 +110,29 @@ export default async function PaginaOferta({
   // Todos os cliques de saída passam pelo redirecionador para alimentar os relatórios.
   const linkFinal = `${URL_SITE}/r/${oferta.id}`;
 
+  const caracteristicas = [
+    ["Marca", oferta.marca],
+    ["Modelo", oferta.modelo],
+    ["Cor", oferta.cor],
+    ["Tamanho", oferta.tamanho],
+    ["Voltagem", oferta.voltagem],
+    ["Capacidade", oferta.capacidade],
+  ].filter((item): item is [string, string] => Boolean(item[1]?.trim()));
+
+  const detalhesProduto = caracteristicas.length > 0 ? (
+    <div className="rounded-xl2 bg-card p-4 ring-1 ring-white/5">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-muted">Detalhes do produto</p>
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
+        {caracteristicas.map(([rotulo, valor]) => (
+          <div key={rotulo} className="min-w-0">
+            <dt className="text-[10px] font-semibold uppercase tracking-wide text-text-muted/70">{rotulo}</dt>
+            <dd className="mt-0.5 break-words text-sm font-semibold text-text">{valor}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  ) : null;
+
   const precoEstruturado = oferta.precoPix ?? oferta.precoAtual;
   const imagemEstruturada = oferta.imagemPrincipal
     ? new URL(oferta.imagemPrincipal, URL_SITE).toString()
@@ -198,12 +222,25 @@ export default async function PaginaOferta({
                     : "object-contain p-16 opacity-70"
                 } ${expirada ? "grayscale opacity-60" : ""}`}
               />
-              {!expirada && desconto ? (
-                <span className="absolute right-3 top-3 rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg">
-                  -{desconto}%
-                </span>
+              {!expirada && (desconto || oferta.ofertaBlack) ? (
+                <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+                  {desconto ? (
+                    <span className="rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg shadow-md">
+                      -{desconto}%
+                    </span>
+                  ) : null}
+                  {oferta.ofertaBlack ? (
+                    <span
+                      className="bg-black px-4 py-1.5 pr-5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#f6c843] shadow-lg"
+                      style={{ clipPath: "polygon(0 0, 100% 0, 90% 50%, 100% 100%, 0 100%)" }}
+                    >
+                      OFERTA BLACK
+                    </span>
+                  ) : null}
+                </div>
               ) : null}
             </div>
+            {detalhesProduto ? <div className="mt-4 hidden md:block">{detalhesProduto}</div> : null}
           </div>
 
           {/* Informações */}
@@ -286,6 +323,8 @@ export default async function PaginaOferta({
               </div>
             )}
 
+            {detalhesProduto ? <div className="mt-4 md:hidden">{detalhesProduto}</div> : null}
+
             {(oferta.cupom || oferta.cupomDescricao || oferta.linkCupom) && (
               <div className="mt-5 rounded-xl2 border border-gold/20 bg-gold/10 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">
@@ -330,6 +369,12 @@ export default async function PaginaOferta({
               <div className="mt-5 whitespace-pre-wrap rounded-xl2 bg-card p-4 text-sm text-text-muted ring-1 ring-white/5">
                 {oferta.textoPublicacao}
               </div>
+            )}
+
+            {oferta.publicadoEm && (
+              <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.08em] text-text-muted/55">
+                OFERTA POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
+              </p>
             )}
 
             <div className="mt-6 flex flex-col gap-2 sm:flex-row">

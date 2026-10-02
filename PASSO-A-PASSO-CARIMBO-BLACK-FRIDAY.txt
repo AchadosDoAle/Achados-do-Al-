@@ -1,0 +1,51 @@
+ACHADOS DO ALÊ — ATUALIZAÇÃO DE CARIMBO, BLACK FRIDAY E DETALHES DO PRODUTO
+
+ATENÇÃO: esta atualização altera o banco de dados.
+Execute primeiro o SQL e só depois publique o código novo.
+
+1) SUPABASE
+- Entre no Supabase do Achados do Alê.
+- Vá em SQL Editor > New query.
+- Abra no projeto o arquivo:
+  supabase/migrations/20261001_carimbo_black_friday.sql
+- Copie TODO o conteúdo para o SQL Editor.
+- Clique em RUN.
+- O script não apaga ofertas, cupons, cliques ou métricas existentes.
+
+O SQL:
+- adiciona offers.oferta_black;
+- adiciona coupons.publicado_em;
+- preenche carimbos históricos quando possível;
+- cria proteção no banco para o carimbo não ser alterado depois;
+- atualiza o cache do PostgREST.
+
+2) TESTE LOCAL
+Na pasta do projeto:
+  npm install
+  npm run typecheck
+  npm run build
+  npm run dev
+
+Teste:
+- criar/editar oferta e ativar Oferta Black Friday;
+- abrir a oferta pública e conferir faixa OFERTA BLACK;
+- preencher marca/modelo/cor/tamanho/voltagem/capacidade e conferir a página pública;
+- pesquisar uma oferta antiga no admin;
+- conferir data de postagem em oferta e cupom;
+- republicar uma oferta e confirmar que a data de postagem NÃO muda.
+
+3) GITHUB DESKTOP
+Summary sugerido:
+  Adiciona carimbo de postagem e Oferta Black
+
+Description sugerida:
+  Adiciona carimbo imutável de primeira postagem para ofertas e cupons, corrige a busca de registros antigos, cria opção Oferta Black Friday e exibe características do produto na página pública.
+
+Depois:
+- Commit to main
+- Push origin
+- aguarde o deploy da Vercel
+- faça Ctrl + F5 no site
+
+OBSERVAÇÃO SOBRE OFERTAS ANTIGAS
+Para registros antigos que não possuíam publicado_em, não existe como reconstruir com certeza a data exata da primeira publicação. Nesses casos, a migration usa criado_em como a melhor referência histórica disponível. Registros que já possuem publicado_em mantêm esse valor.

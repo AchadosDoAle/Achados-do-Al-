@@ -21,6 +21,7 @@ import { linkParecePertencerALoja } from "@/lib/validar-link";
 import { interpretarTextoOferta } from "@/lib/parse-oferta-texto";
 import PreviaWhatsApp from "./PreviaWhatsApp";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { formatarDataPublicacao } from "@/lib/datas";
 
 const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
@@ -57,6 +58,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   textoPublicacao: "",
   observacoes: "",
   imagemPrincipal: "",
+  ofertaBlack: false,
   status: "rascunho",
   agendadoPara: "",
 };
@@ -875,6 +877,25 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               <Campo rotulo="Estoque"><input className={`${classeInput} uppercase`} value={valores.estoque} onChange={(e) => atualizarCampo("estoque", paraCaixaAlta(e.target.value))} /></Campo>
               <Campo rotulo="Validade da promoção"><input type="date" className={classeInput} value={valores.validadePromocao} onChange={(e) => atualizarCampo("validadePromocao", e.target.value)} /><p className="mt-1 text-xs text-ink/50">Depois dessa data, a oferta fica visualmente esgotada automaticamente.</p></Campo>
             </div>
+
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-ink/10 bg-white px-4 py-3 transition hover:border-ink/20">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ink">Oferta Black Friday</p>
+                <p className="mt-0.5 text-xs leading-5 text-ink/50">
+                  Opcional. Quando ativo, exibe a faixa preta <strong>OFERTA BLACK</strong> na página pública do produto.
+                </p>
+              </div>
+              <span className="relative inline-flex h-7 w-12 shrink-0 items-center">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={Boolean(valores.ofertaBlack)}
+                  onChange={(e) => atualizarCampo("ofertaBlack", e.target.checked)}
+                />
+                <span className="absolute inset-0 rounded-full bg-ink/15 transition-colors peer-checked:bg-black" />
+                <span className="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+              </span>
+            </label>
           </div>
         </section>
 
@@ -919,6 +940,11 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                 <Campo rotulo="Status da publicação" obrigatorio><select className={classeInput} value={valores.status} onChange={(e) => atualizarCampo("status", e.target.value as StatusOferta)}>{statusOpcoes.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></Campo>
                 {valores.status === "agendada" && <Campo rotulo="Agendar para"><input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} /></Campo>}
               </div>
+              {ofertaExistente?.publicadoEm && (
+                <div className="rounded-xl border border-ink/10 bg-cream px-3 py-2 text-xs text-ink/55">
+                  Carimbo de postagem: <strong>{formatarDataPublicacao(ofertaExistente.publicadoEm)}</strong> · fixo e não editável.
+                </div>
+              )}
             </div>
           </div>
         </section>

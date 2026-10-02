@@ -36,6 +36,7 @@ create table if not exists public.offers (
   texto_publicacao text,
   observacoes text,
   imagem_principal text,
+  oferta_black boolean not null default false,
   status text not null default 'rascunho',
   agendado_para timestamptz,
   publicado_em timestamptz,

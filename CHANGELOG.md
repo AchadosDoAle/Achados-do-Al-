@@ -1,3 +1,15 @@
+## 2026-10-01 — Carimbo imutável, Oferta Black e detalhes do produto
+
+- Ofertas passam a tratar `publicado_em` como carimbo imutável da primeira publicação; republicações preservam a data.
+- Cupons ganham `publicado_em` com proteção por trigger no Supabase.
+- Datas de postagem aparecem de forma discreta nas páginas públicas e nas listagens administrativas.
+- Nova opção administrativa **Oferta Black Friday**, persistida em `offers.oferta_black`.
+- Ofertas marcadas exibem faixa preta **OFERTA BLACK** com texto dourado, desenhada em CSS.
+- Marca, modelo, cor, tamanho, voltagem e capacidade passam a aparecer na página pública quando preenchidos.
+- No desktop, as características ficam abaixo da foto; no mobile, aparecem em bloco compacto junto às informações do produto.
+- Pesquisa administrativa passa a percorrer o histórico em lotes, incluindo registros além do limite padrão de 1.000 linhas do PostgREST.
+- Migration `20261001_carimbo_black_friday.sql` adicionada sem apagar dados existentes.
+
 ## 2026-10-01 — Frete grátis com MELI+ e Amazon Prime
 
 - Adicionados dois radio buttons opcionais no cadastro de ofertas: **MELI+** e **AMAZON PRIME**.
@@ -44,7 +56,7 @@
 - A publicação/republicação acontece direto na listagem, sem precisar abrir a tela de edição.
 - Ao republicar uma oferta cuja validade já passou, a validade antiga é removida para evitar que ela continue aparecendo como vencida.
 - Ofertas expiradas por avisos de visitantes zeram os avisos anteriores antes de voltar ao ar.
-- A republicação atualiza `publicado_em`, remove agendamento pendente e mantém os demais dados da oferta.
+- A republicação remove agendamento pendente e mantém os demais dados; a partir da atualização de 01/10/2026, `publicado_em` preserva a primeira publicação.
 
 
 ## 2026-09-26 — Correção do owner inicial

@@ -8,6 +8,7 @@ import { Cupom, CupomFormValues, PALETA_CORES_LOJA } from "@/lib/types";
 import { salvarNovoCupom, atualizarCupom } from "@/lib/coupons-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { interpretarTextoCupom } from "@/lib/parse-cupom-texto";
+import { formatarDataPublicacao } from "@/lib/datas";
 
 const VALORES_INICIAIS: CupomFormValues = {
   loja: LOJAS[0],
@@ -441,14 +442,21 @@ export default function CupomForm({
             </span>
           </div>
 
-          <label className="flex items-center gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink">
-            <input
-              type="checkbox"
-              checked={valores.ativo}
-              onChange={(e) => atualizarCampo("ativo", e.target.checked)}
-            />
-            Ativo (visível na página pública de cupons)
-          </label>
+          <div className="flex flex-col gap-3">
+            <label className="flex items-center gap-2 rounded-xl bg-cream px-3 py-3 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={valores.ativo}
+                onChange={(e) => atualizarCampo("ativo", e.target.checked)}
+              />
+              Ativo (visível na página pública de cupons)
+            </label>
+            {cupomExistente?.publicadoEm && (
+              <div className="rounded-xl border border-ink/10 bg-cream px-3 py-2 text-xs text-ink/55">
+                Carimbo de postagem: <strong>{formatarDataPublicacao(cupomExistente.publicadoEm)}</strong> · fixo e não editável.
+              </div>
+            )}
+          </div>
         </section>
       </div>
 

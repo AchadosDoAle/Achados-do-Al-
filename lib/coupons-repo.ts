@@ -17,6 +17,7 @@ function linhaParaCupom(linha: any): Cupom {
     ativo: linha.ativo,
     criadoEm: linha.criado_em,
     atualizadoEm: linha.atualizado_em,
+    publicadoEm: linha.publicado_em ?? linha.criado_em,
   };
 }
 
@@ -66,13 +67,26 @@ export async function listarCuponsPaginados(
 export async function listarCuponsParaBuscaAdmin(
   supabase: SupabaseClient
 ): Promise<Cupom[]> {
-  const { data, error } = await supabase
-    .from("coupons")
-    .select("*")
-    .order("criado_em", { ascending: false });
+  const TAMANHO_LOTE = 1000;
+  const acumulado: any[] = [];
+  let inicio = 0;
 
-  if (error) throw error;
-  return (data ?? []).map(linhaParaCupom);
+  while (true) {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .order("criado_em", { ascending: false })
+      .range(inicio, inicio + TAMANHO_LOTE - 1);
+
+    if (error) throw error;
+    const lote = data ?? [];
+    acumulado.push(...lote);
+
+    if (lote.length < TAMANHO_LOTE) break;
+    inicio += TAMANHO_LOTE;
+  }
+
+  return acumulado.map(linhaParaCupom);
 }
 
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {

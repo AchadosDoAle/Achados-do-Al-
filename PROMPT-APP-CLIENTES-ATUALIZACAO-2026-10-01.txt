@@ -1,0 +1,72 @@
+ATUALIZE O PROJETO DO APLICATIVO ACHADOS DO ALÊ DESTINADO AOS CLIENTES.
+
+IMPORTANTE: Android e iOS estão no MESMO projeto e usam o MESMO Supabase do site achadosdoale.com. O banco já foi atualizado pelo site. NÃO execute SQL, NÃO crie tabelas e NÃO altere o schema do Supabase.
+
+Preserve integralmente todas as funcionalidades atuais do aplicativo, incluindo promoções, cupons, notificações, favoritos, compartilhamento, links, métricas, navegação e identidade visual.
+
+NOVOS CAMPOS DISPONÍVEIS NO BANCO
+- offers.oferta_black: boolean
+- offers.publicado_em: timestamptz já existente, agora tratado como carimbo imutável da primeira publicação
+- coupons.publicado_em: timestamptz
+
+OBJETIVOS
+
+1. CARIMBO DE POSTAGEM DAS OFERTAS
+Na tela de detalhes da oferta/produto, exiba discretamente:
+OFERTA POSTADA EM: DD/MM/AAAA
+
+Use `offers.publicado_em`.
+Não permita editar esse valor pelo aplicativo.
+Se estiver nulo em algum registro legado, simplesmente não exiba o texto; não invente data no app.
+
+2. CARIMBO DE POSTAGEM DOS CUPONS
+Na tela/detalhes do cupom, exiba discretamente:
+CUPOM POSTADO EM: DD/MM/AAAA
+
+Use `coupons.publicado_em`.
+Não permita edição.
+
+3. OFERTA BLACK FRIDAY
+Leia `offers.oferta_black`.
+Quando for `true`, exiba uma pequena faixa preta com texto amarelo/dourado:
+OFERTA BLACK
+
+A faixa deve aparecer visualmente próxima e logo abaixo do percentual de desconto quando houver percentual.
+Não use imagem pronta. Desenhe o componente nativamente no app, com aparência profissional, compacta e responsiva.
+Se não houver percentual de desconto, mantenha a faixa em posição equivalente sem quebrar o layout.
+
+4. CARACTERÍSTICAS DO PRODUTO
+Na tela de detalhes da oferta, sempre que os campos possuírem conteúdo, exiba:
+- Marca (`marca`)
+- Modelo (`modelo`)
+- Cor (`cor`)
+- Tamanho (`tamanho`)
+- Voltagem (`voltagem`)
+- Capacidade (`capacidade`)
+
+Não mostre rótulos vazios.
+No mobile, crie um bloco compacto chamado "Detalhes do produto", preferencialmente depois das informações principais de preço/frete e antes dos cupons/ações finais. Pode usar grade de 2 colunas quando houver espaço e 1 coluna em telas muito estreitas.
+
+5. COMPATIBILIDADE ANDROID + IOS
+Implemente com código compartilhado sempre que possível. Não duplique lógica sem necessidade. Garanta o mesmo comportamento visual e funcional nos dois sistemas.
+
+6. COMPATIBILIDADE COM REGISTROS ANTIGOS
+Trate `oferta_black` ausente/nulo como false.
+Trate `publicado_em` ausente/nulo sem erro.
+Não modifique dados históricos.
+
+7. NÃO ALTERAR O BANCO
+O banco já foi atualizado no projeto web. Este projeto deve apenas LER os novos campos. Não gere migration nem SQL.
+
+8. VALIDAÇÃO
+Teste pelo menos:
+- oferta normal sem faixa Black;
+- oferta Black com percentual de desconto;
+- oferta Black sem percentual;
+- oferta com todas as características preenchidas;
+- oferta com apenas uma característica;
+- cupom com carimbo de postagem;
+- registro legado com publicado_em nulo;
+- Android e iOS.
+
+Ao concluir, informe exatamente quais arquivos foram alterados e mostre onde cada novo campo do Supabase é mapeado no modelo do aplicativo.

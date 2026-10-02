@@ -3,6 +3,7 @@ import { cupomExpirado } from "@/lib/coupons-repo";
 import BotaoNomeCupom from "./BotaoNomeCupom";
 import BotaoCompartilharCupom from "./BotaoCompartilharCupom";
 import TermosCupom from "./TermosCupom";
+import { formatarDataPublicacao } from "@/lib/datas";
 
 export default function CupomCard({ cupom }: { cupom: Cupom }) {
   const expirado = cupomExpirado(cupom);
@@ -54,6 +55,12 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
         <p className="mt-2 text-xs text-text-muted">
           {expirado ? "Expirou em " : "Válido até "}
           {new Date(cupom.validade).toLocaleDateString("pt-BR")}
+        </p>
+      )}
+
+      {cupom.publicadoEm && (
+        <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.07em] text-text-muted/50">
+          CUPOM POSTADO EM: {formatarDataPublicacao(cupom.publicadoEm)}
         </p>
       )}
 

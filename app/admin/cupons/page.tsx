@@ -12,6 +12,7 @@ import {
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import Paginacao from "@/components/admin/Paginacao";
 import { textoCorrespondeBusca } from "@/lib/admin-search";
+import { formatarDataPublicacao } from "@/lib/datas";
 
 const ITENS_POR_PAGINA = 30;
 
@@ -28,6 +29,8 @@ function cupomCorrespondeBusca(cupom: Cupom, termo: string) {
     cupom.ativo ? "ativo" : "inativo arquivado",
     expirado ? "vencido vencida expirado expirada esgotado" : "",
     cupom.linkProdutos,
+    cupom.criadoEm,
+    cupom.publicadoEm,
   ]);
 }
 
@@ -262,6 +265,12 @@ export default function ListaCuponsPage() {
                       <div className="rounded-full bg-cream px-3 py-1">Sem validade</div>
                     )}
                   </div>
+
+                  {cupom.publicadoEm && (
+                    <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.06em] text-ink/40">
+                      POSTADO EM: {formatarDataPublicacao(cupom.publicadoEm)}
+                    </p>
+                  )}
 
                   <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium md:mt-3">
                     <Link

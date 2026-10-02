@@ -15,6 +15,7 @@ import StatusBadge from "@/components/admin/StatusBadge";
 import Paginacao from "@/components/admin/Paginacao";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
 import { textoCorrespondeBusca } from "@/lib/admin-search";
+import { formatarDataPublicacao } from "@/lib/datas";
 
 const ITENS_POR_PAGINA = 30;
 
@@ -47,6 +48,9 @@ function ofertaCorrespondeBusca(oferta: Oferta, termo: string) {
     oferta.tamanho,
     oferta.capacidade,
     oferta.linkProduto,
+    oferta.ofertaBlack ? "black friday oferta black" : "",
+    oferta.criadoEm,
+    oferta.publicadoEm,
   ]);
 }
 
@@ -324,7 +328,16 @@ export default function ListaOfertasPage() {
                       </div>
                     ) : null}
                     {oferta.cupom ? <div className="rounded-full bg-trust/10 px-3 py-1 text-trust">Cupom: {oferta.cupom}</div> : null}
+                    {oferta.ofertaBlack ? (
+                      <div className="rounded-full bg-black px-3 py-1 font-bold text-[#f6c843]">OFERTA BLACK</div>
+                    ) : null}
                   </div>
+
+                  {oferta.publicadoEm && (
+                    <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.06em] text-ink/40">
+                      POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
+                    </p>
+                  )}
 
                   <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium md:mt-3">
                     <Link

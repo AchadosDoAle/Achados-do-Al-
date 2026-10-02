@@ -1,0 +1,80 @@
+ATUALIZE O APLICATIVO ADMINISTRATIVO DO ACHADOS DO ALÊ.
+
+Este é o app separado usado pelos administradores para cadastrar promoções/cupons e consultar métricas. Ele utiliza o MESMO Supabase do site e do app dos clientes.
+
+IMPORTANTE: o banco JÁ FOI atualizado pelo site. NÃO execute SQL, NÃO crie tabelas e NÃO altere o schema.
+
+NOVOS/ATUALIZADOS CAMPOS NO BANCO
+- offers.oferta_black: boolean not null default false
+- offers.publicado_em: timestamptz, agora carimbo imutável da primeira publicação
+- coupons.publicado_em: timestamptz, carimbo imutável da postagem do cupom
+
+OBJETIVOS
+
+1. OFERTA BLACK FRIDAY
+Na criação e edição de ofertas, adicione um SWITCH/TOGGLE opcional chamado:
+Oferta Black Friday
+
+Mapeie para `offers.oferta_black`.
+Padrão: false.
+Não torne obrigatório.
+A alteração do switch deve ser persistida normalmente no Supabase.
+
+2. CARIMBO DE POSTAGEM
+Nas telas administrativas de ofertas e cupons, exiba de forma discreta:
+- POSTADA EM: DD/MM/AAAA para ofertas
+- POSTADO EM: DD/MM/AAAA para cupons
+
+Ofertas usam `offers.publicado_em`.
+Cupons usam `coupons.publicado_em`.
+
+NÃO crie campo de edição para essas datas.
+NÃO envie updates para `publicado_em`.
+O banco possui triggers que preservam o valor, mas o app também deve tratar o campo como somente leitura.
+
+3. REPUBLICAÇÃO
+Ao republicar uma oferta, NÃO atualize `publicado_em`.
+A republicação deve preservar o carimbo da primeira publicação.
+Se o código do app atualmente envia `publicado_em = now()` ao republicar, REMOVA esse comportamento.
+
+4. PESQUISA DE OFERTAS E CUPONS ANTIGOS
+Corrija a busca para localizar TODO o histórico, inclusive registros além do limite padrão de 1.000 linhas do Supabase/PostgREST.
+
+A pesquisa deve continuar:
+- ignorando acentos;
+- ignorando maiúsculas/minúsculas;
+- aceitando partes do texto;
+- procurando em nome/título, loja, categoria, marca, modelo, cupom e status;
+- permitindo localizar registros antigos para edição/arquivamento.
+
+NÃO carregue todo o histórico na abertura da tela. Preserve paginação/listagem leve. Se precisar varrer o histórico para a pesquisa, faça isso somente quando o usuário pesquisar, em lotes paginados, ou implemente consulta equivalente no backend sem alterar o banco.
+
+5. CARACTERÍSTICAS DO PRODUTO
+Garanta que os campos já existentes continuem sendo lidos e gravados corretamente:
+- marca
+- modelo
+- cor
+- tamanho
+- voltagem
+- capacidade
+
+Não remova nenhum deles.
+
+6. COMPATIBILIDADE
+Trate `oferta_black` nulo/ausente como false e `publicado_em` nulo sem quebrar telas antigas.
+Não altere autenticação, usuários, permissões, métricas, notificações nem demais fluxos do app.
+
+7. NÃO ALTERAR O BANCO
+O schema já foi migrado pelo projeto web. Não gere migration e não rode SQL neste app.
+
+8. TESTES
+Teste:
+- criar oferta Black e confirmar `oferta_black=true`;
+- editar e desligar a opção;
+- republicar oferta e confirmar que `publicado_em` não mudou;
+- visualizar carimbo em oferta e cupom;
+- pesquisar uma oferta muito antiga;
+- pesquisar sem acento e por trecho do nome;
+- paginação/lista continuar leve.
+
+Ao concluir, informe quais arquivos foram alterados e quais queries/serviços foram modificados para garantir a busca de registros antigos.

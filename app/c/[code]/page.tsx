@@ -10,6 +10,7 @@ import {
 import { cupomExpirado } from "@/lib/coupons-repo";
 import { URL_SITE } from "@/lib/seo-brand";
 import RedirecionarCupom from "@/components/RedirecionarCupom";
+import { formatarDataPublicacao } from "@/lib/datas";
 
 export const revalidate = 0;
 
@@ -107,7 +108,13 @@ export default async function PaginaCupomCompartilhado({
             </p>
           )}
 
-          <Link href="/cupons" className="mt-5 block text-sm font-semibold text-gold hover:underline">
+          {cupom.publicadoEm && (
+            <p className="mt-5 text-[10px] font-medium uppercase tracking-[0.07em] text-text-muted/50">
+              CUPOM POSTADO EM: {formatarDataPublicacao(cupom.publicadoEm)}
+            </p>
+          )}
+
+          <Link href="/cupons" className="mt-4 block text-sm font-semibold text-gold hover:underline">
             Ver todos os cupons
           </Link>
         </div>

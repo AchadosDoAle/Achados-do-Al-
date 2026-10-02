@@ -41,6 +41,7 @@ export function linhaParaOferta(linha: any): Oferta {
     textoPublicacao: linha.texto_publicacao ?? undefined,
     observacoes: linha.observacoes ?? undefined,
     imagemPrincipal: linha.imagem_principal ?? undefined,
+    ofertaBlack: linha.oferta_black ?? false,
     status: linha.status,
     agendadoPara: isoParaDatetimeLocalBrasilia(linha.agendado_para),
     criadoEm: linha.criado_em,
@@ -99,6 +100,7 @@ function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
     texto_publicacao: valores.textoPublicacao || null,
     observacoes: valores.observacoes || null,
     imagem_principal: valores.imagemPrincipal || null,
+    oferta_black: valores.ofertaBlack ?? false,
     status: valores.status,
     agendado_para: datetimeLocalBrasiliaParaIso(valores.agendadoPara),
   };
@@ -118,7 +120,7 @@ function gerarSlug(titulo: string) {
 const CAMPOS_ADMIN_LISTA = [
   "id", "slug", "titulo", "loja", "categoria", "marca", "modelo",
   "preco_antigo", "preco_atual", "preco_pix", "cupom", "cupom_descricao",
-  "validade_promocao", "link_produto", "status", "criado_em", "atualizado_em",
+  "validade_promocao", "link_produto", "oferta_black", "status", "criado_em", "atualizado_em",
   "publicado_em"
 ].join(",");
 
@@ -154,13 +156,29 @@ export async function listarOfertasPaginadas(
 export async function listarOfertasParaBuscaAdmin(
   supabase: SupabaseClient
 ): Promise<Oferta[]> {
-  const { data, error } = await supabase
-    .from("offers")
-    .select(CAMPOS_ADMIN_BUSCA)
-    .order("criado_em", { ascending: false });
+  // O PostgREST/Supabase costuma limitar uma consulta a até 1.000 linhas.
+  // A pesquisa administrativa precisa alcançar também as ofertas antigas, então
+  // buscamos em lotes até chegar ao fim da tabela antes de filtrar no navegador.
+  const TAMANHO_LOTE = 1000;
+  const acumulado: any[] = [];
+  let inicio = 0;
 
-  if (error) throw error;
-  return (data ?? []).map(linhaParaOferta);
+  while (true) {
+    const { data, error } = await supabase
+      .from("offers")
+      .select(CAMPOS_ADMIN_BUSCA)
+      .order("criado_em", { ascending: false })
+      .range(inicio, inicio + TAMANHO_LOTE - 1);
+
+    if (error) throw error;
+    const lote = data ?? [];
+    acumulado.push(...lote);
+
+    if (lote.length < TAMANHO_LOTE) break;
+    inicio += TAMANHO_LOTE;
+  }
+
+  return acumulado.map(linhaParaOferta);
 }
 
 export async function listarOfertas(
@@ -186,7 +204,7 @@ const CAMPOS_CARD = [
   "preco_antigo", "preco_atual", "preco_pix", "oferece_parcelamento",
   "parcelas", "valor_parcela", "parcelamento_sem_juros", "cupom",
   "frete_gratis", "validade_promocao", "link_produto", "imagem_principal",
-  "status", "criado_em", "atualizado_em"
+  "oferta_black", "status", "criado_em", "atualizado_em", "publicado_em"
 ].join(",");
 
 export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {
@@ -272,7 +290,7 @@ export async function duplicarOferta(
   const original = await buscarOfertaPorId(supabase, id);
   if (!original) throw new Error("Oferta não encontrada");
 
-  const { id: _id, slug: _slug, criadoEm, atualizadoEm, ...resto } = original;
+  const { id: _id, slug: _slug, criadoEm, atualizadoEm, publicadoEm, ...resto } = original;
   return salvarNovaOferta(supabase, {
     ...resto,
     titulo: `${original.titulo} (cópia)`,
@@ -304,9 +322,14 @@ export async function publicarOfertaAgora(
   const atualizacoes: Record<string, unknown> = {
     status: "publicada",
     agendado_para: null,
-    publicado_em: agora,
     atualizado_em: agora,
   };
+
+  // O carimbo de postagem representa a PRIMEIRA publicação e não pode mudar
+  // em republicações. A migration também reforça essa regra no próprio banco.
+  if (!oferta.publicadoEm) {
+    atualizacoes.publicado_em = agora;
+  }
 
   // Uma validade antiga faria a oferta continuar aparecendo como vencida
   // imediatamente depois da republicação. Nesse caso, removemos somente a
