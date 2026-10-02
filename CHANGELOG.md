@@ -184,3 +184,7 @@
 - Adicionada sincronizacao ao retornar para uma aba que ficou em segundo plano.
 - Listener fica desativado em `/admin` e `/login` para nao interferir em formularios administrativos.
 - Adicionada migration idempotente para habilitar `offers` e `coupons` na publication `supabase_realtime`.
+
+## 2026-10-02 — Características opcionais sempre visíveis no admin
+- A seção "Características opcionais" da Etapa 5 do cadastro/edição de ofertas deixou de ser recolhível.
+- Voltagem, Cor, Tamanho e Capacidade permanecem sempre visíveis no painel administrativo, sem alterar o funcionamento ou a obrigatoriedade dos campos.

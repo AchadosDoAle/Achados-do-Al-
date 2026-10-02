@@ -904,15 +904,15 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             <div><h2 className="font-display text-lg font-bold text-ink">Detalhes e imagem</h2><p className="text-sm text-ink/55">Só revise o que for relevante para o produto.</p></div>
             <span className="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">Etapa 5</span>
           </div>
-          <details className="rounded-2xl border border-ink/10 bg-cream/70 p-4">
-            <summary className="cursor-pointer text-sm font-semibold text-ink">Características opcionais</summary>
+          <div className="rounded-2xl border border-ink/10 bg-cream/70 p-4">
+            <p className="text-sm font-semibold text-ink">Características opcionais</p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Campo rotulo="Voltagem"><input className={`${classeInput} uppercase`} value={valores.voltagem} onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))} /></Campo>
               <Campo rotulo="Cor"><input className={`${classeInput} uppercase`} value={valores.cor} onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))} /></Campo>
               <Campo rotulo="Tamanho"><input className={`${classeInput} uppercase`} value={valores.tamanho} onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))} /></Campo>
               <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))} /></Campo>
             </div>
-          </details>
+          </div>
           <div className="mt-4 rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
             <Campo rotulo="Imagem principal"><input type="file" accept="image/*" onChange={aoEscolherImagem} /></Campo>
             {enviandoImagem && <p className="mt-2 text-xs text-ink/50">Enviando imagem...</p>}

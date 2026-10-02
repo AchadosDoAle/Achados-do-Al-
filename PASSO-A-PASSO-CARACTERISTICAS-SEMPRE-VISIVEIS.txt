@@ -1,0 +1,18 @@
+ACHADOS DO ALÊ — CARACTERÍSTICAS SEMPRE VISÍVEIS
+
+Alteração realizada:
+- Na Etapa 5 do cadastro/edição de ofertas, a seção "Características opcionais" não pode mais ser recolhida.
+- Voltagem, Cor, Tamanho e Capacidade ficam sempre visíveis.
+- Os campos continuam opcionais.
+- Nenhuma alteração no Supabase é necessária.
+
+PUBLICAÇÃO PELO GITHUB DESKTOP
+1. Extraia o patch dentro da pasta principal do projeto e substitua os arquivos quando solicitado.
+2. Abra o GitHub Desktop e confira a aba Changes.
+3. Summary sugerido:
+   Mantém características do produto sempre visíveis
+4. Description sugerida:
+   Remove o recolhimento da seção de características opcionais na Etapa 5, mantendo Voltagem, Cor, Tamanho e Capacidade sempre visíveis no painel administrativo.
+5. Clique em Commit to main.
+6. Clique em Push origin.
+7. Aguarde o deploy da Vercel e depois use Ctrl + F5 no navegador.
