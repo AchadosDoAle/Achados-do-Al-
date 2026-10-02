@@ -1,0 +1,44 @@
+ACHADOS DO ALE - ATUALIZACAO AO VIVO DA VITRINE
+================================================
+
+O QUE FOI FEITO
+- O site publico agora escuta alteracoes do Supabase Realtime nas tabelas offers e coupons.
+- Quando uma oferta/cupom e publicado, alterado ou removido, as paginas publicas sao atualizadas sem F5.
+- Nao ha recarregamento completo do navegador: o Next.js usa router.refresh().
+- Home, categorias, cupons, ofertas e arquivo de promocoes recebem dados novos automaticamente.
+- Favoritos tambem refaz a consulta quando uma oferta muda.
+- O painel /admin e /login ficam fora do listener para nao interromper formularios.
+- Ao voltar para uma aba que ficou em segundo plano, o site faz uma sincronizacao de seguranca.
+
+ETAPA OBRIGATORIA NO SUPABASE
+1. Abra Supabase > SQL Editor > New query.
+2. Abra o arquivo:
+   supabase/migrations/20261001_realtime_ofertas_cupons.sql
+3. Copie todo o conteudo.
+4. Cole no SQL Editor.
+5. Clique em RUN.
+
+Esse SQL NAO apaga nada. Apenas habilita as tabelas offers e coupons na publication supabase_realtime.
+
+PUBLICAR COM GITHUB DESKTOP
+1. Copie os arquivos atualizados para o projeto.
+2. Abra GitHub Desktop.
+3. Confira a aba Changes.
+4. Summary sugerido:
+   Atualiza ofertas e cupons em tempo real
+5. Description sugerida:
+   Adiciona sincronizacao em tempo real da vitrine publica com Supabase Realtime, atualizando ofertas e cupons sem recarregar a pagina.
+6. Clique em Commit to main.
+7. Clique em Push origin.
+8. Aguarde o deploy da Vercel.
+
+COMO TESTAR
+1. Abra achadosdoale.com em uma janela normal e deixe a home aberta.
+2. Em outra aba/dispositivo, entre no painel administrativo.
+3. Publique uma nova oferta.
+4. Volte para a home que ficou aberta.
+5. A nova oferta deve aparecer automaticamente, sem F5.
+6. Repita o teste com um cupom na pagina /cupons.
+
+OBSERVACAO
+O Realtime respeita as politicas de acesso do Supabase. A vitrine publica continua enxergando apenas o que suas politicas RLS permitem.

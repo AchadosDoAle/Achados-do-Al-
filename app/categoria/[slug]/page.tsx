@@ -11,6 +11,8 @@ import { CATEGORIAS_ADMIN, CATEGORIA_OUTROS } from "@/lib/mock-data";
 import { slugificar } from "@/lib/texto";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
 
+export const revalidate = 0;
+
 function categoriaPorSlug(slug: string) {
   return CATEGORIAS_ADMIN.filter((c) => c !== CATEGORIA_OUTROS).find((c) => slugificar(c) === slug);
 }

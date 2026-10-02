@@ -16,17 +16,44 @@ export default function FavoritosPage() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    async function carregar() {
+    let ativo = true;
+
+    async function carregar(mostrarCarregando = false) {
+      if (mostrarCarregando && ativo) setCarregando(true);
+
       const ids = listarFavoritos();
       if (ids.length === 0) {
-        setCarregando(false);
+        if (ativo) {
+          setOfertas([]);
+          setCarregando(false);
+        }
         return;
       }
-      const supabase = criarClientePublico();
-      setOfertas(await listarOfertasPorIds(supabase, ids));
-      setCarregando(false);
+
+      try {
+        const supabase = criarClientePublico();
+        const novasOfertas = await listarOfertasPorIds(supabase, ids);
+        if (ativo) setOfertas(novasOfertas);
+      } finally {
+        if (ativo) setCarregando(false);
+      }
     }
-    carregar();
+
+    void carregar(true);
+
+    // O listener global de Realtime dispara este evento quando alguma oferta
+    // muda no banco. Favoritos é uma tela Client Component, então refazemos a
+    // consulta para refletir preço, status e demais dados sem F5.
+    function aoAtualizarConteudo() {
+      void carregar(false);
+    }
+
+    window.addEventListener("achado:conteudo-atualizado", aoAtualizarConteudo);
+
+    return () => {
+      ativo = false;
+      window.removeEventListener("achado:conteudo-atualizado", aoAtualizarConteudo);
+    };
   }, []);
 
   return (

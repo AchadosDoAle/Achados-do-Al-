@@ -174,3 +174,13 @@
 - Mantém o botão do olho fixo e centralizado dentro do campo de senha.
 - Remove o deslocamento vertical herdado da animação global de botões.
 - Mantém apenas uma interação sutil de cor/sombra no hover e leve escala no clique.
+
+## 2026-10-01 - Atualizacao ao vivo da vitrine publica
+- Adicionado listener global do Supabase Realtime para `offers` e `coupons`.
+- Paginas publicas passam a receber novas publicacoes e alteracoes sem recarregar o navegador.
+- Atualizacao usa `router.refresh()` do Next.js, evitando reload completo da pagina.
+- Pagina de categoria marcada com `revalidate = 0` para garantir dados atuais em cada refresh.
+- Favoritos refaz sua consulta quando uma oferta recebe alteracao em tempo real.
+- Adicionada sincronizacao ao retornar para uma aba que ficou em segundo plano.
+- Listener fica desativado em `/admin` e `/login` para nao interferir em formularios administrativos.
+- Adicionada migration idempotente para habilitar `offers` e `coupons` na publication `supabase_realtime`.
