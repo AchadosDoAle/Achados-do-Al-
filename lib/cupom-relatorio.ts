@@ -42,23 +42,40 @@ function beneficioRelatorio(cupom: Cupom) {
   return valor || "DESCONTO NÃO INFORMADO";
 }
 
+function removerTrechosEmNegrito(texto?: string) {
+  if (!texto) return "";
+
+  return texto
+    // O mini relatório é propositalmente enxuto: trechos destacados com **...**
+    // ficam de fora para evitar mensagens muito longas no compartilhamento.
+    .replace(/\*\*[\s\S]*?\*\*/g, "")
+    .split(/\r?\n/)
+    .map((linha) => linha.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function termosRelatorio(cupom: Cupom) {
   return (
-    cupom.observacoes?.trim() ||
-    cupom.descricao?.trim() ||
-    "SEM OBSERVAÇÕES / TERMOS DE USO"
+    removerTrechosEmNegrito(cupom.observacoes) ||
+    removerTrechosEmNegrito(cupom.descricao)
   );
 }
 
 export function montarRelatorioCupons(cupons: Cupom[]) {
   return cupons
-    .map((cupom) =>
-      [
+    .map((cupom) => {
+      const termos = termosRelatorio(cupom);
+      const validade = formatarValidadeRelatorioCupom(cupom.validade);
+
+      return [
         `${cupom.nomeCupom} - ${beneficioRelatorio(cupom)}`,
-        `${termosRelatorio(cupom)} - ${formatarValidadeRelatorioCupom(cupom.validade)}`,
+        termos ? `${termos} - ${validade}` : `VALIDADE: ${validade}`,
         urlCurtaDoCupom(cupom.id),
         SEPARADOR,
-      ].join("\n")
-    )
+      ].join("\n");
+    })
     .join("\n");
 }

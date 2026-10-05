@@ -1,3 +1,10 @@
+## 2026-10-05 — Mini relatório de cupons mais enxuto
+
+- Trechos formatados em negrito com `**...**` nas observações/termos são omitidos do mini relatório compartilhável.
+- Informações curtas não destacadas continuam aparecendo junto da validade.
+- Quando não sobra nenhum termo curto, o relatório mostra apenas `VALIDADE: data e hora`.
+- Nenhuma alteração de banco de dados é necessária.
+
 ## 2026-10-01 — Carimbo imutável, Oferta Black e detalhes do produto
 ## 2026-10-01 — Ajuste da faixa Oferta Black
 - A faixa `OFERTA BLACK` passou a ficar ancorada na borda esquerda da imagem da promoção, tanto nos cards públicos quanto na página de detalhes.
