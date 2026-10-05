@@ -1,0 +1,46 @@
+ATUALIZAÇÃO WEB — MINI RELATÓRIO DE CUPONS SELECIONADOS
+Data: 05/10/2026
+
+Esta alteração foi feita SOMENTE no site/painel administrativo web.
+Não altera os apps Android/iOS nem o app administrativo Android.
+Não exige SQL nem mudança no Supabase.
+
+O QUE MUDOU
+1. Na página /admin/cupons, cada card agora possui uma caixa de seleção.
+2. Você pode marcar somente os cupons que quiser compartilhar.
+3. A seleção continua ativa mesmo ao trocar de página na listagem.
+4. Existe um bloco "Mini relatório de cupons" com:
+   - Selecionar desta tela
+   - Copiar relatório
+   - Compartilhar selecionados
+   - Limpar seleção
+5. O relatório mostra uma prévia antes de compartilhar.
+6. Os links usados no relatório são os links curtos do próprio Achado do Alê (/c/...), portanto passam pelo site antes do redirecionamento.
+
+FORMATO DO RELATÓRIO
+NOME DO CUPOM - X% DE DESCONTO
+OBSERVAÇÕES / TERMOS DE USO - DD/MM/AAAA às HH:MM
+https://achadosdoale.com/c/...
+--------------------------------------------------------
+
+Quando não houver porcentagem, será utilizado o valor/benefício textual do cupom. Se não houver nenhum dos dois, aparecerá "DESCONTO NÃO INFORMADO".
+
+PUBLICAR PELO GITHUB DESKTOP
+1. Faça backup da pasta atual do projeto.
+2. Substitua os arquivos do patch dentro da pasta principal do site.
+3. Abra o GitHub Desktop e confirme as alterações em Changes.
+4. Em Summary, use:
+   Adiciona relatório de cupons selecionados
+5. Em Description, use:
+   Adiciona seleção de cupons no painel web e gera relatório compartilhável com benefício, termos, validade e link curto do Achado do Alê.
+6. Clique em Commit to main.
+7. Clique em Push origin.
+8. Aguarde o deploy da Vercel.
+9. Abra /admin/cupons e pressione Ctrl + F5.
+
+TESTE
+- Marque 2 ou 3 cupons em páginas diferentes.
+- Confira se o contador de selecionados permanece correto.
+- Confira a prévia.
+- Teste "Copiar relatório".
+- Teste "Compartilhar selecionados".

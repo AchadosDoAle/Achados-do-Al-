@@ -188,3 +188,10 @@
 ## 2026-10-02 — Características opcionais sempre visíveis no admin
 - A seção "Características opcionais" da Etapa 5 do cadastro/edição de ofertas deixou de ser recolhível.
 - Voltagem, Cor, Tamanho e Capacidade permanecem sempre visíveis no painel administrativo, sem alterar o funcionamento ou a obrigatoriedade dos campos.
+
+## 2026-10-05 — Mini relatório de cupons selecionados (web admin)
+- Adiciona seleção manual de cupons em `/admin/cupons`.
+- Gera relatório textual dos cupons selecionados com benefício, termos, validade com hora e link curto do site.
+- Adiciona compartilhamento via Web Share API e cópia para área de transferência.
+- Seleção persiste entre páginas da listagem administrativa.
+- Alteração somente web; sem mudanças no Supabase ou nos aplicativos.
