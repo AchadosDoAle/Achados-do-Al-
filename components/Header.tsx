@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Container from "./Container";
 
 function CampoBusca({ className }: { className: string }) {
@@ -33,6 +33,13 @@ function CampoBusca({ className }: { className: string }) {
 }
 
 export default function Header() {
+  const pathname = usePathname();
+
+  const categoriasAtiva = pathname === "/categorias" || pathname.startsWith("/categoria/");
+  const cuponsAtivo = pathname === "/cupons";
+  const favoritosAtivo = pathname === "/favoritos";
+  const perdeuAtivo = pathname === "/perdeu";
+
   return (
     <header className="sticky top-0 z-20 bg-bg-secondary/95 backdrop-blur">
       <Container className="px-4 py-3">
@@ -57,16 +64,32 @@ export default function Header() {
             <Link href="/" className="nav-link-modern">
               Início
             </Link>
-            <Link href="/categorias" className="nav-link-modern">
+            <Link
+              href="/categorias"
+              aria-current={categoriasAtiva ? "page" : undefined}
+              className={`nav-link-modern ${categoriasAtiva ? "nav-link-active" : ""}`}
+            >
               Categorias
             </Link>
-            <Link href="/cupons" className="nav-link-modern">
+            <Link
+              href="/cupons"
+              aria-current={cuponsAtivo ? "page" : undefined}
+              className={`nav-link-modern ${cuponsAtivo ? "nav-link-active" : ""}`}
+            >
               Cupons
             </Link>
-            <Link href="/favoritos" className="nav-link-modern">
+            <Link
+              href="/favoritos"
+              aria-current={favoritosAtivo ? "page" : undefined}
+              className={`nav-link-modern ${favoritosAtivo ? "nav-link-active" : ""}`}
+            >
               Favoritos
             </Link>
-            <Link href="/perdeu" className="nav-link-modern text-gold/90">
+            <Link
+              href="/perdeu"
+              aria-current={perdeuAtivo ? "page" : undefined}
+              className={`nav-link-modern ${perdeuAtivo ? "nav-link-active" : ""}`}
+            >
               Já perdeu?
             </Link>
             <a

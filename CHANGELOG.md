@@ -207,3 +207,11 @@
 - Expande a página `/privacidade` com escopo para site, Android e iOS.
 - Documenta LGPD, bases legais, cookies, armazenamento local, métricas, cliques, avisos de ofertas, administradores, apps móveis, operadores, transferências internacionais, afiliados, retenção, segurança, direitos dos titulares e crianças/adolescentes.
 - Inclui links para referências oficiais da ANPD, LGPD e Marco Civil da Internet.
+
+## 2026-10-06 — Destaque da página atual no menu
+
+- O menu superior agora destaca a seção em que o visitante está navegando.
+- `Categorias` permanece destacado também dentro de páginas `/categoria/...`.
+- `Cupons`, `Favoritos` e `Já perdeu?` recebem estado ativo apenas em suas respectivas páginas.
+- `Início` permanece sem destaque na Home, conforme solicitado.
+- A navegação mobile recebeu o mesmo comportamento para manter consistência visual.

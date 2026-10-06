@@ -1,0 +1,18 @@
+ATUALIZAÇÃO — DESTAQUE DA PÁGINA ATUAL NO MENU
+
+O que foi alterado:
+- Categorias fica destacada em /categorias e em qualquer /categoria/...
+- Cupons fica destacado em /cupons
+- Favoritos fica destacado em /favoritos
+- Já perdeu? fica destacado em /perdeu
+- Início NÃO fica destacado quando o usuário está na Home
+- O mesmo comportamento foi aplicado à navegação mobile do site
+
+Não há alteração no Supabase e não é necessário executar SQL.
+
+GitHub Desktop
+Summary:
+Destaca página atual no menu
+
+Description:
+Adiciona estado ativo ao menu de navegação para indicar a página atual, mantendo Início sem destaque na Home e aplicando o mesmo comportamento no mobile.
