@@ -203,3 +203,7 @@
 - Seleção persiste entre páginas da listagem administrativa.
 - Alteração somente web; sem mudanças no Supabase ou nos aplicativos.
 \n## 2026-10-06 — Mini relatório de cupons ultracompacto\n- O compartilhamento de cupons selecionados passou a usar apenas nome do cupom em negrito, benefício, validade e link curto.\n- Observações e termos de uso deixaram de ser incluídos no mini relatório para reduzir o tamanho da mensagem.\n- Quando existir um benefício textual em `valorCupom` (ex.: `22% OFF`), ele é preservado; caso contrário, usa-se o percentual cadastrado.\n
+## 2026-10-06 — Política de Privacidade completa
+- Expande a página `/privacidade` com escopo para site, Android e iOS.
+- Documenta LGPD, bases legais, cookies, armazenamento local, métricas, cliques, avisos de ofertas, administradores, apps móveis, operadores, transferências internacionais, afiliados, retenção, segurança, direitos dos titulares e crianças/adolescentes.
+- Inclui links para referências oficiais da ANPD, LGPD e Marco Civil da Internet.
