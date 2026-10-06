@@ -335,7 +335,7 @@ export default function ListaCuponsPage() {
               id="relatorio-cupons-selecionados"
               readOnly
               value={relatorioSelecionados}
-              rows={Math.min(12, Math.max(5, selecionados.length * 4))}
+              rows={Math.min(12, Math.max(4, selecionados.length * 3))}
               className="mt-2 w-full resize-y rounded-[14px] border border-brand/15 bg-cream/35 px-3 py-3 font-mono text-xs leading-5 text-ink outline-none"
             />
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">

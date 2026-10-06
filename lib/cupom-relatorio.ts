@@ -34,45 +34,23 @@ export function formatarValidadeRelatorioCupom(validade?: string) {
 }
 
 function beneficioRelatorio(cupom: Cupom) {
+  const valor = cupom.valorCupom?.trim();
+  if (valor) return valor;
+
   if (cupom.descontoPercentual != null) {
     return `${formatarNumero(cupom.descontoPercentual)}% DE DESCONTO`;
   }
 
-  const valor = cupom.valorCupom?.trim();
-  return valor || "DESCONTO NÃO INFORMADO";
-}
-
-function removerTrechosEmNegrito(texto?: string) {
-  if (!texto) return "";
-
-  return texto
-    // O mini relatório é propositalmente enxuto: trechos destacados com **...**
-    // ficam de fora para evitar mensagens muito longas no compartilhamento.
-    .replace(/\*\*[\s\S]*?\*\*/g, "")
-    .split(/\r?\n/)
-    .map((linha) => linha.trim())
-    .filter(Boolean)
-    .join(" ")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
-function termosRelatorio(cupom: Cupom) {
-  return (
-    removerTrechosEmNegrito(cupom.observacoes) ||
-    removerTrechosEmNegrito(cupom.descricao)
-  );
+  return "DESCONTO NÃO INFORMADO";
 }
 
 export function montarRelatorioCupons(cupons: Cupom[]) {
   return cupons
     .map((cupom) => {
-      const termos = termosRelatorio(cupom);
       const validade = formatarValidadeRelatorioCupom(cupom.validade);
 
       return [
-        `${cupom.nomeCupom} - ${beneficioRelatorio(cupom)}`,
-        termos ? `${termos} - ${validade}` : `VALIDADE: ${validade}`,
+        `*${cupom.nomeCupom}* - ${beneficioRelatorio(cupom)} - ${validade}`,
         urlCurtaDoCupom(cupom.id),
         SEPARADOR,
       ].join("\n");

@@ -202,3 +202,4 @@
 - Adiciona compartilhamento via Web Share API e cópia para área de transferência.
 - Seleção persiste entre páginas da listagem administrativa.
 - Alteração somente web; sem mudanças no Supabase ou nos aplicativos.
+\n## 2026-10-06 — Mini relatório de cupons ultracompacto\n- O compartilhamento de cupons selecionados passou a usar apenas nome do cupom em negrito, benefício, validade e link curto.\n- Observações e termos de uso deixaram de ser incluídos no mini relatório para reduzir o tamanho da mensagem.\n- Quando existir um benefício textual em `valorCupom` (ex.: `22% OFF`), ele é preservado; caso contrário, usa-se o percentual cadastrado.\n

@@ -1,0 +1,9 @@
+ATUALIZAÇÃO — MINI RELATÓRIO DE CUPONS ULTRACOMPACTO
+
+Formato novo:
+*NOME DO CUPOM* - BENEFÍCIO - VALIDADE
+https://achadosdoale.com/c/ID
+--------------------------------------------------------
+
+As observações/termos de uso não entram mais no relatório compartilhável.
+Nenhuma alteração de banco de dados é necessária.
