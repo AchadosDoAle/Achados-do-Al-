@@ -182,24 +182,36 @@ export default function Hero({ ofertaDestaque }: { ofertaDestaque?: Oferta }) {
             )}
 
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <div className="rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/[0.06]">
+              <Link
+                href="/#ofertas"
+                aria-label="Ver ofertas"
+                className="rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/[0.06]"
+              >
                 <div className="text-lg">🔥</div>
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                   Ofertas
                 </p>
-              </div>
-              <div className="rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/[0.06]">
+              </Link>
+              <Link
+                href="/cupons"
+                aria-label="Ver cupons"
+                className="rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/[0.06]"
+              >
                 <div className="text-lg">🏷️</div>
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                   Cupons
                 </p>
-              </div>
-              <div className="rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/[0.06]">
+              </Link>
+              <Link
+                href="/favoritos"
+                aria-label="Ver favoritos"
+                className="rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/[0.06]"
+              >
                 <div className="text-lg">💛</div>
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                   Favoritos
                 </p>
-              </div>
+              </Link>
             </div>
           </div>
 
