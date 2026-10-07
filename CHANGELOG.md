@@ -1,3 +1,12 @@
+
+## 2026-10-07 — Promoção imperdível, cupons relâmpago e cadastro rápido
+- Destaque temporário na Home com validade máxima de 24h e fallback automático para a oferta mais recente.
+- Cupons relâmpago com seção dedicada e microanimação no hover.
+- Cadastro de ofertas reorganizado com texto e prévia lado a lado no desktop.
+- Reconhecimento automático aprimorado para POR = preço à vista, DE = preço antigo e tamanhos/numerações.
+- Campo opcional de observação do preço.
+- Sem integração com IA externa para manter o fluxo sem custo e sem dependência de cotas.
+
 ## 2026-10-05 — Mini relatório de cupons mais enxuto
 
 - Trechos formatados em negrito com `**...**` nas observações/termos são omitidos do mini relatório compartilhável.

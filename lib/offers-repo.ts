@@ -18,6 +18,7 @@ export function linhaParaOferta(linha: any): Oferta {
     precoAntigo: linha.preco_antigo == null ? undefined : Number(linha.preco_antigo),
     precoAtual: linha.preco_atual == null ? undefined : Number(linha.preco_atual),
     precoPix: linha.preco_pix == null ? undefined : Number(linha.preco_pix),
+    precoObservacao: linha.preco_observacao ?? undefined,
     ofereceParcelamento:
       linha.oferece_parcelamento ??
       Boolean(linha.parcelas && linha.valor_parcela),
@@ -42,6 +43,8 @@ export function linhaParaOferta(linha: any): Oferta {
     observacoes: linha.observacoes ?? undefined,
     imagemPrincipal: linha.imagem_principal ?? undefined,
     ofertaBlack: linha.oferta_black ?? false,
+    destaqueImperdivel: linha.destaque_imperdivel ?? false,
+    destaqueAte: isoParaDatetimeLocalBrasilia(linha.destaque_ate),
     status: linha.status,
     agendadoPara: isoParaDatetimeLocalBrasilia(linha.agendado_para),
     criadoEm: linha.criado_em,
@@ -79,6 +82,7 @@ function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
     preco_antigo: valores.precoAntigo ?? null,
     preco_atual: valores.precoAtual ?? null,
     preco_pix: valores.precoPix ?? null,
+    preco_observacao: valores.precoObservacao || null,
     oferece_parcelamento: valores.ofereceParcelamento ?? false,
     parcelas: valores.parcelas ?? null,
     valor_parcela: valores.valorParcela ?? null,
@@ -101,6 +105,8 @@ function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
     observacoes: valores.observacoes || null,
     imagem_principal: valores.imagemPrincipal || null,
     oferta_black: valores.ofertaBlack ?? false,
+    destaque_imperdivel: valores.destaqueImperdivel ?? false,
+    destaque_ate: datetimeLocalBrasiliaParaIso(valores.destaqueAte),
     status: valores.status,
     agendado_para: datetimeLocalBrasiliaParaIso(valores.agendadoPara),
   };
@@ -119,8 +125,8 @@ function gerarSlug(titulo: string) {
 
 const CAMPOS_ADMIN_LISTA = [
   "id", "slug", "titulo", "loja", "categoria", "marca", "modelo",
-  "preco_antigo", "preco_atual", "preco_pix", "cupom", "cupom_descricao",
-  "validade_promocao", "link_produto", "oferta_black", "status", "criado_em", "atualizado_em",
+  "preco_antigo", "preco_atual", "preco_pix", "preco_observacao", "cupom", "cupom_descricao",
+  "validade_promocao", "link_produto", "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em",
   "publicado_em"
 ].join(",");
 
@@ -204,7 +210,7 @@ const CAMPOS_CARD = [
   "preco_antigo", "preco_atual", "preco_pix", "oferece_parcelamento",
   "parcelas", "valor_parcela", "parcelamento_sem_juros", "cupom",
   "frete_gratis", "validade_promocao", "link_produto", "imagem_principal",
-  "oferta_black", "status", "criado_em", "atualizado_em", "publicado_em"
+  "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em", "publicado_em"
 ].join(",");
 
 export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {
@@ -212,6 +218,9 @@ export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Ofe
     .from("offers")
     .select(CAMPOS_CARD)
     .in("status", ["publicada", "expirada"])
+    // A vitrine deve refletir a ordem real de publicação, não apenas a data
+    // em que um rascunho foi originalmente criado.
+    .order("publicado_em", { ascending: false, nullsFirst: false })
     .order("criado_em", { ascending: false })
     .limit(500);
   if (error) throw error;
@@ -295,6 +304,8 @@ export async function duplicarOferta(
     ...resto,
     titulo: `${original.titulo} (cópia)`,
     status: "rascunho",
+    destaqueImperdivel: false,
+    destaqueAte: "",
   });
 }
 

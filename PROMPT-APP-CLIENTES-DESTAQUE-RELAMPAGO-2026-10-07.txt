@@ -1,0 +1,76 @@
+Quero atualizar o aplicativo ACHADOS DO ALÊ destinado aos CLIENTES.
+
+IMPORTANTE:
+- Android e iOS estão no MESMO projeto.
+- O aplicativo usa o MESMO Supabase do site.
+- O BANCO JÁ SERÁ ATUALIZADO PELO SITE.
+- NÃO execute SQL, NÃO crie migration, NÃO crie tabela e NÃO crie coluna no projeto mobile.
+- Preserve notificações, favoritos, métricas, cupons, ofertas, autenticação e identidade visual atuais.
+
+NOVOS CAMPOS QUE JÁ EXISTIRÃO NO SUPABASE:
+- offers.destaque_imperdivel boolean
+- offers.destaque_ate timestamptz
+- offers.preco_observacao text
+- coupons.relampago boolean
+
+1. PROMOÇÃO IMPERDÍVEL NA HOME
+Na Home do aplicativo, procure entre as ofertas publicadas e não expiradas uma oferta com:
+- destaque_imperdivel = true
+- destaque_ate maior que a data/hora atual
+
+Se existir, use essa oferta no espaço principal de destaque da Home e exiba o título:
+PROMOÇÃO IMPERDÍVEL
+
+O destaque pode representar preço excepcional ou cupom excepcional; não é necessário criar um campo de motivo.
+
+Se NÃO existir destaque válido, mantenha o comportamento normal atual e use a oferta publicada mais recentemente como destaque/fallback.
+
+Nunca mostrar como imperdível uma oferta cujo destaque_ate já passou.
+
+2. OBSERVAÇÃO DO PREÇO
+Na tela de detalhes do produto, quando offers.preco_observacao possuir conteúdo, exibir discretamente abaixo das informações de preço/parcelamento.
+Não mostrar campo vazio.
+
+3. CUPONS RELÂMPAGO
+Na tela pública de cupons, crie uma seção separada chamada:
+CUPONS RELÂMPAGO
+
+Ela deve mostrar cupons com:
+- relampago = true
+- ativo = true
+- validade ainda não vencida, quando houver validade
+
+Os cupons relâmpago não precisam ser duplicados na lista comum.
+
+Como Android/iOS não têm hover, NÃO implemente tremida contínua. Use uma microanimação discreta apenas na entrada do card ou quando ele receber foco/toque, por exemplo um pequeno pulso/movimento de poucos pixels, sem atrapalhar leitura nem acessibilidade.
+Respeite redução de movimento do sistema quando disponível.
+
+4. COMPATIBILIDADE
+- destaque_imperdivel nulo/ausente = false
+- relampago nulo/ausente = false
+- destaque_ate nulo = sem destaque
+- preco_observacao nulo = não exibir
+- não quebrar registros antigos
+
+5. ANDROID E IOS
+Use implementação compartilhada entre Android e iOS sempre que possível.
+O comportamento funcional deve ser igual nas duas plataformas.
+
+6. REALTIME
+Se o aplicativo já utiliza Supabase Realtime para ofertas/cupons, garanta que mudanças em destaque_imperdivel, destaque_ate e relampago atualizem a interface sem exigir reinício do app.
+Não crie assinatura duplicada.
+
+7. NÃO ALTERAR O BANCO
+O banco já foi migrado pelo site. Apenas leia os campos novos.
+
+8. TESTES
+- oferta imperdível válida aparece na Home
+- destaque expirado deixa de ser mostrado
+- ausência de destaque usa oferta mais recente
+- observação do preço aparece quando preenchida
+- cupom relâmpago aparece na seção correta
+- cupom relâmpago vencido não aparece na seção relâmpago
+- Android e iOS
+- registros antigos sem os novos campos não quebram
+
+Ao finalizar, informe os arquivos alterados e onde cada novo campo foi mapeado.

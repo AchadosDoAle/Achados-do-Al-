@@ -1,0 +1,121 @@
+Quero atualizar o aplicativo ADMINISTRATIVO do ACHADOS DO ALÊ.
+
+IMPORTANTE:
+- Este app administrativo é um projeto SEPARADO do app de clientes.
+- Ele usa o MESMO Supabase do site.
+- O BANCO JÁ SERÁ ATUALIZADO PELO SITE.
+- NÃO execute SQL, NÃO crie migration, NÃO crie tabela e NÃO crie coluna.
+- Preserve login, usuários, permissões, métricas, publicação, notificações e demais funcionalidades.
+
+NOVOS CAMPOS JÁ EXISTENTES NO SUPABASE:
+- offers.destaque_imperdivel boolean
+- offers.destaque_ate timestamptz
+- offers.preco_observacao text
+- coupons.relampago boolean
+
+1. PROMOÇÃO IMPERDÍVEL
+No cadastro e edição de oferta, adicione um switch opcional:
+🔥 Promoção imperdível na Home
+
+Mapear para offers.destaque_imperdivel.
+
+Ao ativar:
+- mostrar campo de data + hora / datetime para offers.destaque_ate
+- sugerir automaticamente agora + 24 horas
+- impedir seleção maior que 24 horas a partir do momento atual
+- impedir horário no passado
+
+Ao desligar:
+- salvar destaque_imperdivel = false
+- limpar destaque_ate
+
+O próprio banco garante apenas um destaque ativo por vez. Não crie outra regra concorrente no app.
+
+2. CUPOM RELÂMPAGO
+No cadastro e edição de cupom, adicione switch opcional:
+⚡ Cupom relâmpago
+
+Mapear para coupons.relampago.
+O valor padrão é false.
+Mostrar visualmente nos cards/lista administrativa quais cupons estão marcados como relâmpago.
+
+3. OBSERVAÇÃO DO PREÇO
+No cadastro/edição de oferta, adicione campo opcional:
+Observação do preço
+
+Mapear para offers.preco_observacao.
+Exemplos:
+- SOMENTE PARA MEMBROS
+- À VISTA NO BOLETO
+- COM CARTÃO DA LOJA
+
+4. RECONHECIMENTO DE PREÇOS
+Reforme o parser local do aplicativo sem usar API paga.
+
+REGRA OBRIGATÓRIA:
+Sempre que uma linha de preço usar a palavra POR, por exemplo:
+POR R$ 79,90
+POR R$ 79
+POR 79,90
+
+interpretar como PREÇO À VISTA / PREÇO PRINCIPAL (equivalente ao campo preco_pix/preço à vista do projeto), mesmo que a palavra PIX não esteja escrita.
+
+NÃO confundir:
+POR 12x de R$ 10
+com preço à vista. Nesse caso reconhecer parcelamento.
+
+PREÇO ANTIGO:
+O preço antigo deve ser reconhecido prioritariamente quando a publicação possuir uma linha iniciada por:
+DE R$ ...
+
+Não confundir "12x de R$ ..." com preço antigo.
+
+Continuar reconhecendo preços com ou sem centavos e milhares no padrão brasileiro.
+
+5. RECONHECIMENTO DE TAMANHOS
+Corrigir e ampliar reconhecimento de:
+- TAMANHO: M
+- TAM: GG
+- SIZE: XL
+- NUMERAÇÃO: 38
+- NÚMERO: 42
+- TAMANHOS: P / M / G / GG
+- NUMERAÇÃO 35 A 40
+- dimensões: 20 x 30 cm, 1,20 x 0,80 m
+
+Preencher o campo tamanho quando houver informação confiável.
+Não inventar tamanho quando o texto não trouxer a informação.
+
+6. FLUXO DE POSTAGEM MAIS RÁPIDO
+No mobile administrativo, adapte o conceito do painel web para ganhar velocidade:
+- colar texto deve disparar reconhecimento automaticamente
+- Ctrl+V não se aplica em todo aparelho, mas qualquer ação de colagem deve tentar processar imediatamente
+- manter botão REPROCESSAR para texto alterado
+- mostrar prévia do texto de forma próxima do campo de colagem
+- em tablets/telas largas, pode usar duas colunas (texto + prévia)
+- em celulares, empilhar sem perder fluidez
+- não criar etapas desnecessárias
+
+7. IA EXTERNA
+NÃO adicionar API externa de IA por enquanto.
+Quero manter o reconhecimento sem custo, sem chave externa e sem depender de cotas gratuitas de terceiros.
+Aprimore o parser determinístico/local.
+
+8. COMPATIBILIDADE
+- campos novos nulos não podem quebrar o app
+- não alterar datas/carimbos históricos
+- não alterar banco
+- preservar uploads de imagem, categoria, marca, modelo, cor, capacidade, voltagem, frete, Black Friday, agendamento e demais campos atuais
+
+9. TESTES
+- DE R$ 199 / POR R$ 149 => antigo 199 e à vista 149
+- DE R$ 199 / POR R$ 149,90 => antigo 199 e à vista 149,90
+- POR 12x de R$ 10 => parcelamento, não à vista 12
+- TAMANHO: 42
+- TAMANHOS P / M / G / GG
+- produto imperdível com validade de até 24h
+- tentativa de validade acima de 24h deve ser impedida
+- cupom relâmpago true/false
+- observação de preço salva e volta corretamente na edição
+
+Ao finalizar, informe todos os arquivos alterados e confirme que NÃO houve SQL no projeto do app.

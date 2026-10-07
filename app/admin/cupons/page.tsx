@@ -32,6 +32,7 @@ function cupomCorrespondeBusca(cupom: Cupom, termo: string) {
     cupom.linkProdutos,
     cupom.criadoEm,
     cupom.publicadoEm,
+    cupom.relampago ? "cupom relampago relâmpago" : "",
   ]);
 }
 
@@ -402,6 +403,11 @@ export default function ListaCuponsPage() {
                       {!cupom.ativo && (
                         <span className="rounded-full bg-ink/10 px-2.5 py-1 text-xs font-medium text-ink/50">
                           Inativo
+                        </span>
+                      )}
+                      {cupom.relampago && (
+                        <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800 ring-1 ring-amber-300/70">
+                          ⚡ Relâmpago
                         </span>
                       )}
                     </div>

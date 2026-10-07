@@ -1,0 +1,64 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO 2026-10-07
+Promoção imperdível + Cupons Relâmpago + reforma do cadastro de ofertas
+
+IMPORTANTE
+Esta atualização adiciona novas colunas ao Supabase. Execute o SQL ANTES de publicar o novo código na Vercel.
+
+1) SUPABASE
+Abra Supabase > SQL Editor > New query.
+Execute todo o arquivo:
+  supabase/migrations/20261007_destaque_imperdivel_cupom_relampago.sql
+
+Ele cria:
+- offers.preco_observacao
+- offers.destaque_imperdivel
+- offers.destaque_ate
+- coupons.relampago
+
+O script também cria as proteções do destaque:
+- máximo de 24 horas;
+- data futura;
+- apenas um destaque imperdível por vez.
+
+Não apaga ofertas, cupons, usuários ou métricas.
+
+2) TESTE NO PAINEL
+Admin > Ofertas > Nova oferta
+- cole uma publicação;
+- confira texto e prévia lado a lado no desktop;
+- teste DE R$ 199 / POR R$ 149;
+- teste TAMANHO: 42 ou CAMISETA TAM G;
+- preencha Observação do preço, se quiser;
+- marque Promoção imperdível e escolha data/hora (até 24h).
+
+Admin > Cupons
+- crie/edite um cupom;
+- marque Cupom relâmpago.
+
+3) TESTE PÚBLICO
+Home:
+- destaque ativo => título PROMOÇÃO IMPERDÍVEL;
+- sem destaque ativo => produto publicado mais recentemente.
+
+Cupons:
+- cupom relâmpago aparece em CUPONS RELÂMPAGO;
+- no desktop, passar o mouse dá uma tremidinha discreta.
+
+4) GITHUB DESKTOP
+Summary sugerido:
+  Adiciona promoção imperdível e cupons relâmpago
+
+Description sugerida:
+  Adiciona destaque temporário de até 24h na Home, cupons relâmpago e reforma o cadastro de ofertas com parser melhorado, reconhecimento de tamanhos, preço POR como à vista, observação de preço e prévia lado a lado.
+
+Depois:
+- Commit to main
+- Push origin
+- aguarde a Vercel
+- Ctrl + F5 no site
+
+5) APPS
+Não rode SQL nos apps. O banco já foi alterado pelo site.
+Use os arquivos de prompt incluídos no projeto para atualizar:
+- app dos clientes (Android+iOS juntos)
+- app administrativo (projeto separado)

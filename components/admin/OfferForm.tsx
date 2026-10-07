@@ -28,6 +28,24 @@ const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
 const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
 const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
 
+function datetimeLocalBrasilia(data: Date) {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(data);
+  const get = (tipo: string) => partes.find((item) => item.type === tipo)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+}
+
+function agoraMais24h() {
+  return datetimeLocalBrasilia(new Date(Date.now() + 24 * 60 * 60 * 1000));
+}
+
 const VALORES_INICIAIS: OfertaFormValues = {
   titulo: "",
   loja: LOJAS[0],
@@ -37,6 +55,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   precoAntigo: undefined,
   precoAtual: undefined,
   precoPix: undefined,
+  precoObservacao: "",
   ofereceParcelamento: false,
   parcelas: undefined,
   valorParcela: undefined,
@@ -59,6 +78,8 @@ const VALORES_INICIAIS: OfertaFormValues = {
   observacoes: "",
   imagemPrincipal: "",
   ofertaBlack: false,
+  destaqueImperdivel: false,
+  destaqueAte: "",
   status: "rascunho",
   agendadoPara: "",
 };
@@ -78,6 +99,7 @@ function normalizarTextosOferta(valores: OfertaFormValues): OfertaFormValues {
     tamanho: paraCaixaAlta(valores.tamanho || ""),
     capacidade: paraCaixaAlta(valores.capacidade || ""),
     observacoes: paraCaixaAlta(valores.observacoes || ""),
+    precoObservacao: paraCaixaAlta(valores.precoObservacao || ""),
     // O texto da publicação é mantido exatamente como foi colado/editado.
     textoPublicacao: valores.textoPublicacao || "",
   };
@@ -199,6 +221,19 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     });
   }
 
+  function atualizarDestaqueImperdivel(ativo: boolean) {
+    setValores((atual) => ({
+      ...atual,
+      destaqueImperdivel: ativo,
+      destaqueAte: ativo ? atual.destaqueAte || agoraMais24h() : "",
+    }));
+    setErros((atuais) => {
+      const proximo = { ...atuais };
+      delete proximo.destaqueAte;
+      return proximo;
+    });
+  }
+
   function reconhecerTextoRecebido(textoBruto: string) {
     const texto = textoBruto.trim();
     if (!texto) {
@@ -311,6 +346,19 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       novosErros.categoria = "Informe a categoria manualmente.";
     } else if (!valores.categoria) novosErros.categoria = "Escolha a categoria.";
     if (!valores.linkProduto.trim()) novosErros.linkProduto = "Cole o link do produto.";
+    if (valores.destaqueImperdivel) {
+      if (!valores.destaqueAte) {
+        novosErros.destaqueAte = "Informe até quando a promoção ficará em destaque.";
+      } else {
+        const validade = new Date(`${valores.destaqueAte}:00-03:00`).getTime();
+        const agora = Date.now();
+        if (!Number.isFinite(validade) || validade <= agora) {
+          novosErros.destaqueAte = "Escolha uma data e hora futuras.";
+        } else if (validade > agora + 24 * 60 * 60 * 1000 + 2 * 60 * 1000) {
+          novosErros.destaqueAte = "O destaque pode durar no máximo 24 horas.";
+        }
+      }
+    }
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   }
@@ -458,50 +506,72 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           <span className="w-fit rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">Etapa 1</span>
         </div>
 
-        <Campo rotulo="Texto da publicação">
-          <div className="mb-2 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={colarDaAreaTransferencia}
-              disabled={colandoAreaTransferencia}
-              className="admin-action rounded-xl border px-4 py-2 text-sm font-bold"
-            >
-              {colandoAreaTransferencia ? "COLANDO..." : "COLAR"}
-            </button>
-            <button
-              type="button"
-              onClick={limparTextoColado}
-              className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-bold"
-            >
-              LIMPAR
-            </button>
+        <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
+          <div className="flex min-w-0 flex-col">
+            <Campo rotulo="Texto da publicação">
+              <div className="mb-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={colarDaAreaTransferencia}
+                  disabled={colandoAreaTransferencia}
+                  className="admin-action rounded-xl border px-4 py-2 text-sm font-bold"
+                >
+                  {colandoAreaTransferencia ? "COLANDO..." : "COLAR"}
+                </button>
+                <button
+                  type="button"
+                  onClick={limparTextoColado}
+                  className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-bold"
+                >
+                  LIMPAR
+                </button>
+                <button
+                  type="button"
+                  onClick={reconhecerTexto}
+                  className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-bold"
+                >
+                  ✨ REPROCESSAR
+                </button>
+              </div>
+              <textarea
+                className={`${classeInput} min-h-[300px] flex-1 resize-y`}
+                rows={12}
+                value={valores.textoPublicacao}
+                onChange={(e) => atualizarCampo("textoPublicacao", e.target.value)}
+                onPaste={(e) => {
+                  const texto = e.clipboardData.getData("text");
+                  if (!texto.trim()) return;
+                  e.preventDefault();
+                  reconhecerTextoRecebido(texto);
+                }}
+                placeholder="Cole aqui a oferta completa..."
+              />
+            </Campo>
           </div>
-          <textarea
-            className={classeInput}
-            rows={12}
-            value={valores.textoPublicacao}
-            onChange={(e) => atualizarCampo("textoPublicacao", e.target.value)}
-            placeholder="Cole aqui a oferta completa..."
-          />
-        </Campo>
 
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <button type="button" onClick={reconhecerTexto} className="admin-action admin-btn-modern rounded-xl border px-5 py-3 text-sm font-semibold">
-            ✨ Reconhecer texto e preencher campos
-          </button>
-          <p className="text-xs text-ink/50">O reconhecimento acontece no próprio site e não altera o texto que você colou.</p>
+          <div className="flex min-h-[360px] min-w-0 flex-col rounded-2xl border border-ink/10 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink/45">Prévia do texto</p>
+              <span className="rounded-full bg-brand/5 px-2.5 py-1 text-[10px] font-semibold text-brand">AO LADO PARA GANHAR TEMPO</span>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto">
+              {valores.textoPublicacao ? (
+                <PreviaWhatsApp texto={valores.textoPublicacao} />
+              ) : (
+                <div className="flex h-full min-h-[260px] items-center justify-center rounded-xl border border-dashed border-ink/10 bg-cream/35 px-5 text-center text-sm text-ink/45">
+                  Cole uma promoção à esquerda. A prévia aparece aqui sem ocupar outra linha da tela.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {resultadoLeitura && (
-          <p className="mt-3 rounded-xl bg-trust/10 px-3 py-2 text-sm text-ink/75">{resultadoLeitura}</p>
-        )}
-
-        {valores.textoPublicacao && (
-          <div className="mt-4 border-t border-ink/10 pt-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/45">Prévia do texto</p>
-            <PreviaWhatsApp texto={valores.textoPublicacao} />
-          </div>
-        )}
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-ink/50">Ao usar COLAR, o reconhecimento já roda automaticamente. REPROCESSAR serve para textos editados manualmente.</p>
+          {resultadoLeitura && (
+            <p className="rounded-xl bg-trust/10 px-3 py-2 text-xs text-ink/75 sm:max-w-[60%]">{resultadoLeitura}</p>
+          )}
+        </div>
       </section>
 
       <div className="grid gap-5 xl:grid-cols-2">
@@ -795,6 +865,16 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                 />
               </Campo>
             )}
+
+            <Campo rotulo="Observação do preço">
+              <input
+                className={`${classeInput} uppercase`}
+                value={valores.precoObservacao ?? ""}
+                onChange={(e) => atualizarCampo("precoObservacao", paraCaixaAlta(e.target.value))}
+                placeholder="Ex.: SOMENTE PARA MEMBROS, À VISTA NO BOLETO, COM CARTÃO DA LOJA..."
+              />
+              <p className="mt-1 text-xs text-ink/50">Opcional. Use para uma condição de preço que não cabe nos campos acima.</p>
+            </Campo>
           </div>
         </section>
 
@@ -896,6 +976,43 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                 <span className="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
               </span>
             </label>
+
+            <div className="rounded-2xl border border-gold/25 bg-[#fff9ea] p-4">
+              <label className="flex cursor-pointer items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-ink">🔥 Promoção imperdível na Home</p>
+                  <p className="mt-0.5 text-xs leading-5 text-ink/55">
+                    Coloca esta oferta no quadro principal da Home. Ao ativar outro produto, o destaque anterior sai automaticamente.
+                  </p>
+                </div>
+                <span className="relative inline-flex h-7 w-12 shrink-0 items-center">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={Boolean(valores.destaqueImperdivel)}
+                    onChange={(e) => atualizarDestaqueImperdivel(e.target.checked)}
+                  />
+                  <span className="absolute inset-0 rounded-full bg-ink/15 transition-colors peer-checked:bg-[#d9a62e]" />
+                  <span className="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+                </span>
+              </label>
+
+              {valores.destaqueImperdivel && (
+                <div className="mt-4">
+                  <Campo rotulo="Destaque válido até" erro={erros.destaqueAte}>
+                    <input
+                      type="datetime-local"
+                      className={classeInput}
+                      value={valores.destaqueAte ?? ""}
+                      min={datetimeLocalBrasilia(new Date())}
+                      max={agoraMais24h()}
+                      onChange={(e) => atualizarCampo("destaqueAte", e.target.value)}
+                    />
+                    <p className="mt-1 text-xs text-ink/50">Máximo de 24 horas. Ao ativar, o painel sugere automaticamente 24h a partir de agora.</p>
+                  </Campo>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 

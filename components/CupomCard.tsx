@@ -11,9 +11,15 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
   return (
     <div
       className={`relative overflow-hidden rounded-xl2 bg-card p-4 ring-1 ring-white/5 animar-entrada transition-transform duration-200 hover:-translate-y-1 ${
-        expirado ? "grayscale" : ""
-      }`}
+        cupom.relampago && !expirado ? "coupon-flash-card" : ""
+      } ${expirado ? "grayscale" : ""}`}
     >
+      {cupom.relampago && !expirado && (
+        <span className="absolute right-3 top-3 z-[2] rounded-full bg-amber-400/15 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-300 ring-1 ring-amber-300/20">
+          ⚡ Relâmpago
+        </span>
+      )}
+
       {expirado && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
           <span className="w-40 -rotate-45 bg-danger py-1 text-center text-xs font-bold tracking-widest text-white shadow-lg">

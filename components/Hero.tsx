@@ -16,7 +16,13 @@ function calcularDesconto(oferta?: Oferta) {
   return Math.round((1 - precoPrincipal / oferta.precoAntigo) * 100);
 }
 
-export default function Hero({ ofertaDestaque }: { ofertaDestaque?: Oferta }) {
+export default function Hero({
+  ofertaDestaque,
+  promocaoImperdivel = false,
+}: {
+  ofertaDestaque?: Oferta;
+  promocaoImperdivel?: boolean;
+}) {
   const desconto = calcularDesconto(ofertaDestaque);
 
   return (
@@ -84,10 +90,12 @@ export default function Hero({ ofertaDestaque }: { ofertaDestaque?: Oferta }) {
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gold">
-                  Achado em destaque
+                  {promocaoImperdivel ? "PROMOÇÃO IMPERDÍVEL" : "Achado em destaque"}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-text">
-                  Uma amostra do que já está no site
+                  {promocaoImperdivel
+                    ? "Preço ou cupom excepcional selecionado por até 24 horas"
+                    : "Uma amostra do que já está no site"}
                 </p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold text-lg font-black text-bg shadow-lg shadow-gold/10">

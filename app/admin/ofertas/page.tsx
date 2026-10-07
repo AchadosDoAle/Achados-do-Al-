@@ -13,7 +13,7 @@ import {
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import StatusBadge from "@/components/admin/StatusBadge";
 import Paginacao from "@/components/admin/Paginacao";
-import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { destaqueImperdivelAtivo, ofertaEstaExpirada } from "@/lib/oferta-status";
 import { textoCorrespondeBusca } from "@/lib/admin-search";
 import { formatarDataPublicacao } from "@/lib/datas";
 
@@ -49,6 +49,8 @@ function ofertaCorrespondeBusca(oferta: Oferta, termo: string) {
     oferta.capacidade,
     oferta.linkProduto,
     oferta.ofertaBlack ? "black friday oferta black" : "",
+    oferta.destaqueImperdivel ? "promocao imperdivel destaque destaque home" : "",
+    oferta.precoObservacao,
     oferta.criadoEm,
     oferta.publicadoEm,
   ]);
@@ -330,6 +332,9 @@ export default function ListaOfertasPage() {
                     {oferta.cupom ? <div className="rounded-full bg-trust/10 px-3 py-1 text-trust">Cupom: {oferta.cupom}</div> : null}
                     {oferta.ofertaBlack ? (
                       <div className="rounded-full bg-black px-3 py-1 font-bold text-[#f6c843]">OFERTA BLACK</div>
+                    ) : null}
+                    {destaqueImperdivelAtivo(oferta) ? (
+                      <div className="rounded-full bg-amber-100 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-300/70">🔥 IMPERDÍVEL</div>
                     ) : null}
                   </div>
 

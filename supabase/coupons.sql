@@ -23,6 +23,7 @@ alter table public.coupons add column if not exists ativo boolean default true;
 alter table public.coupons add column if not exists criado_em timestamptz default now();
 alter table public.coupons add column if not exists atualizado_em timestamptz default now();
 alter table public.coupons add column if not exists publicado_em timestamptz default now();
+alter table public.coupons add column if not exists relampago boolean not null default false;
 
 -- Compatibilidade com tentativas antigas:
 -- se a tabela já possuía colunas que NÃO fazem parte do formato atual
@@ -55,7 +56,8 @@ begin
         'ativo',
         'criado_em',
         'atualizado_em',
-        'publicado_em'
+        'publicado_em',
+        'relampago'
       )
   loop
     execute format(

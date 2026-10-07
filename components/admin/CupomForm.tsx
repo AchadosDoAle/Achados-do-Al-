@@ -21,6 +21,7 @@ const VALORES_INICIAIS: CupomFormValues = {
   corLoja: PALETA_CORES_LOJA[0].cor,
   validade: "",
   ativo: true,
+  relampago: false,
 };
 
 const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
@@ -450,6 +451,22 @@ export default function CupomForm({
                 onChange={(e) => atualizarCampo("ativo", e.target.checked)}
               />
               Ativo (visível na página pública de cupons)
+            </label>
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-amber-300/70 bg-amber-50 px-3 py-3 text-sm text-ink">
+              <div>
+                <p className="font-semibold">⚡ Cupom relâmpago</p>
+                <p className="mt-0.5 text-xs text-ink/55">Entra na seção CUPONS RELÂMPAGO e ganha uma tremidinha discreta no hover.</p>
+              </div>
+              <span className="relative inline-flex h-7 w-12 shrink-0 items-center">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={Boolean(valores.relampago)}
+                  onChange={(e) => atualizarCampo("relampago", e.target.checked)}
+                />
+                <span className="absolute inset-0 rounded-full bg-ink/15 transition-colors peer-checked:bg-amber-500" />
+                <span className="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+              </span>
             </label>
             {cupomExistente?.publicadoEm && (
               <div className="rounded-xl border border-ink/10 bg-cream px-3 py-2 text-xs text-ink/55">

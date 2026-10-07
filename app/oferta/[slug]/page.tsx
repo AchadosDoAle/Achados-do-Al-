@@ -304,6 +304,12 @@ export default async function PaginaOferta({
                   </span>
                 </p>
               )}
+
+              {oferta.precoObservacao && (
+                <p className="mt-2 rounded-lg bg-white/[0.04] px-3 py-2 text-xs font-medium text-text-muted ring-1 ring-white/[0.05]">
+                  ℹ️ {oferta.precoObservacao}
+                </p>
+              )}
             </div>
 
             {(oferta.freteGratis || oferta.freteCondicao) && (

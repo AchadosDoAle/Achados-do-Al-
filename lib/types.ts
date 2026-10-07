@@ -34,6 +34,7 @@ export type Oferta = {
   precoAntigo?: number;
   precoAtual?: number;
   precoPix?: number;
+  precoObservacao?: string;
   ofereceParcelamento?: boolean;
   parcelas?: number;
   valorParcela?: number;
@@ -62,6 +63,8 @@ export type Oferta = {
   observacoes?: string;
   imagemPrincipal?: string;
   ofertaBlack?: boolean;
+  destaqueImperdivel?: boolean;
+  destaqueAte?: string;
   status: StatusOferta;
   agendadoPara?: string;
 
@@ -114,6 +117,7 @@ export type Cupom = {
   criadoEm: string;
   atualizadoEm: string;
   publicadoEm: string;
+  relampago?: boolean;
 };
 
 export type CupomFormValues = Omit<Cupom, "id" | "criadoEm" | "atualizadoEm" | "publicadoEm">;

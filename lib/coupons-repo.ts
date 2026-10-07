@@ -18,6 +18,7 @@ function linhaParaCupom(linha: any): Cupom {
     criadoEm: linha.criado_em,
     atualizadoEm: linha.atualizado_em,
     publicadoEm: linha.publicado_em ?? linha.criado_em,
+    relampago: linha.relampago ?? false,
   };
 }
 
@@ -33,6 +34,7 @@ function cupomParaLinha(valores: Partial<CupomFormValues>) {
     cor_loja: valores.corLoja,
     validade: valores.validade || null,
     ativo: valores.ativo ?? true,
+    relampago: valores.relampago ?? false,
   };
 }
 

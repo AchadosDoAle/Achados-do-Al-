@@ -19,6 +19,11 @@ export default async function CuponsPage() {
   const supabase = criarClientePublico();
   const todos = await listarCupons(supabase);
   const cupons = todos.filter((c) => c.ativo);
+  const agora = Date.now();
+  const cuponsRelampago = cupons.filter(
+    (c) => c.relampago && (!c.validade || new Date(c.validade).getTime() >= agora)
+  );
+  const cuponsRegulares = cupons.filter((c) => !cuponsRelampago.some((r) => r.id === c.id));
 
   return (
     <main className="min-h-screen bg-bg pb-bottom-nav">
@@ -36,10 +41,36 @@ export default async function CuponsPage() {
             Nenhum cupom cadastrado ainda.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {cupons.map((cupom) => (
-              <CupomCard key={cupom.id} cupom={cupom} />
-            ))}
+          <div className="space-y-8">
+            {cuponsRelampago.length > 0 && (
+              <section aria-labelledby="cupons-relampago">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/15 text-lg ring-1 ring-amber-300/20">⚡</span>
+                  <div>
+                    <h2 id="cupons-relampago" className="font-display text-xl font-bold text-text">CUPONS RELÂMPAGO</h2>
+                    <p className="text-xs text-text-muted">Oportunidades rápidas destacadas no painel.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {cuponsRelampago.map((cupom) => (
+                    <CupomCard key={cupom.id} cupom={cupom} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {cuponsRegulares.length > 0 && (
+              <section aria-labelledby="todos-cupons">
+                {cuponsRelampago.length > 0 && (
+                  <h2 id="todos-cupons" className="mb-3 font-display text-lg font-bold text-text">Todos os cupons</h2>
+                )}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {cuponsRegulares.map((cupom) => (
+                    <CupomCard key={cupom.id} cupom={cupom} />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </Container>

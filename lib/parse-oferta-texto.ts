@@ -199,6 +199,7 @@ const MARCAS_CONHECIDAS: Array<[string, string]> = [
   ["GOPRO", "GOPRO"], ["DJI", "DJI"], ["MAX TITANIUM", "MAX TITANIUM"], ["INTEGRALMEDICA", "INTEGRALMÉDICA"], ["GROWTH", "GROWTH"],
   ["NESTLE", "NESTLÉ"], ["LACTA", "LACTA"], ["GAROTO", "GAROTO"], ["3 CORACOES", "3 CORAÇÕES"],
   ["COCA COLA", "COCA-COLA"], ["COCA-COLA", "COCA-COLA"], ["PEPSI", "PEPSI"], ["RED BULL", "RED BULL"], ["MONSTER", "MONSTER"], ["HEINEKEN", "HEINEKEN"], ["BRAHMA", "BRAHMA"], ["SKOL", "SKOL"],
+  ["JACK DANIELS", "JACK DANIEL'S"], ["JOHNNIE WALKER", "JOHNNIE WALKER"], ["CHIVAS", "CHIVAS REGAL"], ["BALLANTINES", "BALLANTINE'S"], ["ABSOLUT", "ABSOLUT"], ["TANQUERAY", "TANQUERAY"],
   ["COLGATE", "COLGATE"], ["ORAL B", "ORAL-B"], ["ORAL-B", "ORAL-B"], ["GILLETTE", "GILLETTE"], ["REXONA", "REXONA"], ["NEUTROGENA", "NEUTROGENA"], ["ELSEVE", "ELSEVE"], ["SEDA", "SEDA"], ["HEAD SHOULDERS", "HEAD & SHOULDERS"],
 ];
 
@@ -291,11 +292,11 @@ function detectarModelo(titulo?: string, texto?: string, marca?: string, categor
       const resto = tituloNormalizado.slice(indice + chaveNormalizada.length).trim();
       const candidato = limparModeloCandidato(resto).split(" ").slice(0, 6).join(" ");
       if (!candidato || candidato.length < 2 || candidato.length > 55) continue;
-      if (/^(?:ORIGINAL|TRADICIONAL|CLASSICO|CLÁSSICO|ZERO|LIGHT|DIET|KIT|PACK|UNIDADE|UNIDADES|SORTIDO|SORTIDA)$/i.test(candidato)) continue;
+      if (/^(?:ORIGINAL|TRADICIONAL|CLASSICO|CLÁSSICO|ZERO|LIGHT|DIET|KIT|PACK|UNIDADE|UNIDADES|SORTIDO|SORTIDA|MASCULINO|MASCULINA|FEMININO|FEMININA|ADULTO|ADULTA|INFANTIL|PRETO|PRETA|BRANCO|BRANCA|AZUL|ROSA|VERDE|CINZA|VERMELHO|VERMELHA|BIVOLT)$/i.test(candidato)) continue;
       if (/^\d+(?:[.,]\d+)?\s*(?:GB|TB|MB|L|ML|KG|G|CM|MM|W|V)$/i.test(candidato)) continue;
       const temCodigo = /(?=.*[A-Z])(?=.*\d)[A-Z0-9][A-Z0-9+\-]{2,}/.test(candidato);
       const palavras = candidato.split(/\s+/).filter(Boolean);
-      const temNomeCurtoDeModelo = palavras.length >= 1 && palavras.length <= 4 && !/^(PRO|PLUS|ULTRA|PRETO|BRANCO|AZUL|ROSA)$/i.test(candidato);
+      const temNomeCurtoDeModelo = palavras.length >= 1 && palavras.length <= 4 && !/^(PRO|PLUS|ULTRA|PRETO|PRETA|BRANCO|BRANCA|AZUL|ROSA|VERDE|CINZA|MASCULINO|MASCULINA|FEMININO|FEMININA|ADULTO|ADULTA|INFANTIL)$/i.test(candidato);
       if (temCodigo || temNomeCurtoDeModelo) return candidato;
     }
   }
@@ -328,7 +329,8 @@ function detectarTitulo(texto: string, loja?: string) {
     if (/^(DE|POR)\s*:?\s*R?\$?/i.test(linha)) return true;
     if (/R\$\s*\d/.test(linha)) return true;
     if (/^CUPOM\b/i.test(linha)) return true;
-    if (/^(CATEGORIA|MARCA|MODELO|COR|TAMANHO|CAPACIDADE|VOLTAGEM|REFER[EÊ]NCIA)\b/i.test(linha)) return true;
+    if (/^(CATEGORIA|MARCA|MODELO|COR|TAMANHO|TAM\.?|SIZE|NUMERA[CÇ][AÃ]O|CAPACIDADE|VOLTAGEM|REFER[EÊ]NCIA)\b/i.test(linha)) return true;
+    if (/^(OBS(?:ERVA[CÇ][AÃ]O)?(?:\s+DO\s+PRE[CÇ]O)?|CONDI[CÇ][AÃ]O\s+DO\s+PRE[CÇ]O|PARCELAMENTO|PARCELAS?|PRE[CÇ]O\s+(?:ATUAL|ANTIGO|FINAL|PARCELADO)|VALIDADE|ESTOQUE)\b/i.test(linha)) return true;
     if (/^COMPRE\s+AQUI\b/i.test(linha)) return true;
     if (/^VAGAS\s+NO\s+GRUPO\b/i.test(linha)) return true;
     if (/^FRETE\b/i.test(linha)) return true;
@@ -393,6 +395,43 @@ function detectarTitulo(texto: string, loja?: string) {
   };
 
   return [...candidatos].sort((a, b) => pontuar(b) - pontuar(a))[0];
+}
+
+
+function detectarTamanho(texto: string, titulo?: string) {
+  const base = `${titulo ?? ""}\n${texto}`.replace(/\u00A0/g, " ");
+
+  const explicito = primeiroMatch(base, [
+    /(?:^|\n)\s*(?:TAMANHO|TAM\.?|SIZE|NUMERA[CÇ][AÃ]O|N[ÚU]MERO|N[º°])\s*[:\-–—]?\s*([^\n|•]{1,30})/i,
+  ]);
+  if (explicito) {
+    const limpo = limparMarkdown(explicito)
+      .replace(/[;,.]+$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (limpo) return limpo.toLocaleUpperCase("pt-BR");
+  }
+
+  // Também aceita o tamanho embutido no nome do produto, por exemplo:
+  // "Tênis Nike nº 42", "Camiseta tam G" e "Calça tamanho 38 ao 44".
+  const tamanhoNoMeioDaLinha = base.match(
+    /\b(?:TAMANHO|TAM\.?|SIZE|NUMERA[CÇ][AÃ]O|N[ÚU]MERO|N[º°])\s*[:\-–—]?\s*((?:PP|P|M|G|GG|XG|XGG|XXG|XXGG|\d{1,3})(?:\s*(?:,|\/|A|AO|AT[EÉ]|-)\s*(?:PP|P|M|G|GG|XG|XGG|XXG|XXGG|\d{1,3})){0,8})\b/i
+  )?.[1];
+  if (tamanhoNoMeioDaLinha) {
+    return limparMarkdown(tamanhoNoMeioDaLinha).toLocaleUpperCase("pt-BR");
+  }
+
+  const lista = base.match(
+    /\b(?:TAMANHOS?|TAM\.?|NUMERA[CÇ][AÃ]O)\s*(?:DISPON[IÍ]VEIS?)?\s*[:\-–—]?\s*((?:PP|P|M|G|GG|XG|XGG|XXG|XXGG|\d{2})(?:\s*(?:,|\/|A|AO|AT[EÉ]|-)\s*(?:PP|P|M|G|GG|XG|XGG|XXG|XXGG|\d{2})){0,8})/i
+  )?.[1];
+  if (lista) return limparMarkdown(lista).toLocaleUpperCase("pt-BR");
+
+  const dimensao = base.match(
+    /\b(\d+(?:[.,]\d+)?\s*[xX]\s*\d+(?:[.,]\d+)?(?:\s*[xX]\s*\d+(?:[.,]\d+)?)?\s*(?:MM|CM|M))\b/i
+  )?.[1];
+  if (dimensao) return dimensao.replace(/\s+/g, " ").toLocaleUpperCase("pt-BR");
+
+  return undefined;
 }
 
 
@@ -479,10 +518,12 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
   // O preço antigo tem prioridade absoluta quando vier no padrão "DE R$...".
   const textoPrecos = texto
     .replace(/\u00A0/g, " ")
-    .replace(/[\*_~`]/g, " ");
+    .replace(/[\*_~`]/g, " ")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, " ")
+    .replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, " ");
 
   const precoAntigo = matchMoeda(textoPrecos, [
-    new RegExp(`(?:^|\\s)DE\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})(?=\\s|$|[^0-9,])`, "i"),
+    new RegExp(`(?:^|\\n)\\s*DE\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})(?=\\s|$|[^0-9,])`, "i"),
     new RegExp(`(?:preço|preco)\\s*(?:antigo|de)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
   ]);
   if (precoAntigo != null) {
@@ -490,19 +531,22 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("preço antigo");
   }
 
+  // Regra do fluxo do Achado do Alê: sempre que a publicação usar
+  // "POR R$ ...", esse é o preço à vista/principal, mesmo sem a palavra PIX.
   const precoPix = matchMoeda(textoPrecos, [
+    new RegExp(`(?:^|\\n)[^\\n]*?\\bPOR\\s*:?[\\s]*(?:APENAS\\s*)?R?\\s*\\$?\\s*(${VALOR_BR})(?!\\s*[xX])(?=\\s|$|[^0-9,])`, "i"),
     new RegExp(`R\\s*\\$\\s*(${VALOR_BR})\\s*(?:à\\s*vista\\s*)?(?:no\\s*)?pix\\b`, "i"),
     new RegExp(`\\bpix\\s*:?[\\s]*(?:por\\s*)?R\\s*\\$\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`\\bpor\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})[^\\n]{0,24}\\bpix\\b`, "i"),
+    new RegExp(`\\b(?:à|a)\\s*vista\\s*:?[\\s]*(?:por\\s*)?R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
   ]);
   if (precoPix != null) {
     valores.precoPix = precoPix;
     detectados.push("preço no Pix");
   }
 
+  // "POR" não entra aqui: no fluxo do site ele sempre representa preço à vista.
   const precoAtual = matchMoeda(textoPrecos, [
-    new RegExp(`(?:^|\\n)[^\\n]*?\\bPOR\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`(?:preço|preco)\\s*(?:atual|final)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`(?:preço|preco)\\s*(?:atual|final|parcelado)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
   ]);
   if (precoAtual != null) {
     valores.precoAtual = precoAtual;
@@ -539,16 +583,32 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("voltagem");
   }
 
-  const cor = primeiroMatch(texto, [/(?:^|\n)[^\n]*?\bCor\s+([^\n]+)/i]);
+  const cor = primeiroMatch(texto, [
+    /(?:^|\n)[^\n]*?\bCor\s*[:\-–—]?\s*([^\n|•]{2,50})/i,
+  ]);
   if (cor) {
-    valores.cor = limparMarkdown(cor).toLocaleUpperCase("pt-BR");
+    valores.cor = limparMarkdown(cor).replace(/[;,.]+$/, "").toLocaleUpperCase("pt-BR");
     detectados.push("cor");
+  }
+
+  const tamanho = detectarTamanho(texto, titulo);
+  if (tamanho) {
+    valores.tamanho = tamanho;
+    detectados.push("tamanho");
   }
 
   const capacidade = primeiroMatch(`${titulo ?? ""}\n${texto}`, [/\b(\d+(?:[.,]\d+)?\s*(?:L|ML|KG|GB|TB))\b/i]);
   if (capacidade) {
     valores.capacidade = capacidade.toLocaleUpperCase("pt-BR").replace(/\s+/g, " ");
     detectados.push("capacidade");
+  }
+
+  const observacaoPreco = primeiroMatch(texto, [
+    /(?:^|\n)\s*(?:OBS(?:ERVA[CÇ][AÃ]O)?(?:\s+DO\s+PRE[CÇ]O)?|CONDI[CÇ][AÃ]O\s+DO\s+PRE[CÇ]O)\s*[:\-–—]\s*([^\n]{3,140})/i,
+  ]);
+  if (observacaoPreco) {
+    valores.precoObservacao = limparMarkdown(observacaoPreco).toLocaleUpperCase("pt-BR");
+    detectados.push("observação do preço");
   }
 
   const cupom = detectarCupomOferta(texto);

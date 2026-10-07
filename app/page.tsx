@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { destaqueImperdivelAtivo, ofertaEstaExpirada } from "@/lib/oferta-status";
 import { NOME_MARCA, NOMES_ALTERNATIVOS, SAME_AS, URL_SITE } from "@/lib/seo-brand";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -24,6 +24,8 @@ export default async function HomePage() {
   const ofertasAtivas = ofertas.filter(
     (oferta) => oferta.status === "publicada" && !ofertaEstaExpirada(oferta)
   );
+  const promocaoImperdivel = ofertasAtivas.find(destaqueImperdivelAtivo);
+  const ofertaDestaque = promocaoImperdivel ?? ofertasAtivas[0];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -75,7 +77,8 @@ export default async function HomePage() {
       />
       <Header />
       <Hero
-        ofertaDestaque={ofertasAtivas[0]}
+        ofertaDestaque={ofertaDestaque}
+        promocaoImperdivel={Boolean(promocaoImperdivel)}
       />
       <section id="ofertas" className="scroll-mt-24">
         <OfertasGrid ofertas={ofertasAtivas} />

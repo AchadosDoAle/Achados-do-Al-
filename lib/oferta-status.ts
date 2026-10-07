@@ -22,3 +22,19 @@ export function dataPromocaoJaPassou(validade?: string) {
 export function ofertaEstaExpirada(oferta: Pick<Oferta, "status" | "validadePromocao">) {
   return oferta.status === "expirada" || dataPromocaoJaPassou(oferta.validadePromocao);
 }
+
+
+function dataHoraBrasiliaParaTimestamp(valor?: string) {
+  if (!valor) return NaN;
+  if (/Z$|[+-]\d{2}:?\d{2}$/.test(valor)) return new Date(valor).getTime();
+  const complementoSegundos = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(valor) ? ":00" : "";
+  return new Date(`${valor}${complementoSegundos}-03:00`).getTime();
+}
+
+export function destaqueImperdivelAtivo(
+  oferta: Pick<Oferta, "destaqueImperdivel" | "destaqueAte">
+) {
+  if (!oferta.destaqueImperdivel || !oferta.destaqueAte) return false;
+  const limite = dataHoraBrasiliaParaTimestamp(oferta.destaqueAte);
+  return Number.isFinite(limite) && limite > Date.now();
+}
