@@ -215,3 +215,8 @@
 - `Cupons`, `Favoritos` e `Já perdeu?` recebem estado ativo apenas em suas respectivas páginas.
 - `Início` permanece sem destaque na Home, conforme solicitado.
 - A navegação mobile recebeu o mesmo comportamento para manter consistência visual.
+
+## 2026-10-06 — Categorias com emojis e animações
+- Adiciona emoji próprio em cada botão da página pública de categorias.
+- Adiciona entrada suave, elevação discreta, brilho leve e microanimação dos emojis no hover/touch.
+- Mantém a grade, rotas e conteúdo das categorias inalterados.
