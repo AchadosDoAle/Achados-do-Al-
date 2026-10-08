@@ -1,0 +1,29 @@
+ACHADOS DO ALÊ — PATCH DE LOJAS ALFABÉTICAS E LINK MANUAL DA FOTO
+
+Este patch modifica somente components/admin/OfferForm.tsx.
+
+O QUE MUDA
+1. A lista de lojas na postagem/edição de ofertas fica ordenada alfabeticamente (pt-BR).
+2. "Outros" é a última opção. A loja padrão existente não foi alterada.
+3. Na Etapa 5, adicionado "Link direto da imagem (opcional)".
+4. Colar um URL direto de foto (HTTPS/HTTP) define a imagem principal e mostra a prévia.
+5. Continua possível enviar arquivo ou buscar automaticamente a foto pelo link do produto.
+6. Uma foto que não carregar mostra aviso; não é necessário SQL.
+
+O LINK tidd.ly/... É UM LINK DE AFILIADO PARA A PÁGINA DO PRODUTO,
+NÃO O LINK DIRETO DA FOTO. No campo novo, cole o URL público da imagem
+(ex.: https://servidor.com/foto.jpg ou endereço CDN equivalente).
+Se a loja impedir o uso externo da imagem, faça download da foto e
+use "Ou enviar arquivo do computador" para armazenar no Storage.
+
+COMO APLICAR (GITHUB DESKTOP)
+1. Abra GitHub Desktop > Repository > Show in Explorer.
+2. Extraia este ZIP e copie a pasta components para a raiz do projeto.
+3. Confirme a substituição de components/admin/OfferForm.tsx.
+4. Em Changes, confirme que o código alterado é somente o formulário.
+5. Summary: Organiza lojas e adiciona link direto da imagem
+6. Description: Ordena lojas alfabeticamente com Outros por último e permite informar imagem por URL com prévia no cadastro de ofertas.
+7. Commit to main > Push origin. Aguarde a Vercel.
+8. Teste em https://achadosdoale.com/admin/ofertas/nova.
+
+NÃO precisa rodar SQL e NÃO altera os aplicativos.

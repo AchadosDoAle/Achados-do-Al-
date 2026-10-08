@@ -25,6 +25,23 @@ import { formatarDataPublicacao } from "@/lib/datas";
 
 const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
+// Ordena só a lista visual do cadastro, sem mudar a loja padrão de registros novos.
+const LOJAS_PARA_SELECAO = [
+  ...LOJAS.filter((loja) => loja !== LOJA_OUTROS).sort((a, b) =>
+    a.localeCompare(b, "pt-BR", { sensitivity: "base" })
+  ),
+  LOJA_OUTROS,
+];
+
+function imagemTemUrlValida(url: string): boolean {
+  try {
+    const analisada = new URL(url.trim());
+    return analisada.protocol === "https:" || analisada.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 const classeCard = "rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm";
 const paraCaixaAlta = (valor: string) => valor.toLocaleUpperCase("pt-BR");
 
@@ -140,6 +157,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const [previewImagem, setPreviewImagem] = useState<string | undefined>(ofertaExistente?.imagemPrincipal);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [erroImagem, setErroImagem] = useState("");
+  const [erroPreviewImagem, setErroPreviewImagem] = useState(false);
   const [buscandoImagemAuto, setBuscandoImagemAuto] = useState(false);
   const [statusImagemAuto, setStatusImagemAuto] = useState("");
   const [resultadoLeitura, setResultadoLeitura] = useState("");
@@ -148,6 +166,18 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
 
   function atualizarCampo<K extends keyof OfertaFormValues>(campo: K, valor: OfertaFormValues[K]) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  function atualizarLinkImagemManual(link: string) {
+    // O link da foto é salvo no mesmo campo já usado por upload e busca automática.
+    const endereco = link.trim();
+    atualizarCampo("imagemPrincipal", endereco);
+    setErroImagem("");
+    setErroPreviewImagem(false);
+    // Não tenta exibir URLs incompletas enquanto o usuário digita.
+    setPreviewImagem(
+      imagemTemUrlValida(endereco) || endereco.startsWith("/") ? endereco : undefined
+    );
   }
 
   function marcarCampoConferido(campo: "categoria" | "marca" | "modelo") {
@@ -346,6 +376,11 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       novosErros.categoria = "Informe a categoria manualmente.";
     } else if (!valores.categoria) novosErros.categoria = "Escolha a categoria.";
     if (!valores.linkProduto.trim()) novosErros.linkProduto = "Cole o link do produto.";
+    if (valores.imagemPrincipal?.trim() &&
+        !imagemTemUrlValida(valores.imagemPrincipal) &&
+        !valores.imagemPrincipal.startsWith("/")) {
+      novosErros.imagemPrincipal = "Cole o link completo da imagem (http:// ou https://).";
+    }
     if (valores.destaqueImperdivel) {
       if (!valores.destaqueAte) {
         novosErros.destaqueAte = "Informe até quando a promoção ficará em destaque.";
@@ -407,17 +442,18 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       if (dados.imagemUrl) {
         atualizarCampo("imagemPrincipal", dados.imagemUrl);
         setPreviewImagem(dados.imagemUrl);
+        setErroPreviewImagem(false);
         setStatusImagemAuto(
           dados.origem === "externa"
             ? `✅ Imagem encontrada pelo preview do link. ${dados.aviso || "Usando a imagem original da loja."}`
             : "✅ Imagem encontrada, copiada para o Storage e adicionada!"
         );
       } else {
-        setStatusImagemAuto(`${dados.erro || "Não encontramos a imagem automaticamente."} Envie manualmente abaixo.`);
+        setStatusImagemAuto(`${dados.erro || "Não encontramos a imagem automaticamente."} Cole o link direto da imagem na Etapa 5 ou envie um arquivo.`);
       }
     } catch (erro) {
       console.error(erro);
-      setStatusImagemAuto("Não foi possível buscar a imagem automaticamente. Envie manualmente abaixo.");
+      setStatusImagemAuto("Não foi possível buscar a imagem automaticamente. Cole o link direto da imagem na Etapa 5 ou envie um arquivo.");
     } finally {
       setBuscandoImagemAuto(false);
     }
@@ -427,6 +463,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     const arquivo = evento.target.files?.[0];
     if (!arquivo) return;
     setPreviewImagem(URL.createObjectURL(arquivo));
+    setErroPreviewImagem(false);
     setEnviandoImagem(true);
     setErroImagem("");
     try {
@@ -435,6 +472,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       if (error) throw error;
       const { data } = supabase.storage.from("ofertas").getPublicUrl(nomeArquivo);
       atualizarCampo("imagemPrincipal", data.publicUrl);
+      setPreviewImagem(data.publicUrl);
     } catch (erro) {
       console.error(erro);
       setErroImagem("Não foi possível enviar a imagem. Confira o Storage do Supabase e tente de novo.");
@@ -597,7 +635,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                     const nova = e.target.value; setLojaSelecionada(nova);
                     atualizarCampo("loja", nova === LOJA_OUTROS ? lojaPersonalizada : nova);
                   }}>
-                    {LOJAS.map((loja) => <option key={loja} value={loja}>{loja}</option>)}
+                    {LOJAS_PARA_SELECAO.map((loja) => <option key={loja} value={loja}>{loja}</option>)}
                   </select>
                   {lojaSelecionada === LOJA_OUTROS && <input className={classeInput} value={lojaPersonalizada} onChange={(e) => { setLojaPersonalizada(e.target.value); atualizarCampo("loja", e.target.value); }} placeholder="Digite o nome da loja" />}
                 </div>
@@ -1030,11 +1068,46 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))} /></Campo>
             </div>
           </div>
-          <div className="mt-4 rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
-            <Campo rotulo="Imagem principal"><input type="file" accept="image/*" onChange={aoEscolherImagem} /></Campo>
-            {enviandoImagem && <p className="mt-2 text-xs text-ink/50">Enviando imagem...</p>}
-            {erroImagem && <p className="mt-2 text-xs text-accent-dark">{erroImagem}</p>}
-            {previewImagem && <img src={previewImagem} alt="Prévia" className="mt-3 h-36 w-36 rounded-2xl object-cover ring-1 ring-ink/10" />}
+          <div className="mt-4 space-y-4 rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
+            <div>
+              <Campo rotulo="Link direto da imagem (opcional)" erro={erros.imagemPrincipal}>
+                <input
+                  type="url"
+                  className={classeInput}
+                  value={valores.imagemPrincipal ?? ""}
+                  placeholder="https://exemplo.com/imagens/produto.jpg"
+                  onChange={(e) => atualizarLinkImagemManual(e.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </Campo>
+              <p className="mt-1.5 text-xs text-ink/60">
+                Se o link da oferta (ex.: tidd.ly) não fornecer a foto, cole aqui o endereço
+                direto da imagem. A prévia aparece abaixo e o link é salvo como foto principal.
+              </p>
+            </div>
+            <div className="border-t border-brand/10 pt-3">
+              <Campo rotulo="Ou enviar arquivo do computador">
+                <input type="file" accept="image/*" onChange={aoEscolherImagem} />
+              </Campo>
+            </div>
+            {enviandoImagem && <p className="text-xs text-ink/60">Enviando imagem para o Supabase...</p>}
+            {erroImagem && <p role="alert" className="text-xs text-accent-dark">{erroImagem}</p>}
+            {erroPreviewImagem && (
+              <p role="alert" className="text-xs text-accent-dark">
+                A imagem não carregou. Confira se é um link público e direto da foto
+                (não o link da página da loja) ou envie um arquivo do computador.
+              </p>
+            )}
+            {previewImagem && (
+              <img
+                src={previewImagem}
+                alt="Prévia da imagem principal do produto"
+                className="h-36 w-36 rounded-2xl bg-white object-contain ring-1 ring-ink/10"
+                onLoad={() => setErroPreviewImagem(false)}
+                onError={() => setErroPreviewImagem(true)}
+              />
+            )}
           </div>
         </section>
 
