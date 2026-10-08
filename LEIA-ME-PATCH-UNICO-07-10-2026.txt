@@ -1,0 +1,71 @@
+PATCH ÚNICO — ACHADO DO ALÊ — 07/10/2026
+============================================
+
+FINALIDADE
+Reunir em um único ZIP as alterações realizadas nas últimas atualizações do site.
+Atenção especial: as páginas Sobre, Termos de Uso e Links de Afiliados estão incluídas
+com seus conteúdos COMPLETOS, não são apenas textos de demonstração.
+
+O QUE ESTÁ INCLUSO
+- /sobre: história do Achado do Alê, formação de Alexandre, agosto de 2026,
+  desenvolvimento independente e planos para Android e iOS.
+- /termos: Termos de Uso completos com direitos e responsabilidades,
+  links de afiliados, preços, cupons, terceiros, privacidade e apps.
+- /afiliados: transparência sobre como funcionam os programas de afiliados
+  e as comissões, separada da Política de Privacidade.
+- Link Termos de Uso no rodapé.
+- Promoção Imperdível com validade máxima de 24 h e fallback da Home.
+- Cupom Relâmpago e efeitos visuais discretos.
+- Postagem de ofertas mais ágil, texto/prévia lado a lado,
+  reconhecimento de DE/POR/tamanho, observação de preço.
+- Oito lojas novas no cadastro, com reconhecimento contextual.
+- Miniaturas Open Graph compartilhadas pelo próprio domínio.
+- Melhorias nos atalhos da Home e categorias, quando não presentes na base local.
+
+IMPORTANTE — COMO INSTALAR PELO GITHUB DESKTOP
+1) Faça um backup da pasta atual do projeto antes de qualquer substituição.
+2) Abra o GitHub Desktop e selecione o repositório Achados-do-Al.
+3) Verifique a aba Changes; se houver edições suas ainda não confirmadas,
+   faça backup ou commit delas antes de copiar este patch.
+4) Clique em Repository > Show in Explorer.
+5) Extraia este ZIP para uma pasta temporária.
+6) Copie o CONTEÚDO DO ZIP para a RAIZ do repositório que o GitHub Desktop abriu.
+   Isso significa que a pasta app do ZIP se mescla à pasta app do projeto,
+   e components à components. Substitua os arquivos de mesmo nome.
+   NÃO coloque a pasta do patch inteira dentro do repositório.
+7) Na aba Changes, procure estes arquivos:
+      app/sobre/page.tsx
+      app/termos/page.tsx
+      app/afiliados/page.tsx
+      components/Footer.tsx
+   Se os 3 primeiros não aparecerem em Changes, confira diretamente seu conteúdo
+   dentro da pasta; pode significar que já estão idênticos localmente.
+8) Execute npm run typecheck e npm run build, se o ambiente local estiver preparado.
+9) Summary do commit:
+      Consolida melhorias e atualiza Sobre, Termos e Afiliados
+   Description:
+      Reúne melhorias de ofertas, cupons, lojas, compartilhamento e páginas
+      institucionais, incluindo Termos de Uso completos e história do projeto.
+10) Clique em Commit to main e depois Push origin.
+11) Aguarde o status Ready na Vercel. Verifique se o domínio usa esse deploy.
+12) Teste em janela anônima, nos endereços:
+      https://achadosdoale.com/sobre
+      https://achadosdoale.com/termos
+      https://achadosdoale.com/afiliados
+    Se necessário use Ctrl+F5.
+
+SUPABASE
+Este patch traz o código e também os arquivos de SQL ligados ao destaque
+imperdível/cupom relâmpago das atualizações anteriores. Copiar arquivos .sql
+NÃO executa SQL automaticamente. Se você já aplicou a migration
+20261007_destaque_imperdivel_cupom_relampago.sql, NÃO precisa executá-la
+novamente apenas por causa deste patch. NÃO houve alteração adicional no BD
+para as páginas Sobre, Termos de Uso, Afiliados, novas lojas ou prévia social.
+
+APLICATIVOS
+Nenhuma mudança direta nos apps Android/iOS ou no app administrativo Android.
+
+ATENÇÃO
+Este patch foi montado sobre a última versão do site gerada aqui na conversa.
+Se você editou os mesmos arquivos posteriormente no seu computador, faça backup
+antes de substituir para não perder essas edições. Não copie .env e não substitua .git.

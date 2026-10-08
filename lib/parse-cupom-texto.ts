@@ -18,6 +18,13 @@ function textoBase(texto: string) {
 
 function detectarLoja(texto: string) {
   const t = texto.toLocaleUpperCase("pt-BR");
+  const nomeExplicito = texto.match(/(?:^|\n)\s*(?:LOJA|SITE|VENDIDO\s+POR)\s*[:\-–—]\s*([^\n|•]{2,80})/i)?.[1];
+  if (nomeExplicito) {
+    const normalizada = normalizarNomeLoja(nomeExplicito.replace(/[;,.]+$/, "").trim());
+    const chave = (nome: string) => nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[’'\s-]/g, "").toUpperCase();
+    const afiliada = LOJAS_AFILIADAS.find((loja) => chave(loja) === chave(normalizada));
+    if (afiliada) return afiliada;
+  }
   const aliases: Array<[string, string]> = [
     ["MERCADO LIVRE", "Mercado Livre"],
     ["MERCADOLIVRE", "Mercado Livre"],
@@ -31,12 +38,22 @@ function detectarLoja(texto: string) {
     ["ALIEXPRESS", "AliExpress"],
     ["NATURA", "Natura"],
     ["AVON", "Avon"],
+    ["DAFITI", "Dafiti"],
+    ["SEPHORA", "Sephora"],
+    ["SHOP TIMÃO", "ShopTIMÃO"],
+    ["SHOP TIMAO", "ShopTIMÃO"],
+    ["SHOPTIMÃO", "ShopTIMÃO"],
+    ["SHOPTIMAO", "ShopTIMÃO"],
+    ["LOJA NBA", "Loja NBA"],
+    ["NBA STORE", "Loja NBA"],
   ];
 
   for (const [chave, loja] of aliases) {
     if (t.includes(chave)) return normalizarNomeLoja(loja);
   }
+  const marcasTambemLojas = new Set(["Adidas", "Nike", "Samsung", "L'Oréal"]);
   for (const loja of LOJAS_AFILIADAS) {
+    if (marcasTambemLojas.has(loja)) continue;
     if (t.includes(loja.toLocaleUpperCase("pt-BR"))) return loja;
   }
   return undefined;

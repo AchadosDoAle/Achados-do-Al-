@@ -74,13 +74,26 @@ function detectarLoja(texto: string) {
     ["ALIEXPRESS", "AliExpress"],
     ["NATURA", "Natura"],
     ["AVON", "Avon"],
+    ["DAFITI", "Dafiti"],
+    ["SEPHORA", "Sephora"],
+    ["SHOP TIMÃO", "ShopTIMÃO"],
+    ["SHOP TIMAO", "ShopTIMÃO"],
+    ["SHOPTIMÃO", "ShopTIMÃO"],
+    ["SHOPTIMAO", "ShopTIMÃO"],
+    ["LOJA NBA", "Loja NBA"],
+    ["NBA STORE", "Loja NBA"],
   ];
 
   for (const [chave, loja] of aliases) {
     if (textoNormalizado.includes(chave)) return normalizarNomeLoja(loja);
   }
 
+  // Adidas, Nike, Samsung e L'Oréal também são MARCAS de produtos.
+  // Não considerar mera menção ao nome como evidência de loja vendedora.
+  // Com "LOJA: ..." acima, essas quatro continuam sendo reconhecidas.
+  const marcasTambemLojas = new Set(["Adidas", "Nike", "Samsung", "L'Oréal"]);
   for (const loja of LOJAS_AFILIADAS) {
+    if (marcasTambemLojas.has(loja)) continue;
     if (textoNormalizado.includes(loja.toLocaleUpperCase("pt-BR"))) return loja;
   }
 

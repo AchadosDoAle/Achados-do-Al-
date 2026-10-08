@@ -1,0 +1,21 @@
+ACHADO DO ALÊ — ATUALIZAÇÃO DAS PÁGINAS SOBRE E AFILIADOS
+
+ALTERAÇÕES
+- /sobre: história do projeto, idealizador, formação, desenvolvimento independente e próximos passos para apps.
+- /afiliados: explicação completa de programas de afiliados e aviso sobre comissões.
+- /privacidade: SEM ALTERAÇÕES.
+- Sem alterações em banco de dados ou nos aplicativos.
+
+PUBLICAÇÃO COM GITHUB DESKTOP
+1. Faça backup da pasta atual do projeto antes de substituições.
+2. No GitHub Desktop, confira que está no repositório e branch corretos.
+3. Vá em Repository > Show in Explorer.
+4. Extraia o ZIP do patch e copie sua pasta app para a raiz do projeto. Confirme a substituição dos dois arquivos app/sobre/page.tsx e app/afiliados/page.tsx.
+5. Opcional: copie CHANGELOG.md e este passo a passo se desejar documentar a alteração.
+6. No GitHub Desktop, abra Changes e confirme que apenas os arquivos esperados foram alterados.
+7. Summary: Atualiza páginas Sobre e Transparência de Afiliados
+8. Description: Reformula a história do Achado do Alê e detalha o funcionamento dos links de afiliados em página independente, preservando a Política de Privacidade.
+9. Clique em Commit to main e depois Push origin.
+10. Aguarde o deploy na Vercel e teste /sobre e /afiliados em computador e celular.
+
+NÃO EXECUTAR SQL NO SUPABASE.

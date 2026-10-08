@@ -65,6 +65,15 @@ export const LOJAS_AFILIADAS = [
   "AliExpress",
   "Natura",
   "Avon",
+  // Novas parcerias — outubro/2026. Manter as lojas existentes e a opção Outros.
+  "Adidas",
+  "Dafiti",
+  "L'Oréal",
+  "Loja NBA",
+  "Nike",
+  "Samsung",
+  "Sephora",
+  "ShopTIMÃO",
 ];
 
 export const LOJA_OUTROS = "Outros";
@@ -78,10 +87,42 @@ const ALIASES_LOJAS: Record<string, string> = {
   "MagaLu-Magazine Luiza": "Magalu - Magazine Luiza",
   Baw: "BAW",
   "Outra loja": LOJA_OUTROS,
+  Loreal: "L'Oréal",
+  "L'Oreal": "L'Oréal",
+  "L'Oréal Paris": "L'Oréal",
+  "Shop Timão": "ShopTIMÃO",
+  "Shop Timão Store": "ShopTIMÃO",
+  "Shop Timao": "ShopTIMÃO",
+  "Loja do Timão": "ShopTIMÃO",
+  "NBA Store": "Loja NBA",
 };
 
 export function normalizarNomeLoja(loja: string): string {
-  return ALIASES_LOJAS[loja] ?? loja;
+  const nome = loja.trim();
+  if (ALIASES_LOJAS[nome]) return ALIASES_LOJAS[nome];
+  // Reconhece grafias sem acento, apóstrofo ou espaço na leitura automática.
+  const chave = nome
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’'\s-]/g, "")
+    .toLocaleUpperCase("pt-BR");
+  const equivalencias: Record<string, string> = {
+    LOREAL: "L'Oréal",
+    LOREALPARIS: "L'Oréal",
+    SHOPTIMAO: "ShopTIMÃO",
+    SHOPTIMAOSTORE: "ShopTIMÃO",
+    LOJADOTIMAO: "ShopTIMÃO",
+    NBASTORE: "Loja NBA",
+    LOJANBA: "Loja NBA",
+  };
+  const nomeDaLista = LOJAS_AFILIADAS.find((afiliada) =>
+    afiliada
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[’'\s-]/g, "")
+      .toLocaleUpperCase("pt-BR") === chave
+  );
+  return equivalencias[chave] ?? nomeDaLista ?? nome;
 }
 
 export function lojaEhAfiliada(loja: string): boolean {

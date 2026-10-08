@@ -1,3 +1,13 @@
+
+## 2026-10-07 — Patch único consolidado (páginas institucionais e melhorias)
+
+- Reúne as alterações de vitrine, categorias, destaque temporário, cupons relâmpago, melhorias de postagem, lojas afiliadas e miniatura de compartilhamento das entregas de outubro.
+- Inclui integralmente a página `/sobre` com a história do projeto e aplicativos ainda não lançados.
+- Inclui integralmente `/afiliados`, a página independente de transparência sobre comissões comerciais.
+- Substitui `/termos` pela versão detalhada dos Termos de Uso, até então ainda antiga; preserva `/privacidade` sem qualquer mudança.
+- Ajusta o texto do link para `Termos de Uso` no rodapé.
+- O ZIP contém apenas arquivos novos ou alterados em relação à base com menu ativo; não inclui `node_modules`, `.env` ou dados de produção.
+
 ## 2026-10-07 — Foto de produto na prévia do WhatsApp
 - Os metadados Open Graph de ofertas e links curtos passam a apontar somente para uma miniatura servida no domínio do Achado do Alê.
 - A rota pública de prévia busca a mesma imagem principal cadastrada e entrega um PNG de marca com título, loja e preço se o servidor não conseguir acessar a foto externa.

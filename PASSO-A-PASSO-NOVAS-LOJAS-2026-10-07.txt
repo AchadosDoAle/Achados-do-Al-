@@ -1,0 +1,31 @@
+ACHADO DO ALÊ — NOVAS LOJAS AFILIADAS
+Atualização: 07/10/2026
+
+O QUE FOI ALTERADO
+- Novas lojas no seletor de oferta (e também na tela de cupons, pois a lista é compartilhada):
+  Adidas, Nike, Dafiti, Sephora, L'Oréal, Samsung, ShopTIMÃO e Loja NBA.
+- Compatibilidade com escritas alternativas de L'Oréal, ShopTIMÃO e Loja NBA.
+- O reconhecimento do texto diferencia marca do produto e loja vendedora: se uma
+  publicação citar "Tênis Nike" e a loja não estiver identificada, não deve
+  selecionar Nike automaticamente como loja.
+- As lojas antigas e a opção "Outros" foram preservadas.
+
+COMO INSTALAR PELO GITHUB DESKTOP
+1. Abra GitHub Desktop e confira que está no repositório correto, branch main.
+2. Se houver alterações não publicadas no campo Changes, faça backup/commit delas.
+3. No menu, clique em Repository > Show in Explorer.
+4. Extraia o ZIP do patch; copie o conteúdo de dentro dele para a raiz do projeto
+   aberta pelo GitHub Desktop. Aceite substituir os arquivos existentes.
+5. Na aba Changes, confira os arquivos lib/mock-data.ts,
+   lib/parse-oferta-texto.ts, lib/parse-cupom-texto.ts e CHANGELOG.md.
+6. Summary do commit:
+   Adiciona novas lojas afiliadas ao painel
+7. Description do commit:
+   Inclui Adidas, Nike, Dafiti, Sephora, L'Oréal, Samsung, ShopTIMÃO e Loja NBA
+   nos seletores de ofertas e cupons e amplia reconhecimento de lojas no texto.
+8. Clique em Commit to main; depois Push origin.
+9. Aguarde o deploy da Vercel ficar Ready e faça Ctrl+F5 no site.
+10. Em /admin/ofertas/nova, abra Loja para conferir as novas opções.
+
+NÃO EXECUTAR SQL: a estrutura do banco de dados não foi alterada.
+NÃO precisa atualizar os apps Android/iOS por causa deste patch do site.

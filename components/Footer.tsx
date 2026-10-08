@@ -102,7 +102,7 @@ export default function Footer({
           <Link href="/sobre" className="nav-link-modern">Sobre</Link>
           <Link href="/afiliados" className="nav-link-modern">Afiliados</Link>
           <Link href="/privacidade" className="nav-link-modern">Privacidade</Link>
-          <Link href="/termos" className="nav-link-modern">Termos</Link>
+          <Link href="/termos" className="nav-link-modern">Termos de Uso</Link>
           <Link href="/perdeu" className="nav-link-modern text-gold/80">Veja o que já perdeu!</Link>
         </div>
         <p className="mt-4 text-xs text-text-muted">
