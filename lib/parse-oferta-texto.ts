@@ -4,6 +4,7 @@ import {
   normalizarNomeLoja,
 } from "./mock-data";
 import { OfertaFormValues } from "./types";
+import { detectarLojaDeclarada } from "./detectar-loja-declarada";
 
 export type ResultadoLeituraOferta = {
   valores: Partial<OfertaFormValues>;
@@ -47,6 +48,8 @@ function primeiroMatch(texto: string, regexes: RegExp[]) {
 }
 
 function detectarLoja(texto: string) {
+  const declarada = detectarLojaDeclarada(texto);
+  if (declarada) return declarada;
   const lojaExplicita = primeiroMatch(texto, [
     /(?:^|\n)\s*(?:LOJA|SITE|VENDIDO\s+POR)\s*[:\-–—]\s*([^\n|•]{2,80})/i,
   ]);
@@ -342,6 +345,7 @@ function detectarTitulo(texto: string, loja?: string) {
     if (/^(DE|POR)\s*:?\s*R?\$?/i.test(linha)) return true;
     if (/R\$\s*\d/.test(linha)) return true;
     if (/^CUPOM\b/i.test(linha)) return true;
+    if (/^(?:LOJA|SITE)(?:\s+OFICIAL)?(?:\b|:)|^VENDID[OA]\s+POR\b/i.test(linha)) return true;
     if (/^(CATEGORIA|MARCA|MODELO|COR|TAMANHO|TAM\.?|SIZE|NUMERA[CÇ][AÃ]O|CAPACIDADE|VOLTAGEM|REFER[EÊ]NCIA)\b/i.test(linha)) return true;
     if (/^(OBS(?:ERVA[CÇ][AÃ]O)?(?:\s+DO\s+PRE[CÇ]O)?|CONDI[CÇ][AÃ]O\s+DO\s+PRE[CÇ]O|PARCELAMENTO|PARCELAS?|PRE[CÇ]O\s+(?:ATUAL|ANTIGO|FINAL|PARCELADO)|VALIDADE|ESTOQUE)\b/i.test(linha)) return true;
     if (/^COMPRE\s+AQUI\b/i.test(linha)) return true;
@@ -375,7 +379,13 @@ function detectarTitulo(texto: string, loja?: string) {
   // sobre chamadas publicitárias como "NO PRECINHO" ou "EM OFERTA".
   if (loja) {
     const lojaUpper = loja.toLocaleUpperCase("pt-BR");
-    const indiceLoja = linhas.findIndex((linha) => {
+    // Prefira a linha declarada da loja; uma chamada como "ADIDAS CAMPUS"
+    // pode conter a marca antes da linha "LOJA OFICIAL ADIDAS".
+    const indiceLojaDeclarada = linhas.findIndex((linha) =>
+      /^(?:LOJA|SITE)(?:\s+OFICIAL)?\b/i.test(linha) &&
+      linha.toLocaleUpperCase("pt-BR").includes(lojaUpper)
+    );
+    const indiceLoja = indiceLojaDeclarada >= 0 ? indiceLojaDeclarada : linhas.findIndex((linha) => {
       const l = linha.toLocaleUpperCase("pt-BR");
       return l === lojaUpper || l.includes(lojaUpper);
     });
@@ -412,7 +422,19 @@ function detectarTitulo(texto: string, loja?: string) {
 
 
 function detectarTamanho(texto: string, titulo?: string) {
-  const base = `${titulo ?? ""}\n${texto}`.replace(/\u00A0/g, " ");
+  const base = `${titulo ?? ""}\n${texto}`.replace(/\u00A0/g, " ").replace(/[\*_~`]/g, " ");
+
+  // Lista de numerações, inclusive com emoji/Markdown antes do rótulo.
+  // Ex.: "📏 Tamanhos disponíveis: *36 ao 38 e 41*, conforme estoque".
+  const linhaDeTamanhos = base.split(/\r?\n/).find((linha) =>
+    /\b(?:TAMANHOS?|NUMERA[CÇ][AÃ]O|TAM\.?|SIZE)\s+(?:DISPON[IÍ]VEIS?\s*)?[:\-–—]?/i.test(linha)
+  );
+  if (linhaDeTamanhos) {
+    const lista = linhaDeTamanhos.match(
+      /\b(?:TAMANHOS?|NUMERA[CÇ][AÃ]O|TAM\.?|SIZE)\s*(?:DISPON[IÍ]VEIS?\s*)?[:\-–—]?\s*([0-9]{1,3}(?:\s*(?:AO|A|AT[EÉ]|E|,|\/|-)\s*[0-9]{1,3}){0,12}|(?:PP|P|M|G|GG|XG|XGG|XXG|XXGG)(?:\s*(?:AO|A|E|,|\/|-)\s*(?:PP|P|M|G|GG|XG|XGG|XXG|XXGG)){0,12})/i
+    )?.[1];
+    if (lista) return limparMarkdown(lista).toLocaleUpperCase("pt-BR");
+  }
 
   const explicito = primeiroMatch(base, [
     /(?:^|\n)\s*(?:TAMANHO|TAM\.?|SIZE|NUMERA[CÇ][AÃ]O|N[ÚU]MERO|N[º°])\s*[:\-–—]?\s*([^\n|•]{1,30})/i,

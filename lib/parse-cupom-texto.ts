@@ -1,5 +1,6 @@
 import { LOJAS_AFILIADAS, normalizarNomeLoja } from "./mock-data";
 import { CupomFormValues } from "./types";
+import { detectarLojaDeclarada } from "./detectar-loja-declarada";
 
 export type ResultadoLeituraCupom = {
   valores: Partial<CupomFormValues>;
@@ -17,6 +18,8 @@ function textoBase(texto: string) {
 }
 
 function detectarLoja(texto: string) {
+  const declarada = detectarLojaDeclarada(texto);
+  if (declarada) return declarada;
   const t = texto.toLocaleUpperCase("pt-BR");
   const nomeExplicito = texto.match(/(?:^|\n)\s*(?:LOJA|SITE|VENDIDO\s+POR)\s*[:\-–—]\s*([^\n|•]{2,80})/i)?.[1];
   if (nomeExplicito) {
@@ -66,20 +69,49 @@ function numeroPt(valor?: string) {
 }
 
 function detectarCodigoCupom(texto: string) {
-  const regexes = [
-    /(?:c[oó]digo\s+(?:do\s+)?cupom|cupom\s+(?:de\s+desconto\s+)?(?:é|e|:|-|use\s+o|use)?\s*)\s*([A-Z0-9][A-Z0-9_-]{3,39})\b/gi,
-    /\bCUPOM\s+([A-Z0-9][A-Z0-9_-]{3,39})\b/gi,
-  ];
   const proibidos = new Set([
-    "VALIDO", "VÁLIDO", "APLICAVEL", "APLICÁVEL", "PESSOAL", "EXCLUSIVO",
-    "DESCONTO", "BENEFICIO", "BENEFÍCIO", "SOMENTE", "ENQUANTO", "LIMITADO",
+    "VALIDO", "VALIDA", "APLICAVEL", "PESSOAL", "EXCLUSIVO", "DESCONTO",
+    "BENEFICIO", "SOMENTE", "ENQUANTO", "LIMITADO", "LIBERADO", "ATIVO",
+    "OFERTA", "PROMOCAO", "LOJA", "OFICIAL", "CUPOM", "UTILIZE", "PARA",
+    "PRODUTOS", "SELECIONADOS", "PERCENTUAL", "CODIGO", "GRATIS"
   ]);
+  const codigoValido = (candidato?: string) => {
+    if (!candidato) return undefined;
+    const codigo = candidato.toLocaleUpperCase("pt-BR");
+    // Evita datas, percentuais, termos comuns e textos publicitários.
+    if (!/^[A-Z0-9][A-Z0-9_-]{3,39}$/.test(codigo) ||
+        !/[A-Z]/.test(codigo) || proibidos.has(codigo)) return undefined;
+    return codigo;
+  };
 
-  for (const regex of regexes) {
-    for (const match of texto.matchAll(regex)) {
-      const codigo = match[1]?.toLocaleUpperCase("pt-BR");
-      if (codigo && !proibidos.has(codigo)) return codigo;
-    }
+  const linhas = texto.split(/\r?\n/).map((linha) =>
+    linha.replace(/^[^\p{L}\p{N}]+/gu, "").trim()
+  );
+
+  for (const linha of linhas) {
+    // "CUPOM: DESCONTOU", "🎟️ CUPOM LIBERADO: VAIBARATO",
+    // "CÓDIGO DO CUPOM: XYZ123" e "USE O CUPOM VAIBARATO".
+    const explicito = linha.match(
+      /^(?:(?:C[ÓO]DIGO\s+(?:DO\s+)?CUPOM|C[ÓO]DIGO|CUPOM(?:\s+(?:LIBERADO|ATIVO|V[ÁA]LIDO|DE\s+DESCONTO))?|USE\s+(?:O\s+)?CUPOM)\s*[:\-–—]?\s*)([A-Z0-9][A-Z0-9_-]{3,39})\b/i
+    )?.[1];
+    const identificado = codigoValido(explicito);
+    if (identificado) return identificado;
+  }
+
+  // Relatórios e posts curtos: "*DESCONTOU* - 25% DE DESCONTO"
+  // ou "VAIBARATO - 22% OFF - SEM VALIDADE".
+  for (const linha of linhas) {
+    const nomeNoInicio = linha.match(
+      /^([A-Z0-9][A-Z0-9_-]{3,39})\s*[-–—|:]\s*(?:\d{1,3}(?:[.,]\d{1,2})?\s*%|R\s*\$\s*[\d.,]+\s*(?:OFF|DE\s+DESCONTO))/i
+    )?.[1];
+    const identificado = codigoValido(nomeNoInicio);
+    if (identificado) return identificado;
+  }
+
+  // "Use o cupom DESCONTOU para aproveitar" dentro da descrição.
+  for (const match of texto.matchAll(/\b(?:USE\s+(?:O\s+)?CUPOM|CUPOM\s*[:\-–—])\s*([A-Z0-9][A-Z0-9_-]{3,39})\b/gi)) {
+    const identificado = codigoValido(match[1]);
+    if (identificado) return identificado;
   }
   return undefined;
 }
@@ -189,8 +221,11 @@ export function interpretarTextoCupom(textoOriginal: string): ResultadoLeituraCu
   const urls = Array.from(texto.matchAll(/https?:\/\/[^\s)\]}]+/gi)).map((m) =>
     m[0].replace(/[.,;]+$/, "")
   );
-  if (urls[0]) {
-    valores.linkProdutos = urls[0];
+  const linkDestino = urls.find((url) =>
+    !/^(?:https?:\/\/)?(?:www\.)?achadosdoale\.com\/(?:grupo|p\/|c\/)/i.test(url)
+  );
+  if (linkDestino) {
+    valores.linkProdutos = linkDestino;
     camposDetectados.push("link");
   }
 

@@ -14,7 +14,7 @@ import { ofertaEstaExpirada } from "@/lib/oferta-status";
 import { formatarDataPublicacao } from "@/lib/datas";
 import {
   descricaoSocialDaOferta,
-  imagemSocialDaOferta,
+  imagensSociaisDaOferta,
   precoPrincipalDaOferta,
   precoPrincipalEhPix,
   tituloSocialDaOferta,
@@ -42,7 +42,7 @@ export async function generateMetadata({
   const tituloSocial = tituloSocialDaOferta(oferta);
   const expirada = ofertaEstaExpirada(oferta);
   const url = `${URL_SITE}/oferta/${oferta.slug}`;
-  const imagemCompartilhamento = imagemSocialDaOferta(oferta);
+  const imagensCompartilhamento = imagensSociaisDaOferta(oferta);
 
   return {
     title: oferta.titulo,
@@ -55,7 +55,7 @@ export async function generateMetadata({
       type: "website",
       title: tituloSocial,
       description: descricao,
-      images: [{ url: imagemCompartilhamento, alt: oferta.titulo }],
+      images: imagensCompartilhamento.map((url) => ({ url, alt: oferta.titulo })),
       url,
       siteName: "Achado do Alê",
       locale: "pt_BR",
@@ -64,7 +64,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: tituloSocial,
       description: descricao,
-      images: [imagemCompartilhamento],
+      images: imagensCompartilhamento,
     },
   };
 }

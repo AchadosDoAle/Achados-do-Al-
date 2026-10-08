@@ -6,7 +6,7 @@ import {
   buscarOfertaPorCodigoCurto,
   descricaoSocialDaOferta,
   formatarPrecoSocial,
-  imagemSocialDaOferta,
+  imagensSociaisDaOferta,
   precoPrincipalDaOferta,
   precoPrincipalEhPix,
   tituloSocialDaOferta,
@@ -34,7 +34,7 @@ export async function generateMetadata({
   const descricao = descricaoSocialDaOferta(oferta);
   // O WhatsApp geralmente utiliza apenas o PRIMEIRO og:image.
   // Links externos de imagens podem ser bloqueados para bots; usamos a nossa rota.
-  const imagemCompartilhamento = imagemSocialDaOferta(oferta);
+  const imagensCompartilhamento = imagensSociaisDaOferta(oferta);
 
   return {
     title: oferta.titulo,
@@ -47,13 +47,13 @@ export async function generateMetadata({
       url: urlCurta,
       siteName: "Achado do Alê",
       locale: "pt_BR",
-      images: [{ url: imagemCompartilhamento, alt: oferta.titulo }],
+      images: imagensCompartilhamento.map((url) => ({ url, alt: oferta.titulo })),
     },
     twitter: {
       card: "summary_large_image",
       title: tituloSocial,
       description: descricao,
-      images: [imagemCompartilhamento],
+      images: imagensCompartilhamento,
     },
   };
 }

@@ -112,8 +112,8 @@ export default function CupomForm({
     setValores((atual) => ({ ...atual, [campo]: valor }));
   }
 
-  function reconhecerTextoCupom() {
-    const texto = (valores.descricao ?? "").trim();
+  function reconhecerTextoCupom(textoRecebido?: string) {
+    const texto = (textoRecebido ?? valores.descricao ?? "").trim();
     if (!texto) {
       setResultadoLeitura("Cole primeiro o texto/termos do cupom no campo acima.");
       return;
@@ -124,7 +124,7 @@ export default function CupomForm({
       ...atual,
       ...resultado.valores,
       // O texto completo continua no campo para você editar livremente depois.
-      descricao: atual.descricao,
+      descricao: textoRecebido != null ? paraCaixaAlta(textoRecebido) : atual.descricao,
     }));
 
     if (resultado.valores.loja) {
@@ -145,6 +145,19 @@ export default function CupomForm({
         ? `Preenchido automaticamente: ${resultado.camposDetectados.join(", ")}. Você pode alterar qualquer campo antes de salvar.`
         : "Não consegui identificar os dados principais. O texto foi mantido e todos os campos continuam editáveis."
     );
+  }
+
+  async function colarTextoCupom() {
+    try {
+      const texto = await navigator.clipboard.readText();
+      if (!texto.trim()) {
+        setResultadoLeitura("A área de transferência está vazia.");
+        return;
+      }
+      reconhecerTextoCupom(texto);
+    } catch {
+      setResultadoLeitura("O navegador não permitiu acessar a área de transferência. Use Ctrl+V no campo de texto.");
+    }
   }
 
   function validar(): boolean {
@@ -325,14 +338,31 @@ export default function CupomForm({
                 rows={7}
                 value={valores.descricao}
                 onChange={(e) => atualizarCampo("descricao", paraCaixaAlta(e.target.value))}
+                onPaste={(evento) => {
+                  const colado = evento.clipboardData.getData("text/plain");
+                  if (!colado) return;
+                  evento.preventDefault();
+                  const campo = evento.currentTarget;
+                  const inicio = campo.selectionStart;
+                  const fim = campo.selectionEnd;
+                  const texto = `${valores.descricao.slice(0, inicio)}${colado}${valores.descricao.slice(fim)}`;
+                  reconhecerTextoCupom(texto);
+                }}
                 placeholder={
                   "Cole aqui o texto completo do cupom. O site tenta reconhecer loja, código, desconto, limite, link, data e horário de validade."
                 }
               />
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={reconhecerTextoCupom}
+                  onClick={colarTextoCupom}
+                  className="admin-action rounded-xl border px-4 py-2.5 text-sm font-semibold transition"
+                >
+                  📋 COLAR E RECONHECER
+                </button>
+                <button
+                  type="button"
+                  onClick={() => reconhecerTextoCupom()}
                   className="admin-action w-fit rounded-xl border px-4 py-2.5 text-sm font-semibold transition"
                 >
                   ✨ Reconhecer texto e preencher campos

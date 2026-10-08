@@ -1,0 +1,35 @@
+ACHADOS DO ALÊ - PATCH ÚNICO - CUPONS + ADIDAS + FOTO DE COMPARTILHAMENTO
+Data: 07/10/2026
+
+O QUE ALTERA
+1. Cupom: reconhecimento de códigos de publicações curtas (DESCONTOU - 25%...),
+   CUPOM: CODIGO, CUPOM LIBERADO, USE O CUPOM..., percentuais, datas, loja e links.
+2. Cupom: reconhecer automaticamente após Ctrl+V, botão COLAR E RECONHECER,
+   e botão manual de reconhecer para textos editados.
+3. Oferta: identifica LOJA OFICIAL ADIDAS (e outras lojas declaradas).
+   Não considera menção à marca como prova de loja vendedora.
+4. Oferta: corrige título do produto quando aparece após LOJA OFICIAL ADIDAS.
+   Também lê tamanhos "36 ao 38 e 41".
+5. Compartilhamento: preserva correção anterior que informa a foto real
+   do produto como primeira imagem Open Graph e a imagem de reserva depois.
+
+COMO INSTALAR
+1. Abra GitHub Desktop e confirme o repositório Achados-do-Al.
+2. Antes de substituir arquivos, confira Changes e guarde mudanças locais pendentes.
+3. Clique Repository > Show in Explorer.
+4. Extraia ESTE ZIP, copie apenas as pastas app, components, lib
+   para a raiz aberta no Explorer. Confirme a substituição dos arquivos.
+5. Em GitHub Desktop, confira os 7 arquivos em Changes.
+6. Se possível, no terminal da pasta rode npm run typecheck e npm run build.
+7. Summary: Corrige reconhecimento de cupons e loja Adidas
+8. Description: Melhora reconhecimento automático de cupons, detecta loja oficial
+   Adidas e tamanhos, corrige título das ofertas e mantém foto real no compartilhamento.
+9. Clique Commit to main > Push origin.
+10. Confira o deploy na Vercel, depois teste /admin/cupons/novo e
+    /admin/ofertas/nova, e compartilhe um novo produto pelo WhatsApp.
+
+IMPORTANTE
+- NÃO execute SQL no Supabase para esse patch.
+- A publicação Adidas fornecida contém 3x R$100,00, mas não informa o
+  valor à vista no Pix. O parser não inventa o preço Pix; revise os preços.
+- A foto Open Graph depende da disponibilidade da imagem e do cache do WhatsApp.

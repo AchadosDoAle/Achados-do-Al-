@@ -24,6 +24,14 @@ export function imagemSocialDaOferta(
   return `${URL_SITE}/api/preview/oferta/${codigoCurtoDaOferta(oferta.slug)}${sufixo}`;
 }
 
+export function imagensSociaisDaOferta(
+  oferta: Pick<Oferta, "slug" | "atualizadoEm" | "imagemPrincipal">
+) {
+  const principal = imagemAbsolutaDaOferta(oferta);
+  const fallback = imagemSocialDaOferta(oferta);
+  return Array.from(new Set([principal, fallback].filter((v): v is string => Boolean(v))));
+}
+
 export function precoPrincipalDaOferta(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {
   const precos = [oferta.precoPix, oferta.precoAtual].filter(
     (valor): valor is number => typeof valor === "number" && Number.isFinite(valor)
