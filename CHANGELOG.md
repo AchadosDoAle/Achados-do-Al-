@@ -1,3 +1,15 @@
+## 2026-10-07 — Foto de produto na prévia do WhatsApp
+- Os metadados Open Graph de ofertas e links curtos passam a apontar somente para uma miniatura servida no domínio do Achado do Alê.
+- A rota pública de prévia busca a mesma imagem principal cadastrada e entrega um PNG de marca com título, loja e preço se o servidor não conseguir acessar a foto externa.
+- Mantidos texto de compartilhamento, título, preço, loja e URL curta da oferta; sem SQL ou mudanças nos aplicativos.
+- Imagem de prévia versionada conforme última edição para reduzir cache antigo.
+
+## 2026-10-07 — Novas lojas afiliadas no painel web
+- Incluídas Adidas, Nike, Dafiti, Sephora, L'Oréal, Samsung, ShopTIMÃO e Loja NBA na lista suspensa de lojas do cadastro e edição de ofertas e cupons.
+- O reconhecimento de loja aceita variações de L'Oréal/Loreal, ShopTIMÃO/Shop Timao e Loja NBA/NBA Store.
+- Evita confundir marcas de produto (Adidas, Nike, Samsung e L'Oréal) com a loja responsável pela oferta quando o vendedor não está explicitado.
+- Não exige SQL, novas colunas ou migrações no Supabase.
+
 
 ## 2026-10-07 — Promoção imperdível, cupons relâmpago e cadastro rápido
 - Destaque temporário na Home com validade máxima de 24h e fallback automático para a oferta mais recente.
@@ -229,3 +241,9 @@
 - Adiciona emoji próprio em cada botão da página pública de categorias.
 - Adiciona entrada suave, elevação discreta, brilho leve e microanimação dos emojis no hover/touch.
 - Mantém a grade, rotas e conteúdo das categorias inalterados.
+
+## 2026-10-07 — História do projeto e transparência comercial
+- Reformulada a página pública `/sobre` com a trajetória do criador, origem do projeto em agosto de 2026, desenvolvimento independente com apoio de IA e perspectivas dos apps Android/iOS.
+- Ampliada a página pública `/afiliados` para explicar indicações, comissionamento, responsabilidades comerciais e ciência do usuário em linguagem acessível.
+- A página `/privacidade` foi preservada, sem misturar divulgação comercial com política de tratamento de dados.
+- Nenhuma alteração em banco de dados, sistemas de administração ou aplicativos.

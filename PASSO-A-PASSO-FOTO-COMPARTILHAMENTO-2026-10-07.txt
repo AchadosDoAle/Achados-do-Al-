@@ -1,0 +1,36 @@
+ACHADO DO ALÊ — FOTO NAS PRÉVIAS DE COMPARTILHAMENTO
+====================================================
+
+Esta atualização afeta somente o SITE (versão web). Não altera o Supabase nem os aplicativos.
+
+O que foi feito:
+- O link curto /p/CODIGO informa ao WhatsApp um endereço de imagem hospedado no próprio achadosdoale.com.
+- O novo endpoint /api/preview/oferta/CODIGO busca a MESMA imagem principal cadastrada no produto.
+- Se a imagem externa estiver indisponível para o servidor, o endpoint entrega uma imagem alternativa com nome, loja e preço. Assim evita a prévia sem imagem.
+- O título do link, a descrição com preço/loja e o texto compartilhado continuam disponíveis.
+- A URL da miniatura inclui um identificador de versão para minimizar cache antigo quando uma oferta é editada.
+
+COMO PUBLICAR NO GITHUB DESKTOP:
+1. Antes de copiar os arquivos, confira alterações locais pendentes na aba Changes.
+2. Repository > Show in Explorer abre a pasta conectada ao GitHub.
+3. Extraia o ZIP do PATCH e copie suas pastas app e lib para a raiz do projeto, substituindo os arquivos existentes.
+   Se usar o ZIP completo, preserve seu .env.local e sua pasta .git.
+4. Teste localmente (se possível): npm run typecheck e npm run build.
+5. GitHub Desktop > Changes; confira os arquivos alterados.
+6. Summary: Corrige foto na prévia de compartilhamento das ofertas
+7. Description: Hospeda a miniatura social no domínio do Achado do Alê, preserva título/preço/loja/link e adiciona fallback de imagem para WhatsApp e outros aplicativos.
+8. Commit to main e Push origin.
+9. Aguarde a Vercel concluir com status Ready.
+
+COMO TESTAR:
+1. Para o código de exemplo 4adaw, acesse no navegador:
+   https://achadosdoale.com/api/preview/oferta/4adaw
+   Esse endereço deve mostrar a foto do produto ou a imagem alternativa com nome, loja e preço.
+2. Acesse https://achadosdoale.com/p/4adaw e confira que abre a oferta normalmente.
+3. Use o botão Compartilhar da página do produto e selecione WhatsApp.
+4. Aguarde alguns segundos pela prévia antes de enviar.
+5. Se a prévia antiga continuar sem foto, o WhatsApp pode estar usando cache. Teste uma URL de compartilhamento nova, ou use o Depurador de Compartilhamento da Meta para solicitar nova leitura.
+
+ATENÇÃO:
+Não existe garantia de acesso a imagens que lojas externas bloqueiam ativamente. Para máxima confiabilidade, use no cadastro do produto uma imagem enviada ao Storage do Supabase (imagem pública e acessível), em vez de uma URL externa temporária.
+Nenhum SQL é necessário. Não precisa atualizar Android, iOS nem app administrativo.

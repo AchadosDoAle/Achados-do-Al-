@@ -14,6 +14,16 @@ export function urlCurtaDaOferta(slug: string) {
   return `${URL_SITE}/p/${codigoCurtoDaOferta(slug)}`;
 }
 
+/** Imagem para compartilhamento entregue pelo nosso domínio (não pelo CDN da loja).
+ * A versão muda quando a oferta é editada, reduzindo cache desatualizado. */
+export function imagemSocialDaOferta(
+  oferta: Pick<Oferta, "slug" | "atualizadoEm">
+) {
+  const versao = Date.parse(oferta.atualizadoEm);
+  const sufixo = Number.isFinite(versao) ? `?v=${Math.floor(versao / 1000).toString(36)}` : "";
+  return `${URL_SITE}/api/preview/oferta/${codigoCurtoDaOferta(oferta.slug)}${sufixo}`;
+}
+
 export function precoPrincipalDaOferta(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {
   const precos = [oferta.precoPix, oferta.precoAtual].filter(
     (valor): valor is number => typeof valor === "number" && Number.isFinite(valor)
