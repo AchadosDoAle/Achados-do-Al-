@@ -1,0 +1,25 @@
+CORREÇÃO DO BUILD DA VERCEL — 07/10/2026
+
+Erro solucionado:
+./components/admin/CupomForm.tsx:348:36
+Type error: 'valores.descricao' is possibly 'undefined'.
+
+Agora a colagem usa uma string vazia quando a descrição ainda não está preenchida.
+O reconhecimento de cupons, a loja Adidas e o compartilhamento com foto
+continuam presentes neste MESMO patch.
+
+COMO APLICAR NO GITHUB DESKTOP
+1. Abra GitHub Desktop, confira que selecionou Achados-do-Al.
+2. Repository > Show in Explorer.
+3. Extraia o ZIP e COPIE o conteúdo das pastas app, components e lib para
+   a raiz do projeto, substituindo os arquivos correspondentes.
+4. Se tiver mudanças locais que não fez commit, guarde-as antes.
+5. Confira Changes no GitHub Desktop.
+6. Summary: Corrige erro TypeScript no formulário de cupons
+7. Description: Trata descrição opcional na colagem de cupons, recupera
+   o build e mantém reconhecimento Adidas e foto de compartilhamento.
+8. Commit to main > Push origin.
+9. Acompanhe o resultado em Vercel > Deployments.
+
+NÃO precisa rodar SQL no Supabase nem mexer nos apps.
+Se desejar testar no computador: npm run typecheck e npm run build.

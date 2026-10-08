@@ -345,7 +345,10 @@ export default function CupomForm({
                   const campo = evento.currentTarget;
                   const inicio = campo.selectionStart;
                   const fim = campo.selectionEnd;
-                  const texto = `${valores.descricao.slice(0, inicio)}${colado}${valores.descricao.slice(fim)}`;
+                  // "descricao" é opcional no tipo CupomFormValues.
+                  // Trata cupom novo/vazio sem causar erro de TypeScript no build.
+                  const descricaoAtual = valores.descricao ?? "";
+                  const texto = `${descricaoAtual.slice(0, inicio)}${colado}${descricaoAtual.slice(fim)}`;
                   reconhecerTextoCupom(texto);
                 }}
                 placeholder={
