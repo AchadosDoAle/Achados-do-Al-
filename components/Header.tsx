@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Container from "./Container";
@@ -8,12 +8,21 @@ import Container from "./Container";
 function CampoBusca({ className }: { className: string }) {
   const router = useRouter();
   const params = useSearchParams();
-  const [texto, setTexto] = useState(params.get("busca") ?? "");
+  const pathname = usePathname();
+  const buscaNaUrl = params.get("busca") ?? "";
+  const [texto, setTexto] = useState(buscaNaUrl);
+
+  // Ao trocar de página ou limpar a URL, não deixar uma busca antiga no campo.
+  useEffect(() => {
+    setTexto(buscaNaUrl);
+  }, [buscaNaUrl, pathname]);
 
   function aoBuscar(evento: React.FormEvent) {
     evento.preventDefault();
     const query = texto.trim();
-    router.push(query ? `/?busca=${encodeURIComponent(query)}` : "/");
+    // Na área de cupons, busca apenas cupons; nas demais, busca global.
+    const destino = pathname === "/cupons" ? "/cupons" : "/";
+    router.push(query ? `${destino}?busca=${encodeURIComponent(query)}` : destino);
   }
 
   return (

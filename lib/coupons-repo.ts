@@ -91,6 +91,35 @@ export async function listarCuponsParaBuscaAdmin(
   return acumulado.map(linhaParaCupom);
 }
 
+/**
+ * A pesquisa pública percorre todos os lotes de cupons ativos.
+ * Executada SOMENTE quando o visitante efetivamente faz uma busca,
+ * evitando a limitação padrão de 1.000 registros do PostgREST.
+ * A RLS do Supabase continua sendo aplicada normalmente.
+ */
+export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Promise<Cupom[]> {
+  const TAMANHO_LOTE = 500;
+  const acumulado: Cupom[] = [];
+  let inicio = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("ativo", true)
+      .order("criado_em", { ascending: false })
+      .order("id", { ascending: false })
+      .range(inicio, inicio + TAMANHO_LOTE - 1);
+    if (error) throw error;
+
+    const lote = data ?? [];
+    acumulado.push(...lote.map(linhaParaCupom));
+    if (lote.length < TAMANHO_LOTE) break;
+    inicio += TAMANHO_LOTE;
+  }
+  return acumulado;
+}
+
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {
   const { data, error } = await supabase
     .from("coupons")

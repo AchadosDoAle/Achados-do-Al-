@@ -1,0 +1,39 @@
+ACHADOS DO ALÊ — PATCH CORREÇÃO DA PESQUISA PÚBLICA DE CUPONS
+09/10/2026
+
+O QUE FOI CORRIGIDO:
+- O campo de busca do cabeçalho agora encontra códigos de cupom, lojas, descontos e descrições, além de ofertas.
+- A Home mostra os cupons encontrados junto com os resultados da pesquisa de produtos, sem exibir o banner de destaque ao pesquisar.
+- A página /cupons agora possui pesquisa própria, por código, loja, desconto e descrição.
+- Busca ignora maiúsculas/minúsculas, acentos e pontuação e aceita trechos do nome.
+- Na busca, consulta o histórico de cupons ativos em lotes para não ficar limitado aos primeiros 1.000 registros.
+- A paginação de resultados da busca em /cupons mostra 30 cupons por página.
+- A abertura normal da Home não consulta desnecessariamente a base de cupons.
+- A área administrativa não é modificada.
+
+COMO PUBLICAR PELO GITHUB DESKTOP:
+1. Faça backup da pasta do projeto, se desejar.
+2. Extraia este ZIP.
+3. Copie AS PASTAS app, components e lib para a RAIZ do projeto, mesclando pastas e substituindo os arquivos correspondentes.
+4. No GitHub Desktop, confira Changes: os cinco arquivos abaixo devem ser modificados/criados.
+5. Summary do commit: Corrige busca pública de cupons
+6. Description: Faz a pesquisa do site encontrar cupons por código, loja e desconto, inclui busca na página /cupons e pagina resultados antigos.
+7. Clique em Commit to main e, depois, Push origin.
+8. Confira a publicação na Vercel e teste as buscas.
+
+ARQUIVOS:
+- app/page.tsx
+- app/cupons/page.tsx
+- components/Header.tsx
+- lib/coupons-repo.ts
+- lib/busca-cupons.ts (novo)
+
+TESTES APÓS O DEPLOY:
+- Na Home, busque um código de cupom conhecido pelo campo do cabeçalho (ex.: DESCONTOU).
+- Abra /cupons e pesquise pelo mesmo cupom.
+- Busque pelo nome de uma loja e por um percentual, com e sem acentos.
+- Pressione Enter e teste o botão Pesquisar, Limpar e a paginação.
+- Busque um cupom antigo que ainda esteja ativo.
+
+NÃO EXECUTE SQL: o patch não altera tabelas nem colunas do Supabase.
+Os arquivos passam por validação de sintaxe TypeScript/TSX. O build completo deve ser validado pela Vercel durante o deploy.
