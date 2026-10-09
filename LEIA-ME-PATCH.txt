@@ -1,0 +1,9 @@
+PATCH VISUAL — Cupom Relâmpago (site web) — 09/10/2026
+
+1) Extraia os dois arquivos preservando as pastas app/ e components/ na raiz de seu repositório Achado do Alê.
+2) A entrada fade/slide (animar-entrada) fica somente no contêiner EXTERNO quando o componente é montado (abertura/atualização da página).
+3) O hover no card interno relâmpago executa SOMENTE tremor horizontal discreto; foi removido hover:-translate-y-1. É respeitado prefers-reduced-motion.
+4) Não toca no Supabase nem altera apps.
+5) GitHub Desktop — Summary: Corrige animação dos cupons relâmpago
+Description: Separa a animação de entrada do hover, removendo a subida e o fade repetidos e preservando apenas a tremidinha discreta.
+6) Commit to main -> Push origin -> aguardar Vercel. Confira teste de mouse + refresh.

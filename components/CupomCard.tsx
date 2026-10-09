@@ -9,11 +9,14 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
   const expirado = cupomExpirado(cupom);
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-xl2 bg-card p-4 ring-1 ring-white/5 animar-entrada transition-transform duration-200 hover:-translate-y-1 ${
-        cupom.relampago && !expirado ? "coupon-flash-card" : ""
-      } ${expirado ? "grayscale" : ""}`}
-    >
+    /* Entrada da página e hover ficam em elementos diferentes para não
+       reiniciar a animação de fade/slide ao passar o mouse. */
+    <div className="animar-entrada">
+      <div
+        className={`relative overflow-hidden rounded-xl2 bg-card p-4 ring-1 ring-white/5 ${
+          cupom.relampago && !expirado ? "coupon-flash-card" : ""
+        } ${expirado ? "grayscale" : ""}`}
+      >
       {cupom.relampago && !expirado && (
         <span className="absolute right-3 top-3 z-[2] rounded-full bg-amber-400/15 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-300 ring-1 ring-amber-300/20">
           ⚡ Relâmpago
@@ -89,6 +92,7 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
           </a>
         )}
       </div>
+    </div>
     </div>
   );
 }
