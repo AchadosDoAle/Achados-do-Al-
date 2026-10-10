@@ -344,23 +344,77 @@ body {
 }
 
 
+
+
 /* =========================================================
-   CUPONS RELÂMPAGO — microinteração discreta
+   CUPONS — visual de cupom impresso + relâmpago
    ========================================================= */
-/* A animação de ENTRADA (fade + subida) fica somente em animar-entrada,
-   no contêiner externo, durante a montagem da página. No hover só há tremor
-   lateral/rotação mínimo; sem mudança de opacidade nem deslocamento vertical. */
-@keyframes coupon-flash-shake {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  25% { transform: translateX(-1.5px) rotate(-0.22deg); }
-  50% { transform: translateX(1.5px) rotate(0.22deg); }
-  75% { transform: translateX(-0.75px) rotate(-0.12deg); }
+.coupon-ticket-card {
+  position: relative;
+}
+
+.coupon-ticket-surface {
+  position: relative;
+}
+
+.coupon-ticket-divider {
+  position: relative;
+  height: 1px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+.coupon-ticket-divider::before,
+.coupon-ticket-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #0b1727;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transform: translateY(-50%);
+}
+
+.coupon-ticket-divider::before {
+  left: -26px;
+}
+
+.coupon-ticket-divider::after {
+  right: -26px;
+}
+
+.coupon-ticket-stamp {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+@keyframes coupon-flash-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes coupon-flash-shake-x {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1.5px); }
+  50% { transform: translateX(1.5px); }
+  75% { transform: translateX(-1px); }
+}
+
+.coupon-flash-card {
+  animation: coupon-flash-enter 300ms ease-out both;
 }
 
 .coupon-flash-card:hover {
-  animation: coupon-flash-shake 260ms ease-in-out 1;
+  animation: coupon-flash-shake-x 260ms ease-in-out 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .coupon-flash-card,
   .coupon-flash-card:hover { animation: none !important; }
 }
