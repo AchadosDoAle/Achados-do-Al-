@@ -17,9 +17,9 @@ export default function BotaoNomeCupom({
     try {
       await navigator.clipboard.writeText(nomeCupom);
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
+      window.setTimeout(() => setCopiado(false), 2000);
     } catch {
-      // se o navegador bloquear a cópia automática, segue só com o link
+      // Alguns navegadores não permitem usar a área de transferência.
     }
 
     if (link && /^https?:\/\//i.test(link.trim())) {
@@ -31,15 +31,15 @@ export default function BotaoNomeCupom({
     <button
       type="button"
       onClick={aoClicar}
-      className="mt-1 block text-left"
+      className="coupon-voucher-code font-display"
       aria-label={`Copiar cupom ${nomeCupom}`}
+      title="Toque para copiar o código"
     >
-      <span className="font-display text-lg font-extrabold tracking-wide text-white">
-        CUPOM <span style={{ color: cor }}>{nomeCupom}</span>
+      <span className="coupon-voucher-prefix">CUPOM </span>
+      <span className="coupon-voucher-name" style={{ color: cor }}>
+        {nomeCupom}
       </span>
-      <span className="ml-1 text-xs font-normal text-text-muted">
-        {copiado ? "· copiado!" : "· toque para copiar"}
-      </span>
+      <span className="coupon-voucher-copy-hint">{copiado ? "Copiado!" : "Toque para copiar"}</span>
     </button>
   );
 }

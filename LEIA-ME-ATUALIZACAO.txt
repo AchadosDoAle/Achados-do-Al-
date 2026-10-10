@@ -1,0 +1,26 @@
+ACHADOS DO ALÊ — PATCH CARDS DE CUPONS (10/10/2026)
+
+COPIE AS PASTAS components/ E app/ DESTE ZIP PARA A RAIZ DO REPOSITÓRIO.
+O PATCH altera somente:
+- components/CupomCard.tsx
+- components/BotaoNomeCupom.tsx
+- components/AvisoCupomVencendo.tsx (novo)
+- app/globals.css
+
+O QUE MUDA
+1. Um único card tipo bilhete, com cabeçalho azul-marinho e papel claro, linha perfurada e recortes laterais.
+2. Palavra CUPOM branca; nome do cupom usa a cor configurada no cadastro.
+3. A animação de entrada fica no WRAPPER, e o hover fica no CARD. Os relâmpago só tremem lateralmente no hover.
+4. Cards normais mudam discretamente borda/sombra, sem subir e sem fade.
+5. Aviso laranja na última hora e vermelho nos últimos dez minutos; atualizado automaticamente enquanto a página está aberta.
+6. Botões de compartilhar, termos, produtos e copiar código preservados.
+
+NÃO REQUER SQL, ALTERAÇÃO NO SUPABASE OU ATUALIZAÇÃO DOS APPS.
+
+GITHUB DESKTOP
+Summary: Refina cards de cupons e corrige animações de hover
+Description: Reformula os cupons como bilhetes premium, padroniza o título, elimina fade e elevação no hover, limita relâmpagos a tremor lateral e atualiza aviso de validade.
+
+Commit to main -> Push origin -> acompanhar deploy na Vercel -> Ctrl + F5.
+
+NOTA: o build completo exige npm install e precisa ser validado no ambiente do projeto.

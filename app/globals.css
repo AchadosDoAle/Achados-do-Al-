@@ -347,74 +347,261 @@ body {
 
 
 /* =========================================================
-   CUPONS — visual de cupom impresso + relâmpago
+   CUPONS — bilhete premium e animações de hover independentes
    ========================================================= */
-.coupon-ticket-card {
-  position: relative;
+/* O wrapper faz a entrada SOMENTE ao montar a página.
+   Hover atua no .coupon-voucher, um elemento distinto. */
+.coupon-voucher-entrance {
+  height: 100%;
 }
 
-.coupon-ticket-surface {
+.coupon-voucher {
+  height: 100%;
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid #cdd9e4;
+  background: #f8fafc;
+  box-shadow: 0 9px 26px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  /* Proibido animar a opacidade e a posição vertical no hover. */
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
-.coupon-ticket-divider {
-  position: relative;
+.coupon-voucher-regular:hover {
+  border-color: #dcb461;
+  box-shadow: 0 13px 30px rgba(0, 0, 0, 0.18);
+}
+
+.coupon-voucher-head {
+  background: #10263d;
+  border-top: 3px solid #e9bc55;
+  padding: 18px 20px 22px;
+  min-height: 127px;
+}
+
+.coupon-voucher-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.coupon-voucher-store {
+  display: inline-block;
+  max-width: 100%;
+  color: #c7d3df;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.coupon-voucher-flash-label {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffca65;
+  border: 1px solid rgba(255, 202, 101, 0.34);
+  background: rgba(255, 202, 101, 0.08);
+  border-radius: 999px;
+  padding: 4px 9px;
+  letter-spacing: 0.02em;
+}
+
+.coupon-voucher-code {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.015em;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  /* Não herdar subida ou brilho global dos botões. */
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+}
+
+.coupon-voucher-code:hover,
+.coupon-voucher-code:active {
+  transform: none !important;
+  filter: none !important;
+}
+
+.coupon-voucher-prefix {
+  color: #ffffff !important;
+}
+
+.coupon-voucher-copy-hint {
+  display: block;
+  margin-top: 8px;
+  color: #91a7bc;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* Perfuração: sem segunda moldura interna, sem carimbos falsos. */
+.coupon-voucher-perforation {
   height: 1px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  position: relative;
+  flex: 0 0 1px;
+  margin: 0 14px;
+  border-top: 1px dashed #9dadc0;
+  background: transparent;
 }
 
-.coupon-ticket-divider::before,
-.coupon-ticket-divider::after {
+.coupon-voucher-perforation::before,
+.coupon-voucher-perforation::after {
   content: "";
   position: absolute;
-  top: 50%;
-  width: 18px;
-  height: 18px;
-  border-radius: 9999px;
-  background: #0b1727;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transform: translateY(-50%);
+  top: -11px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #07111f;
+  border: 1px solid #cdd9e4;
+}
+.coupon-voucher-perforation::before { left: -24px; }
+.coupon-voucher-perforation::after { right: -24px; }
+
+.coupon-voucher-content {
+  flex: 1;
+  padding: 21px 20px 17px;
+  color: #142b43;
 }
 
-.coupon-ticket-divider::before {
-  left: -26px;
+.coupon-voucher-benefit-label {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.coupon-ticket-divider::after {
-  right: -26px;
+.coupon-voucher-benefit {
+  margin-top: 5px;
+  color: #132940;
+  font-size: clamp(21px, 2.8vw, 27px);
+  font-weight: 800;
+  line-height: 1.23;
+  overflow-wrap: anywhere;
 }
 
-.coupon-ticket-stamp {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+.coupon-voucher-details {
+  margin-top: 15px;
+  color: #526278;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.coupon-voucher-details strong { color: #263e55; font-weight: 700; }
+
+.coupon-voucher-posted {
+  margin-top: 7px;
+  color: #94a3b8;
+  font-size: 10px;
+  letter-spacing: 0.05em;
 }
 
-@keyframes coupon-flash-enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.coupon-voucher-warning {
+  display: inline-block;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: #fff1df;
+  border: 1px solid #f7d9b2;
+  color: #ab520e;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.coupon-voucher-warning-urgent {
+  background: #fff0ed;
+  border-color: #f6c6bb;
+  color: #b42318;
 }
 
-@keyframes coupon-flash-shake-x {
+.coupon-voucher-actions {
+  border-top: 1px solid #e5eaf0;
+  background: #f1f5f9;
+  padding: 14px 20px 18px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.coupon-voucher-actions > button {
+  color: #1b3852;
+  background: #ffffff;
+  border: 1px solid #ced8e4;
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-size: 12px;
+  text-align: center;
+  white-space: normal;
+}
+.coupon-voucher-actions > button:only-child { grid-column: 1 / -1; }
+.coupon-voucher-actions > button:hover {
+  background: #e6edf5;
+  filter: none !important;
+}
+.coupon-voucher-products {
+  display: block;
+  grid-column: 1 / -1;
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #edb949;
+  color: #14273a;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 12px;
+  transition: background-color 150ms ease;
+}
+.coupon-voucher-products:hover { background: #dfae41; }
+
+.coupon-voucher-expired-label {
+  display: inline-block;
+  margin-top: 9px;
+  padding: 3px 8px;
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.coupon-voucher-expired { border-color: #bec8d2; }
+.coupon-voucher-expired .coupon-voucher-code { cursor: default; }
+.coupon-voucher-expired .coupon-voucher-head { border-top-color: #8392a3; }
+.coupon-voucher-expired .coupon-voucher-benefit { color: #64748b; }
+
+/* HOVER RELÂMPAGO: SOMENTE tremidinha lateral; nenhum fade e nenhuma subida. */
+@keyframes coupon-voucher-shake-x {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-1.5px); }
-  50% { transform: translateX(1.5px); }
-  75% { transform: translateX(-1px); }
+  20% { transform: translateX(-1.5px); }
+  40% { transform: translateX(1.5px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
 }
-
-.coupon-flash-card {
-  animation: coupon-flash-enter 300ms ease-out both;
-}
-
-.coupon-flash-card:hover {
-  animation: coupon-flash-shake-x 260ms ease-in-out 1;
+.coupon-voucher-flash:hover {
+  animation: coupon-voucher-shake-x 280ms ease-in-out 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coupon-flash-card,
-  .coupon-flash-card:hover { animation: none !important; }
+  .coupon-voucher-entrance { animation: none !important; }
+  .coupon-voucher-flash:hover { animation: none !important; transform: none !important; }
 }
