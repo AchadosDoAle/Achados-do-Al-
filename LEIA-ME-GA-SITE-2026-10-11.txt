@@ -1,0 +1,13 @@
+ACHADOS DO ALE - GOOGLE ANALYTICS DO SITE
+
+Novo fluxo WEB: G-NEQW6KW18Q
+
+O arquivo app/layout.tsx usa este ID como padrao, mas a variavel NEXT_PUBLIC_GA_MEASUREMENT_ID na Vercel tem prioridade.
+
+Na Vercel > Project > Settings > Environment Variables, defina NEXT_PUBLIC_GA_MEASUREMENT_ID = G-NEQW6KW18Q em Production. Se existir valor antigo, EDITE-O. Faca novo deploy (variaveis NEXT_PUBLIC_ sao incorporadas no build).
+
+Nao cole o snippet HTML do Google: a tag ja existe no layout.
+
+Para testar: site em janela anonima > aceitar metricas > Google Analytics > Relatorios > Tempo real; confira tambem DebugView/Tag Assistant. A contagem GA depende do consentimento do visitante.
+
+O projeto conserva SEO ja existente. Este pacote altera apenas configuracao do fluxo web e instrucoes.

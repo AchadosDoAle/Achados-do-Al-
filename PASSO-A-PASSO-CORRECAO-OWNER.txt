@@ -1,0 +1,84 @@
+ACHADO DO ALÊ — CORREÇÃO DO OWNER INICIAL
+Data: 26/09/2026
+
+O QUE ACONTECEU
+---------------
+A tela Usuários permite acesso somente a registros da tabela public.admin_users
+com role = 'owner'. O único administrador do banco ficou com role = 'admin', por
+isso o site mostrou "Acesso restrito" mesmo sendo a única conta administrativa.
+
+A correção desta versão possui DUAS proteções:
+
+1) BANCO DE DADOS
+   Uma migration garante que, se existe somente um administrador, ele seja owner.
+   Se por algum motivo houver vários administradores e nenhum owner, apenas o mais
+   antigo é promovido a owner.
+
+2) BACKEND DO SITE
+   Ao identificar que o usuário logado é o ÚNICO administrador e está como admin,
+   o servidor corrige automaticamente o papel dele para owner. Essa regra só vale
+   quando existe exatamente um administrador e deixa de se aplicar assim que há
+   dois ou mais.
+
+PASSO 1 — CORRIGIR AGORA O SUPABASE
+------------------------------------
+1. Entre em https://supabase.com/dashboard
+2. Abra o projeto usado pelo achadosdoale.com.
+3. No menu esquerdo, abra SQL Editor.
+4. Clique em New query.
+5. No projeto atualizado, abra o arquivo:
+
+   supabase/migrations/20260926_corrige_owner_inicial.sql
+
+6. Copie TODO o conteúdo desse arquivo.
+7. Cole no SQL Editor do Supabase.
+8. Clique em Run.
+9. A consulta deve finalizar sem erro.
+
+PASSO 2 — CONFERIR SE VIROU OWNER
+----------------------------------
+Ainda no SQL Editor, rode:
+
+select user_id, email, nome, role, criado_em
+from public.admin_users
+order by criado_em asc;
+
+Se existe somente um usuário administrativo, a coluna role dele deve aparecer:
+
+owner
+
+PASSO 3 — ATUALIZAR O SITE PELO GITHUB DESKTOP
+-----------------------------------------------
+1. Abra o GitHub Desktop.
+2. Selecione o repositório do Achado do Alê.
+3. Vá em Repository > Show in Explorer.
+4. Extraia o ZIP de atualização recebido do ChatGPT.
+5. Copie os arquivos para a raiz do projeto e aceite substituir os existentes.
+6. Volte ao GitHub Desktop e confira a aba Changes.
+
+No campo Summary use:
+
+Corrige owner do administrador principal
+
+No campo Description use:
+
+Corrige o bloqueio do Gerenciador de Usuários, garantindo que o administrador
+único seja owner. Adiciona proteção automática no backend e migration de reparo
+para impedir que o painel fique sem um proprietário administrativo.
+
+7. Clique em Commit to main.
+8. Clique em Push origin.
+9. Aguarde a Vercel concluir o deploy.
+10. Entre novamente em https://achadosdoale.com/admin/usuarios
+
+Se estiver com a página antiga em cache, use Ctrl + F5.
+
+IMPORTANTE
+----------
+Não é necessário criar outro usuário para corrigir o problema.
+Não é necessário apagar seu usuário atual.
+Não é necessário alterar a senha.
+Não é necessário excluir a tabela admin_users.
+
+A partir desta versão, o sistema não deve permitir que uma instalação com um único
+administrador fique sem owner por causa desse estado de banco.

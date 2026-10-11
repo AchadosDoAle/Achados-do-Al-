@@ -1,0 +1,79 @@
+ACHADOS DO ALÊ — REPARO E DIAGNÓSTICO DOS RELATÓRIOS
+11/10/2026
+
+O QUE ESTE PATCH ALTERA
+- Painel Administrativo > Relatórios: mostra diagnóstico da coleta de acessos (com botão de reverificação).
+- Diferencia falta de dados de erro do Supabase.
+- Identifica se visitantes têm permissão para chamar track_basic_pageview SEM registrar visitas falsas.
+- Melhora os avisos sobre Google Analytics: a tag de medição e a Data API são integrações diferentes.
+- Quando faltar configuração do GA4, o painel mostra NOMES de variáveis ausentes, nunca seus valores.
+- Exibe falhas da Data API em linguagem clara (propriedade, permissões e autenticação).
+- Adiciona botão "Atualizar dados" no relatório.
+- Não altera os aplicativos, o banco de dados, a coleta de cookies ou as permissões de acesso ao site.
+
+COMO INSTALAR NO GITHUB DESKTOP
+1. Faça uma cópia de segurança dos arquivos atuais.
+2. Extraia o ZIP na pasta PRINCIPAL do projeto Achados do Alê, mantendo a estrutura.
+3. Confirme as alterações no GitHub Desktop.
+4. Summary: Melhora diagnosticos do GA4 e acessos recentes
+5. Description: Adiciona teste seguro de rastreamento anonimo e exibe erros da Data API e do Supabase no painel de relatorios, sem alterar o banco.
+6. Clique "Commit to main" e depois "Push origin".
+7. Aguarde a Vercel concluir o deploy (Ready).
+8. Abra https://achadosdoale.com/admin/relatorios e clique "Verificar novamente".
+9. Abra a Home do site numa janela anônima, espere alguns segundos e clique "Atualizar dados" no painel.
+
+INTERPRETANDO O DIAGNÓSTICO
+- "Rastreamento básico disponível": função pública existe e está acessível. Se não aparecer visita recente, confira o período selecionado e faça o teste da janela anônima.
+- "Função ... não disponível": talvez supabase/analytics.sql não tenha sido aplicado. Use a opção de SQL abaixo SOMENTE depois de confirmar.
+- "Permissão ...": confira GRANT EXECUTE à função no Supabase.
+- "Erro ao ler acessos": verifique tabelas/permissões/RLS; o painel passará a mostrar o erro.
+
+IMPORTANTE SOBRE O SQL
+Este patch NÃO executa SQL e NÃO altera tabelas.
+Caso o diagnóstico indique que a função/tabela realmente não existe,
+consulte o arquivo SQL-OPCIONAL-ANALYTICS.sql incluso no ZIP.
+O SQL é uma cópia do script já existente no projeto e só deve ser
+executado após verificar se o problema é realmente falta de infraestrutura.
+Ele cria tabelas se não existirem e substitui funções/políticas pré-existentes
+para restabelecer a configuração prevista pelo próprio projeto; não apaga
+registros de analytics, mas requer revisão antes da execução.
+
+COMO CONECTAR IDADE E GÊNERO DO GOOGLE ANALYTICS 4
+Obs.: O ID de medição G-1SHEYDJB40 já aparece configurado no código do site;
+não é o ID numérico da propriedade do Analytics exigido pela Data API.
+
+1. Google Analytics: https://analytics.google.com/
+   Administrador -> Propriedade -> Detalhes da propriedade.
+   Copie o ID numérico da propriedade (somente dígitos).
+2. Google Cloud: https://console.cloud.google.com/apis/library/analyticsdata.googleapis.com
+   Selecione ou crie um projeto Cloud e HABILITE "Google Analytics Data API".
+3. No Google Cloud: IAM e administrador -> Contas de serviço -> Criar conta de serviço.
+   Crie uma chave JSON dessa conta de serviço, se a política da sua organização permitir.
+   Guarde o JSON fora do projeto e não envie a ninguém.
+4. Google Analytics: Administrador -> Gerenciamento de acesso à propriedade.
+   Adicione o e-mail dessa conta de serviço como LEITOR (Viewer).
+5. Vercel: projeto do site -> Settings -> Environment Variables (Production).
+   Crie exatamente estas 3 variáveis:
+
+   GA4_PROPERTY_ID  -> o ID NUMÉRICO da propriedade (não o G-...)
+   GA4_CLIENT_EMAIL -> valor client_email do JSON da conta de serviço
+   GA4_PRIVATE_KEY  -> valor private_key do JSON, incluindo BEGIN/END PRIVATE KEY
+
+   Não acrescente aspas externas à chave. Ela pode conter novas linhas reais
+   ou o texto literal \\n como separador de linhas: o código aceita ambos.
+   Nunca compartilhe o JSON ou a chave privada e nunca faça commit deles.
+6. Redeploy em Production na Vercel. Abra /admin/relatorios e clique Atualizar dados.
+7. Se o painel exibir "GA4 Data API conectada", a integração está ativa.
+   Dados de idade e gênero podem continuar sem aparecer por consentimento,
+   volume insuficiente ou limites de privacidade aplicados pelo Google.
+   Tente selecionar "30 dias" para aumentar o intervalo.
+
+REFERÊNCIAS OFICIAIS
+https://developers.google.com/analytics/devguides/reporting/data/v1/quickstart
+https://support.google.com/analytics/answer/9305788?hl=pt-BR
+https://support.google.com/analytics/answer/9383630?hl=pt-BR
+
+VALIDAÇÃO
+- Sintaxe TypeScript/TSX verificada; sem erros de análise sintática.
+- Build completo Next.js não executado neste ambiente (dependências não instaladas).
+- Integração real com Supabase e GA4 não testada: depende das credenciais do projeto.
