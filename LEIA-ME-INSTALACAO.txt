@@ -1,35 +1,26 @@
-ACHADOS DO ALÊ — PATCH DE CUPONS (10/10/2026)
+ACHADOS DO ALÊ — INSTAGRAM E WHATSAPP JUNTOS NO RODAPÉ
 
-ALTERAÇÕES:
-- Card inspirado em cupom impresso com azul-marinho mais claro.
-- Cupons vencidos inteiramente em tons de cinza.
-- Palavra CUPOM em branco e nome do código na cor cadastrada.
-- Cupons relâmpago: SOMENTE tremor horizontal no hover (sem fade/subida).
-- Cupons normais: pequena mudança de borda e sombra no hover (sem fade/subida).
-- Filtros públicos: Todos, Ativos, Vencidos, Vence hoje, Relâmpago e Loja.
-- Pesquisa preservada; filtros são combináveis; Enter e Limpar.
-- Paginação pública: 30 cupons por página; filtro comum feito no Supabase.
-- O filtro 'Vence hoje' usa o horário de Brasília.
+Este patch atualiza SOMENTE o arquivo:
+  components/Footer.tsx
 
-COMO INSTALAR:
-1. Faça backup dos arquivos locais alterados.
-2. Extraia este ZIP na PASTA PRINCIPAL do projeto Achado do Alê.
-3. Substitua os arquivos correspondentes (respeite as subpastas).
-4. Abra o GitHub Desktop e confira as alterações em Changes.
-5. Recomendado antes do push: npm run typecheck e npm run build.
-6. Summary: Refina cards de cupons e adiciona filtros públicos
-7. Description: Retorna o visual azul-marinho, mantém vencidos em cinza,
-   remove fade/subida no hover, preserva tremor relâmpago e adiciona
-   filtros por status, loja e vencimento com paginação.
-8. Commit to main -> Push origin -> aguarde a Vercel publicar.
-9. Teste /cupons em desktop/mobile e faça Ctrl+F5.
+ALTERAÇÕES
+- Na Home, Instagram e WhatsApp aparecem lado a lado, no mesmo bloco
+  'ACOMPANHE O ACHADO DO ALÊ'.
+- Ambos usam o mesmo visual, dimensões, ícones e estilo de hover.
+- O botão pequeno e duplicado 'WhatsApp' é removido da área abaixo.
+- O link do canal é reutilizado de lib/seo-brand.ts e não foi alterado.
+- Os botões de download Android/iOS do patch anterior são preservados.
+- Nas outras páginas, o rodapé mantém seus links sociais originais.
 
-NÃO É NECESSÁRIO EXECUTAR SQL.
-NÃO ALTERA OS APPS ANDROID/iOS.
+INSTALAÇÃO
+1. Extraia o ZIP NA RAIZ do repositório do site.
+2. Substitua components/Footer.tsx.
+3. Confirme em Changes no GitHub Desktop que somente Footer.tsx foi alterado.
+4. Commit summary: Junta Instagram e WhatsApp no rodapé
+5. Commit to main -> Push origin; aguarde publicação na Vercel.
+6. Faça Ctrl+F5 e confira a Home no celular e no computador.
 
-ATENÇÃO:
-- Cupons desativados (ativo=false) no painel continuam ocultos na página pública.
-- O filtro 'Vencidos' encontra cupons cuja validade passou, mas que continuam
-  cadastrados como ativos no painel, como já ocorria nos cards cinza.
-- O código foi validado sintaticamente; o build integral da Vercel deve ser
-  conferido após a publicação.
+IMPORTANTE:
+- Aplique após o patch anterior de botões Android/iOS, que contém o
+  mesmo Footer.tsx usado como base aqui.
+- Não exige SQL, alteração no Supabase nem atualização dos aplicativos.

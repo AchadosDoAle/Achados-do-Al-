@@ -22,6 +22,24 @@ function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function WhatsAppIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20.2 11.7a8.2 8.2 0 0 1-12.1 7.2L3.5 20l1.2-4.4a8.2 8.2 0 1 1 15.5-3.9Z" />
+      <path d="M8.6 8.1c-.4 0-.8.5-.9 1.1-.1 1.3 1.3 3.3 3.1 4.7 1.7 1.3 3.3 1.6 3.9 1.2l.8-1.2-2-1-1 1.1c-1.3-.6-2.4-1.7-3-2.9l1-1-1-2.1Z" />
+    </svg>
+  );
+}
+
 function LinkedinIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg
@@ -48,10 +66,11 @@ export default function Footer({
     ? REDES_SOCIAIS.filter((rede) => rede.nome.toLowerCase() !== "instagram")
     : REDES_SOCIAIS;
 
-  const links = [
-    ...redesRodape,
-    { nome: "WhatsApp", url: LINK_CANAL_WHATSAPP },
-  ];
+  // No destaque da Home, Instagram e WhatsApp dividem o mesmo bloco.
+  // Os demais links sociais continuam abaixo, se estiverem configurados.
+  const links = destacarInstagramProjeto && instagramProjeto
+    ? redesRodape
+    : [...redesRodape, { nome: "WhatsApp", url: LINK_CANAL_WHATSAPP }];
 
   return (
     <footer className="mt-6 border-t border-white/5 bg-bg-secondary px-4 py-7 text-center">
@@ -62,18 +81,30 @@ export default function Footer({
               Acompanhe o Achado do Alê
             </p>
             <p className="mt-1 text-sm text-text-muted">
-              Mais achadinhos e promoções também no Instagram.
+              Novidades, achadinhos e promoções no Instagram e no WhatsApp.
             </p>
-            <a
-              href={instagramProjeto.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Abrir Instagram do Achado do Alê"
-              className="btn-modern mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-text hover:border-gold/50 hover:text-gold"
-            >
-              <InstagramIcon className="h-6 w-6" />
-              @achados.do.ale
-            </a>
+            <div className="mx-auto mt-4 grid w-full max-w-[390px] grid-cols-2 gap-2 sm:gap-3">
+              <a
+                href={instagramProjeto.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Acompanhar Achados do Alê no Instagram"
+                className="btn-modern inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-semibold text-text transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              >
+                <InstagramIcon className="h-5 w-5 shrink-0" />
+                <span>Instagram</span>
+              </a>
+              <a
+                href={LINK_CANAL_WHATSAPP}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Acompanhar Achados do Alê no canal do WhatsApp"
+                className="btn-modern inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-semibold text-text transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              >
+                <WhatsAppIcon className="h-5 w-5 shrink-0" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
           </div>
         )}
 
