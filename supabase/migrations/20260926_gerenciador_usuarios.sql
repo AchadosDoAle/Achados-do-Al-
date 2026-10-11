@@ -19,12 +19,32 @@ begin
   end if;
 end $$;
 
--- IMPORTANTE: por segurança, todo administrador já cadastrado até hoje
--- vira "owner" (acesso completo, incluindo gerenciar outros usuários).
--- Isso evita que alguém fique trancado para fora do próprio painel.
--- Depois, na aba "Usuários" do site, você pode rebaixar quem quiser
--- para o papel "admin" (sem acesso ao gerenciador de usuários).
-update public.admin_users set role = 'owner' where role is null or role = 'admin';
+-- IMPORTANTE: garante um owner inicial sem elevar todos os administradores.
+-- Se existe apenas um administrador, ele é necessariamente o owner inicial.
+update public.admin_users
+set role = 'owner'
+where user_id = (
+  select user_id
+  from public.admin_users
+  order by criado_em asc nulls last, user_id asc
+  limit 1
+)
+and (select count(*) from public.admin_users) = 1;
+
+-- Se houver vários administradores, mas nenhum owner (instalação antiga ou
+-- migração incompleta), promove somente o administrador mais antigo.
+with owner_inicial as (
+  select user_id
+  from public.admin_users
+  order by criado_em asc nulls last, user_id asc
+  limit 1
+)
+update public.admin_users
+set role = 'owner'
+where user_id = (select user_id from owner_inicial)
+  and not exists (
+    select 1 from public.admin_users where role = 'owner'
+  );
 
 -- Função auxiliar: usuário logado é "owner"?
 create or replace function public.is_owner()

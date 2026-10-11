@@ -245,3 +245,23 @@ export async function listarLojasCuponsPublicas(supabase: SupabaseClient): Promi
   }
   return [...lojas].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
 }
+
+/** Atualizações pontuais sem alterar outras propriedades do cupom. */
+export async function alterarSituacaoCupom(
+  supabase: SupabaseClient,
+  id: string,
+  acao: "arquivar" | "vencer" | "reativar"
+) {
+  const alteracoes: Record<string, unknown> = { atualizado_em: new Date().toISOString() };
+  if (acao === "arquivar") alteracoes.ativo = false;
+  if (acao === "vencer") {
+    alteracoes.ativo = true;
+    alteracoes.validade = new Date(Date.now() - 86400000).toISOString();
+  }
+  if (acao === "reativar") {
+    alteracoes.ativo = true;
+    alteracoes.validade = null;
+  }
+  const { error } = await supabase.from("coupons").update(alteracoes).eq("id", id);
+  if (error) throw error;
+}

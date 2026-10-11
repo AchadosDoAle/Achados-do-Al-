@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 const links = [
   { href: "/admin/ofertas", label: "Ofertas" },
   { href: "/admin/cupons", label: "Cupons" },
-  { href: "/admin/integracoes", label: "Integrações" },
   { href: "/admin/relatorios", label: "Relatórios" },
   { href: "/admin/usuarios", label: "Usuários" },
 ];
@@ -29,7 +28,7 @@ export default function AdminLayout({
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div>
             <Link href="/admin" className="font-display text-lg font-bold text-ink sm:text-xl">
-              Painel — Achado do Alê
+              Painel — Achados do Alê
             </Link>
             <p className="hidden text-xs text-ink/50 sm:block">
               Ofertas, cupons e publicações
@@ -45,7 +44,7 @@ export default function AdminLayout({
             <Link
               key={link.href}
               href={link.href}
-              className="admin-action shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition"
+              className="admin-action-soft shrink-0 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:shadow-sm"
             >
               {link.label}
             </Link>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Cupom } from "@/lib/types";
 import {
   cupomExpirado,
+  alterarSituacaoCupom,
   excluirCupom,
   listarCuponsPaginados,
   listarCuponsParaBuscaAdmin,
@@ -14,6 +15,7 @@ import Paginacao from "@/components/admin/Paginacao";
 import { textoCorrespondeBusca } from "@/lib/admin-search";
 import { formatarDataPublicacao } from "@/lib/datas";
 import { montarRelatorioCupons } from "@/lib/cupom-relatorio";
+import { urlCurtaDoCupom, beneficioCupom, formatarValidadeCupom } from "@/lib/cupom-share";
 
 const ITENS_POR_PAGINA = 30;
 
@@ -47,6 +49,8 @@ export default function ListaCuponsPage() {
   const [totalItens, setTotalItens] = useState(0);
   const [cuponsSelecionados, setCuponsSelecionados] = useState<Record<string, Cupom>>({});
   const [feedbackRelatorio, setFeedbackRelatorio] = useState("");
+  const [ocupado, setOcupado] = useState<string | null>(null);
+  const [filtroStatus, setFiltroStatus] = useState("todos");
 
   const emBusca = Boolean(buscaAplicada.trim());
 
@@ -60,10 +64,10 @@ export default function ListaCuponsPage() {
   );
 
   const cuponsVisiveis = useMemo(() => {
-    if (!emBusca) return cupons;
+    if (!emBusca) return cupons.filter(c => filtroStatus === "todos" || (filtroStatus === "arquivados" ? !c.ativo : filtroStatus === "vencidos" ? c.ativo && cupomExpirado(c) : c.ativo && !cupomExpirado(c)));
     const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
-    return (resultadosBusca ?? []).slice(inicio, inicio + ITENS_POR_PAGINA);
-  }, [cupons, emBusca, paginaAtual, resultadosBusca]);
+    return (resultadosBusca ?? []).filter(c => filtroStatus === "todos" || (filtroStatus === "arquivados" ? !c.ativo : filtroStatus === "vencidos" ? c.ativo && cupomExpirado(c) : c.ativo && !cupomExpirado(c))).slice(inicio, inicio + ITENS_POR_PAGINA);
+  }, [cupons, emBusca, paginaAtual, resultadosBusca, filtroStatus]);
 
   async function carregarPaginaNormal(pagina = paginaAtual) {
     setCarregando(true);
@@ -200,6 +204,40 @@ export default function ListaCuponsPage() {
     } catch {
       // Cancelamento do menu de compartilhamento não deve gerar erro visual.
     }
+  }
+
+  function textoParaCompartilhar(cupom: Cupom) {
+    return [`🎟️ CUPOM ${cupom.nomeCupom}`, `🏬 ${cupom.loja}`, beneficioCupom(cupom), cupom.descricao, `Validade: ${formatarValidadeCupom(cupom.validade)}`, `🛒 ${urlCurtaDoCupom(cupom.id)}`].filter(Boolean).join("\n");
+  }
+
+  async function copiarCupom(cupom: Cupom) {
+    try {
+      await navigator.clipboard.writeText(textoParaCompartilhar(cupom));
+      setFeedbackRelatorio(`Cupom ${cupom.nomeCupom} copiado!`);
+    } catch { setFeedbackRelatorio("Não foi possível copiar. Verifique a permissão do navegador."); }
+  }
+
+  async function compartilharCupom(cupom: Cupom) {
+    const texto = textoParaCompartilhar(cupom);
+    try {
+      if (navigator.share) await navigator.share({ title: `Cupom ${cupom.nomeCupom}`, text: texto, url: urlCurtaDoCupom(cupom.id) });
+      else await copiarCupom(cupom);
+    } catch (erro) {
+      if ((erro as Error)?.name !== "AbortError") setFeedbackRelatorio("Não foi possível compartilhar.");
+    }
+  }
+
+  async function mudarSituacao(cupom: Cupom, acao: "arquivar" | "vencer" | "reativar") {
+    const rotulo = acao === "arquivar" ? "arquivar" : acao === "vencer" ? "marcar como vencido" : "reativar";
+    if (!window.confirm(`Deseja ${rotulo} o cupom ${cupom.nomeCupom}?`)) return;
+    setOcupado(cupom.id);
+    try {
+      await alterarSituacaoCupom(supabase, cupom.id, acao);
+      await recarregar();
+      setFeedbackRelatorio(`Cupom ${cupom.nomeCupom} atualizado.`);
+    } catch (erro) {
+      setFeedbackRelatorio(`Erro ao atualizar cupom: ${(erro as Error).message}`);
+    } finally { setOcupado(null); }
   }
 
   async function aoExcluir(id: string) {
@@ -351,6 +389,14 @@ export default function ListaCuponsPage() {
         )}
       </section>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-sm font-semibold text-ink/70">Mostrar:</span>
+        {[{id:"todos", label:"Todos"},{id:"ativos",label:"Ativos"},{id:"vencidos",label:"Vencidos"},{id:"arquivados",label:"Arquivados"}].map(f => (
+          <button key={f.id} type="button" onClick={() => {setFiltroStatus(f.id); setPaginaAtual(1);}}
+            className={`rounded-xl border px-3 py-2 text-xs font-semibold ${filtroStatus === f.id ? "bg-[#35215D] text-white" : "bg-white text-ink"}`}>{f.label}</button>
+        ))}
+      </div>
+      {feedbackRelatorio && <p role="status" className="mb-4 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-ink shadow-sm">{feedbackRelatorio}</p>}
       <div id="inicio-lista-cupons" className="scroll-mt-4" />
 
       {carregando ? (
@@ -395,7 +441,7 @@ export default function ListaCuponsPage() {
                       </div>
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                      {expirado && (
+                      {expirado && cupom.ativo && (
                         <span className="rounded-full bg-ink/10 px-2.5 py-1 text-xs font-medium text-ink/50">
                           Esgotado
                         </span>
@@ -437,13 +483,18 @@ export default function ListaCuponsPage() {
                     </p>
                   )}
 
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium md:mt-3">
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-semibold sm:grid-cols-3 md:mt-3">
                     <Link
                       href={`/admin/cupons/${cupom.id}/editar`}
-                      className="admin-action-soft rounded-xl border px-3 py-2"
+                      className="admin-action-soft rounded-xl border px-3 py-2 text-center"
                     >
                       Editar
                     </Link>
+                    <button type="button" onClick={() => compartilharCupom(cupom)} className="admin-action rounded-xl border px-3 py-2">↗ Compartilhar</button>
+                    <button type="button" onClick={() => copiarCupom(cupom)} className="admin-action-soft rounded-xl border px-3 py-2">Copiar texto</button>
+                    {cupom.ativo && !expirado && <button type="button" disabled={ocupado === cupom.id} onClick={() => mudarSituacao(cupom, "vencer")} className="admin-action-soft rounded-xl border px-3 py-2 disabled:opacity-40">Marcar vencido</button>}
+                    {cupom.ativo && <button type="button" disabled={ocupado === cupom.id} onClick={() => mudarSituacao(cupom, "arquivar")} className="admin-action-soft rounded-xl border px-3 py-2 disabled:opacity-40">Arquivar</button>}
+                    {(!cupom.ativo || expirado) && <button type="button" disabled={ocupado === cupom.id} onClick={() => mudarSituacao(cupom, "reativar")} className="admin-action rounded-xl border px-3 py-2 disabled:opacity-40">Reativar</button>}
                     <button
                       onClick={() => aoExcluir(cupom.id)}
                       className="admin-action-soft rounded-xl border px-3 py-2"

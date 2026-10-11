@@ -1,7 +1,7 @@
 ACHADO DO ALÊ — GOOGLE ANALYTICS / CONSENT MODE V2
 
 1. Na Vercel, confirme a variável:
-   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-ZZPY0JEKB9
+   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-NEQW6KW18Q
    Tipo: Config
    Ambiente: Production (e Preview, se desejar medir previews)
 

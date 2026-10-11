@@ -10,17 +10,17 @@ const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const agora = new Date();
   const paginasFixas: MetadataRoute.Sitemap = [
-    { url: URL_SITE, lastModified: agora, changeFrequency: "hourly", priority: 1 },
-    { url: `${URL_SITE}/cupons`, lastModified: agora, changeFrequency: "daily", priority: 0.9 },
-    { url: `${URL_SITE}/categorias`, lastModified: agora, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${URL_SITE}/perdeu`, lastModified: agora, changeFrequency: "daily", priority: 0.5 },
-    { url: `${URL_SITE}/sobre`, lastModified: agora, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${URL_SITE}/afiliados`, lastModified: agora, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${URL_SITE}/privacidade`, lastModified: agora, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${URL_SITE}/termos`, lastModified: agora, changeFrequency: "monthly", priority: 0.3 },
+    { url: URL_SITE, changeFrequency: "daily", priority: 1 },
+    { url: `${URL_SITE}/cupons`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${URL_SITE}/categorias`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${URL_SITE}/perdeu`, changeFrequency: "daily", priority: 0.5 },
+    { url: `${URL_SITE}/sobre`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${URL_SITE}/afiliados`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${URL_SITE}/privacidade`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${URL_SITE}/termos`, changeFrequency: "monthly", priority: 0.3 },
     ...CATEGORIAS_ADMIN.filter((c) => c !== CATEGORIA_OUTROS).map((categoria) => ({
       url: `${URL_SITE}/categoria/${slugificar(categoria)}`,
-      lastModified: agora, changeFrequency: "daily" as const, priority: 0.7,
+      changeFrequency: "daily" as const, priority: 0.7,
     })),
   ];
 

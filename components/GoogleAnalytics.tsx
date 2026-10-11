@@ -23,6 +23,7 @@ export default function GoogleAnalytics({
     window.gtag("event", "page_view", {
       page_path: `${window.location.pathname}${window.location.search}`,
       page_location: window.location.href,
+      page_title: document.title,
     });
   }, [measurementId, pathname]);
 
