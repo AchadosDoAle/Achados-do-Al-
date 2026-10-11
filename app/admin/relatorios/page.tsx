@@ -57,6 +57,12 @@ type Demografia = {
   age: { label: string; users: number }[];
   gender: { label: string; users: number }[];
   error?: string;
+  missingSettings?: string[];
+};
+
+type DiagnosticoRastreamento = {
+  status: "ok" | "missing_rpc" | "permission" | "error";
+  message: string;
 };
 
 const PERIODOS: { valor: Periodo; rotulo: string }[] = [
@@ -116,6 +122,23 @@ export default function RelatoriosPage() {
   const [cliques, setCliques] = useState<LinhaClique[]>([]);
   const [publicacoes, setPublicacoes] = useState<{ status: string; enviado_em: string | null }[]>([]);
   const [demografia, setDemografia] = useState<Demografia>({ configured: false, age: [], gender: [] });
+  const [erroPageviews, setErroPageviews] = useState<string | null>(null);
+  const [erroSessoes, setErroSessoes] = useState<string | null>(null);
+  const [diagnostico, setDiagnostico] = useState<DiagnosticoRastreamento | null>(null);
+  const [diagnosticando, setDiagnosticando] = useState(false);
+
+  const testarRastreamento = useCallback(async () => {
+    setDiagnosticando(true);
+    try {
+      const resposta = await fetch("/api/admin/analytics-diagnostics", { cache: "no-store" });
+      if (!resposta.ok) throw new Error("Não foi possível consultar o diagnóstico.");
+      setDiagnostico((await resposta.json()) as DiagnosticoRastreamento);
+    } catch {
+      setDiagnostico({ status: "error", message: "Não foi possível verificar a função de rastreamento. Atualize a página e tente novamente." });
+    } finally {
+      setDiagnosticando(false);
+    }
+  }, []);
 
   const carregarOnline = useCallback(async () => {
     const desde = new Date(Date.now() - 2 * 60 * 1000).toISOString();
@@ -176,6 +199,8 @@ export default function RelatoriosPage() {
     setCliques((resCliques.data ?? []) as unknown as LinhaClique[]);
     setPublicacoes((resPublicacoes.data ?? []) as { status: string; enviado_em: string | null }[]);
     setErroAnalytics(Boolean(resPageviews.error || resSessoes.error));
+    setErroPageviews(resPageviews.error?.message ?? null);
+    setErroSessoes(resSessoes.error?.message ?? null);
 
     try {
       const respostaDemografia = await fetch(`/api/admin/ga4-demographics?periodo=${periodo}`, { cache: "no-store" });
@@ -191,6 +216,10 @@ export default function RelatoriosPage() {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  useEffect(() => {
+    void testarRastreamento();
+  }, [testarRastreamento]);
 
   useEffect(() => {
     void carregarOnline();
@@ -283,6 +312,9 @@ export default function RelatoriosPage() {
               <option key={item.valor} value={item.valor}>{item.rotulo}</option>
             ))}
           </select>
+          <button onClick={() => void carregar()} disabled={carregando} className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50">
+            ↻ Atualizar dados
+          </button>
           <button onClick={() => window.print()} className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-semibold">
             🖨️ Imprimir / PDF
           </button>
@@ -294,9 +326,27 @@ export default function RelatoriosPage() {
 
       {erroAnalytics && (
         <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          O rastreamento detalhado ainda não está ativo. Rode <strong>supabase/analytics.sql</strong> no SQL Editor para liberar acessos, fontes, dispositivos e contador em tempo real.
+          <p className="font-bold">Não foi possível consultar todas as métricas do Supabase.</p>
+          {erroPageviews && <p className="mt-1">Visualizações: {erroPageviews}</p>}
+          {erroSessoes && <p className="mt-1">Sessões: {erroSessoes}</p>}
+          <p className="mt-2">Verifique as tabelas, as permissões e o script <strong>supabase/analytics.sql</strong>. Não execute SQL sem antes confirmar o erro.</p>
         </div>
       )}
+
+      <section className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm print:hidden" aria-label="Diagnóstico da coleta de acessos">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-base font-bold text-ink">Diagnóstico do rastreamento</h2>
+            <p className="mt-1 text-sm text-ink/55">Confere se visitantes podem registrar visualizações sem gravar um acesso de teste.</p>
+          </div>
+          <button type="button" onClick={() => void testarRastreamento()} disabled={diagnosticando} className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50">
+            {diagnosticando ? "Verificando..." : "Verificar novamente"}
+          </button>
+        </div>
+        <p className={`mt-3 text-sm font-medium ${diagnostico?.status === "ok" ? "text-emerald-700" : diagnostico ? "text-amber-800" : "text-ink/55"}`}>
+          {diagnostico?.message ?? "Verificando configuração..."}
+        </p>
+      </section>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
         <Cartao rotulo="Online c/ métricas" valor={onlineAgora} destaque />
@@ -333,7 +383,7 @@ export default function RelatoriosPage() {
             </p>
           </div>
           <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${demografia.configured ? "bg-trust/10 text-trust" : "bg-ink/5 text-ink/50"}`}>
-            {demografia.configured ? "GA4 conectado" : "GA4 ainda não conectado"}
+            {demografia.error ? "GA4: falha na conexão" : demografia.configured ? "GA4 Data API conectada" : "GA4 Data API pendente"}
           </span>
         </div>
 
@@ -344,9 +394,19 @@ export default function RelatoriosPage() {
           </div>
         ) : (
           <div className="mt-4 rounded-2xl bg-[#F7F4FA] p-4 text-sm leading-6 text-ink/65">
-            {demografia.error
-              ? "O GA4 está configurado, mas não foi possível carregar os dados demográficos agora. Confira as permissões da Data API e do usuário de serviço."
-              : "Para preencher idade e gênero aqui, configure o GA4, ative Google Signals e conecte a Data API. O Google só disponibiliza esses dados para usuários elegíveis e pode aplicar limites mínimos de privacidade."}
+            {demografia.error ? (
+              <span>Não foi possível consultar a propriedade GA4: {demografia.error} Verifique o ID da propriedade, a API habilitada e o acesso de Leitor da conta de serviço.</span>
+            ) : !demografia.configured ? (
+              <span>
+                O rastreamento do Google Analytics já está previsto no site; para exibir idade e gênero aqui falta habilitar a Google Analytics Data API e configurar as credenciais na Vercel.
+                {(demografia.missingSettings?.length ?? 0) > 0 && (
+                  <span className="mt-2 block font-semibold">Variáveis ausentes: {demografia.missingSettings?.join(", ")}.</span>
+                )}
+                <span className="mt-2 block">Não envie a chave privada em mensagens nem a coloque no GitHub. Esses dados só ficam disponíveis quando o Google permite a exibição agregada.</span>
+              </span>
+            ) : (
+              "A conexão com o GA4 está funcionando, mas o Google não retornou faixas de idade ou gênero neste período. Tente 30 dias; dados demográficos podem ser omitidos por limites de privacidade."
+            )}
           </div>
         )}
 
@@ -359,7 +419,18 @@ export default function RelatoriosPage() {
         <h2 className="font-display text-lg font-bold text-ink">Acessos recentes</h2>
         <p className="mt-1 text-sm text-ink/55">Últimas páginas registradas no período selecionado.</p>
         {recentes.length === 0 ? (
-          <p className="mt-4 text-sm text-ink/55">Ainda sem acessos registrados.</p>
+          <div className="mt-4 space-y-2 text-sm text-ink/60">
+            {erroPageviews ? (
+              <p>Falha ao ler os acessos: {erroPageviews}. Confira o diagnóstico acima.</p>
+            ) : diagnostico?.status !== "ok" ? (
+              <p>Não há acessos para mostrar e o rastreamento ainda precisa ser verificado. Confira o diagnóstico acima.</p>
+            ) : (
+              <>
+                <p>Nenhum acesso encontrado no período selecionado.</p>
+                <p>Para testar: abra a página inicial do site em uma janela anônima, aguarde alguns segundos e clique em <strong>Atualizar dados</strong>. A contagem básica não precisa de aceite de métricas avançadas.</p>
+              </>
+            )}
+          </div>
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[650px] text-left text-sm">

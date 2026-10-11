@@ -117,7 +117,19 @@ export async function GET(req: NextRequest) {
   const privateKeyRaw = process.env.GA4_PRIVATE_KEY;
 
   if (!propertyId || !clientEmail || !privateKeyRaw) {
-    return NextResponse.json({ configured: false, age: [], gender: [] });
+    return NextResponse.json({
+      configured: false,
+      age: [],
+      gender: [],
+      missingSettings: [
+        !propertyId ? "GA4_PROPERTY_ID" : null,
+        !clientEmail ? "GA4_CLIENT_EMAIL" : null,
+        !privateKeyRaw ? "GA4_PRIVATE_KEY" : null,
+      ].filter(Boolean),
+    });
+  }
+  if (!/^\d+$/.test(propertyId)) {
+    return NextResponse.json({ configured: false, age: [], gender: [], error: "O GA4_PROPERTY_ID deve conter somente o número da propriedade." }, { status: 400 });
   }
 
   try {
@@ -131,15 +143,15 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ configured: true, age, gender });
   } catch (erro) {
-    console.error(erro);
-    return NextResponse.json(
-      {
-        configured: true,
-        age: [],
-        gender: [],
-        error: erro instanceof Error ? erro.message : "Falha ao consultar GA4",
-      },
-      { status: 502 }
-    );
+    console.error("Falha ao consultar GA4 Data API:", erro);
+    const mensagem = erro instanceof Error ? erro.message : "Falha ao consultar GA4";
+    const descricao = mensagem.includes("403")
+      ? "Acesso negado (403): confira a Google Analytics Data API e a permissão de Leitor da conta de serviço."
+      : mensagem.includes("404")
+        ? "Propriedade não encontrada (404): confira o número de GA4_PROPERTY_ID."
+        : mensagem.includes("401") || mensagem.includes("400")
+          ? "Erro de autenticação: confira e-mail e chave privada da conta de serviço."
+          : "Não foi possível consultar o Google Analytics. Verifique as credenciais e tente novamente.";
+    return NextResponse.json({ configured: true, age: [], gender: [], error: descricao }, { status: 502 });
   }
 }
