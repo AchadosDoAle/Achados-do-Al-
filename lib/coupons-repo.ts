@@ -174,3 +174,74 @@ export async function excluirCupom(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("coupons").delete().eq("id", id);
   if (error) throw error;
 }
+
+// Filtros públicos aplicados diretamente no Supabase, evitando carregar todos
+// os cupons a cada visita. Registros desativados no admin continuam privados.
+export type FiltroPublicoCupom = "todos" | "ativos" | "vencidos" | "vence-hoje" | "relampago";
+
+export async function listarCuponsPublicosFiltrados(
+  supabase: SupabaseClient,
+  opcoes: {
+    pagina: number;
+    porPagina: number;
+    filtro: FiltroPublicoCupom;
+    loja?: string;
+    agora: Date;
+    fimDoDiaBrasilia: Date;
+  }
+): Promise<{ itens: Cupom[]; total: number }> {
+  const pagina = Math.max(1, Math.trunc(opcoes.pagina));
+  const limite = Math.max(1, Math.min(60, Math.trunc(opcoes.porPagina)));
+  const agora = opcoes.agora.toISOString();
+  let query = supabase
+    .from("coupons")
+    .select("*", { count: "exact" })
+    .eq("ativo", true);
+
+  if (opcoes.loja) query = query.eq("loja", opcoes.loja);
+  switch (opcoes.filtro) {
+    case "ativos":
+      query = query.or(`validade.is.null,validade.gte.${agora}`);
+      break;
+    case "vencidos":
+      query = query.lt("validade", agora);
+      break;
+    case "vence-hoje":
+      query = query.gte("validade", agora).lte("validade", opcoes.fimDoDiaBrasilia.toISOString());
+      break;
+    case "relampago":
+      query = query.eq("relampago", true).or(`validade.is.null,validade.gte.${agora}`);
+      break;
+  }
+
+  const inicio = (pagina - 1) * limite;
+  const { data, error, count } = await query
+    .order("criado_em", { ascending: false })
+    .order("id", { ascending: false })
+    .range(inicio, inicio + limite - 1);
+  if (error) throw error;
+  return { itens: (data ?? []).map(linhaParaCupom), total: count ?? 0 };
+}
+
+/** Lista somente nomes de lojas (não busca todo o conteúdo dos cupons). */
+export async function listarLojasCuponsPublicas(supabase: SupabaseClient): Promise<string[]> {
+  const lojas = new Set<string>();
+  const lote = 500;
+  let inicio = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("loja")
+      .eq("ativo", true)
+      .order("loja", { ascending: true })
+      .range(inicio, inicio + lote - 1);
+    if (error) throw error;
+    for (const item of data ?? []) {
+      const loja = typeof item.loja === "string" ? item.loja.trim() : "";
+      if (loja) lojas.add(loja);
+    }
+    if ((data?.length ?? 0) < lote) break;
+    inicio += lote;
+  }
+  return [...lojas].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+}
