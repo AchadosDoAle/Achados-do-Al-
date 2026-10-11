@@ -98,6 +98,42 @@ export default function Footer({
           </div>
         )}
 
+        {/* Links oficiais dos aplicativos, sempre presentes no rodapé público. */}
+        <section aria-labelledby="apps-download-title" className="mx-auto mt-7 max-w-[620px] rounded-[22px] border border-white/10 bg-[#102640] px-4 py-5 shadow-[0_10px_32px_rgba(0,0,0,.16)] sm:px-6">
+          <p id="apps-download-title" className="font-display text-base font-bold text-white">
+            Leve os achados com você
+          </p>
+          <p className="mt-1 text-xs text-[#a9bed6]">
+            Baixe o aplicativo ou acompanhe a chegada da versão para iPhone.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="https://play.google.com/store/apps/details?id=com.achadodoale.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Baixar o Achados do Alê para Android na Google Play"
+              className="inline-flex min-h-[48px] min-w-[156px] items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 text-sm font-extrabold text-[#07111f] shadow-[0_4px_16px_rgba(245,185,66,.12)] transition-colors duration-200 hover:bg-[#ffd16b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 9a7 7 0 0 1 14 0M5 10v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7H5Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="m7 4-2-2m12 2 2-2M9 14h.01M15 14h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span>Baixar Android</span>
+            </a>
+            <Link
+              href="/app/ios"
+              aria-label="Ver quando o aplicativo Achados do Alê para iOS estará disponível"
+              className="inline-flex min-h-[48px] min-w-[156px] items-center justify-center gap-2 rounded-xl border border-[#6885a4]/55 bg-white/[0.06] px-5 py-3 text-sm font-bold text-white transition-colors duration-200 hover:border-gold/60 hover:bg-white/[0.11] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="6" y="2" width="12" height="20" rx="2.7" stroke="currentColor" strokeWidth="1.7" />
+                <path d="M10 5h4M11.5 19h1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              <span>App para iOS</span>
+            </Link>
+          </div>
+        </section>
+
         <div className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-text-muted">
           <Link href="/sobre" className="nav-link-modern">Sobre</Link>
           <Link href="/afiliados" className="nav-link-modern">Afiliados</Link>
