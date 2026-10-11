@@ -175,9 +175,10 @@ export default function Page() {
                 <li><strong className="text-text">Cookie antirrepetição de avisos:</strong> ao reportar problema em uma oferta, pode ser criado o cookie técnico <code className="text-text">achado_reporter</code>, com duração de até 1 ano, usado para reduzir abuso e avisos repetidos.</li>
                 <li><strong className="text-text">Autenticação administrativa:</strong> sessões e tokens estritamente necessários podem ser utilizados para manter administradores autenticados com segurança.</li>
                 <li><strong className="text-text">Google Analytics:</strong> o armazenamento de Analytics permanece negado por padrão e só é habilitado após consentimento do visitante.</li>
+                <li><strong className="text-text">Google Signals:</strong> quando habilitado na propriedade GA4 e permitido pelo consentimento, o Google pode fornecer relatórios agregados de interesses e dados demográficos de usuários elegíveis. A disponibilidade depende de limiares de privacidade e das configurações do Google; o site não determina idade ou gênero individualmente.</li>
               </ul>
               <p>
-                O usuário pode apagar cookies e armazenamento local pelas configurações do navegador. Isso pode remover favoritos, preferências e a escolha de consentimento, fazendo com que algumas configurações precisem ser refeitas.
+                A escolha pode ser alterada a qualquer momento pelo botão “Privacidade e cookies” disponível no rodapé da tela. A revogação interrompe a coleta opcional futura neste navegador, mas não apaga automaticamente dados previamente processados pelo Google. O usuário também pode apagar cookies e armazenamento local pelas configurações do navegador. Isso pode remover favoritos, preferências e a escolha de consentimento, fazendo com que algumas configurações precisem ser refeitas.
               </p>
             </Section>
 

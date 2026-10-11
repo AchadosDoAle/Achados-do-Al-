@@ -14,6 +14,7 @@ const atalhos = [
   { href: "/admin/ofertas", icone: "▦", titulo: "Gerenciar ofertas", detalhe: "Editar, arquivar e republicar" },
   { href: "/admin/cupons", icone: "✂", titulo: "Gerenciar cupons", detalhe: "Compartilhar, vencer e arquivar" },
   { href: "/admin/relatorios", icone: "↗", titulo: "Relatórios", detalhe: "Visualizações e cliques" },
+  { href: "/admin/seo", icone: "◎", titulo: "SEO e visibilidade", detalhe: "Indexação, sitemap e diagnóstico" },
   { href: "/admin/usuarios", icone: "♙", titulo: "Usuários", detalhe: "Acessos e permissões" },
 ];
 
