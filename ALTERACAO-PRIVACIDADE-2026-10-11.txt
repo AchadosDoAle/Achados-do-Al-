@@ -1,0 +1,9 @@
+ACHADOS DO ALÊ — Ajuste de preferências de privacidade
+
+- Removido o botão flutuante "Privacidade e cookies" após consentimento.
+- O banner inferior continua sendo exibido até o usuário aceitar ou recusar.
+- Na página /privacidade, seção "Cookies e armazenamento local", há um botão discreto "Alterar preferências de privacidade" para reabrir o banner.
+- Consentimento continua salvo no navegador; Google Analytics opcional permanece condicionado à escolha.
+
+Commit sugerido:
+fix: remover balão de cookies e mover preferências para Privacidade

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
+import PrivacyPreferencesButton from "@/components/PrivacyPreferencesButton";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import Container from "@/components/Container";
@@ -178,8 +179,9 @@ export default function Page() {
                 <li><strong className="text-text">Google Signals:</strong> quando habilitado na propriedade GA4 e permitido pelo consentimento, o Google pode fornecer relatórios agregados de interesses e dados demográficos de usuários elegíveis. A disponibilidade depende de limiares de privacidade e das configurações do Google; o site não determina idade ou gênero individualmente.</li>
               </ul>
               <p>
-                A escolha pode ser alterada a qualquer momento pelo botão “Privacidade e cookies” disponível no rodapé da tela. A revogação interrompe a coleta opcional futura neste navegador, mas não apaga automaticamente dados previamente processados pelo Google. O usuário também pode apagar cookies e armazenamento local pelas configurações do navegador. Isso pode remover favoritos, preferências e a escolha de consentimento, fazendo com que algumas configurações precisem ser refeitas.
+                A escolha pode ser alterada a qualquer momento nesta página, pelo botão abaixo. A revogação interrompe a coleta opcional futura neste navegador, mas não apaga automaticamente dados previamente processados pelo Google. O usuário também pode apagar cookies e armazenamento local pelas configurações do navegador. Isso pode remover favoritos, preferências e a escolha de consentimento, fazendo com que algumas configurações precisem ser refeitas.
               </p>
+              <div className="mt-4"><PrivacyPreferencesButton /></div>
             </Section>
 
             <Section id="apps" title="6. Aplicativos Android e iOS">

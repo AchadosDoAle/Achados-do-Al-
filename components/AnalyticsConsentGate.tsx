@@ -34,6 +34,12 @@ export default function AnalyticsConsentGate({
   const [reabrir, setReabrir] = useState(false);
 
   useEffect(() => {
+    const abrirPreferencias = () => setReabrir(true);
+    window.addEventListener("achado:abrir-privacidade", abrirPreferencias);
+    return () => window.removeEventListener("achado:abrir-privacidade", abrirPreferencias);
+  }, []);
+
+  useEffect(() => {
     const valor = window.localStorage.getItem(CHAVE);
     if (valor === "aceito" || valor === "recusado") {
       atualizarConsentimentoGoogle(valor);
@@ -63,11 +69,6 @@ export default function AnalyticsConsentGate({
         <GoogleAnalytics measurementId={measurementId} />
       ) : null}
 
-      {carregado && consentimento !== "pendente" && !reabrir && (
-        <button type="button" onClick={() => setReabrir(true)}
-          className="fixed bottom-3 left-3 z-[69] rounded-full border border-white/20 bg-[#172338] px-4 py-2 text-xs font-semibold text-white shadow-xl print:hidden"
-          aria-label="Alterar preferências de privacidade">Privacidade e cookies</button>
-      )}
       {carregado && (consentimento === "pendente" || reabrir) && (
         <section role="dialog" aria-label="Preferências de privacidade" aria-modal="false"
           className="fixed inset-x-0 bottom-0 z-[90] w-full border-t border-[#f5b942]/50 bg-[#101d30] text-white shadow-[0_-10px_40px_rgba(0,0,0,.35)] print:hidden">
