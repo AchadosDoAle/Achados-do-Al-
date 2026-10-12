@@ -25,6 +25,7 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
   const [soComCupom, setSoComCupom] = useState(false);
   const [soFreteGratis, setSoFreteGratis] = useState(false);
   const [soPix, setSoPix] = useState(false);
+  const [ordemPreco, setOrdemPreco] = useState<"padrao" | "menor" | "maior">("padrao");
   const topoRef = useRef<HTMLDivElement>(null);
   // A busca é lida direto da URL a cada renderização, para reagir
   // imediatamente quando alguém pesquisa pelo campo do cabeçalho.
@@ -93,13 +94,30 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
     if (soFreteGratis) resultado = resultado.filter((o) => Boolean(o.freteGratis));
     if (soPix) resultado = resultado.filter((o) => o.precoPix != null);
 
+    if (ordemPreco !== "padrao") {
+      // O menor valor efetivamente anunciado (Pix ou preço atual) é usado na ordenação.
+      const valorOferta = (o: Oferta) => {
+        const valores = [o.precoPix, o.precoAtual].filter(
+          (valor): valor is number => typeof valor === "number" && Number.isFinite(valor) && valor >= 0
+        );
+        return valores.length ? Math.min(...valores) : null;
+      };
+      resultado = [...resultado].sort((a, b) => {
+        const precoA = valorOferta(a);
+        const precoB = valorOferta(b);
+        if (precoA === null) return precoB === null ? 0 : 1;
+        if (precoB === null) return -1;
+        return ordemPreco === "menor" ? precoA - precoB : precoB - precoA;
+      });
+    }
+
     return resultado;
-  }, [ofertas, selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix]);
+  }, [ofertas, selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix, ordemPreco]);
 
   // Sempre que o filtro muda, volta pra primeira página.
   useEffect(() => {
     setPagina(1);
-  }, [selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix]);
+  }, [selecionada, lojaSelecionada, busca, soComCupom, soFreteGratis, soPix, ordemPreco]);
 
   const totalPaginas = Math.max(
     1,
@@ -169,6 +187,20 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
               {ativo ? "✓ " : ""}{rotulo}
             </button>
           ))}
+          <label className="relative inline-flex items-center">
+            <span className="sr-only">Ordenar ofertas por preço</span>
+            <select
+              value={ordemPreco}
+              onChange={(e) => setOrdemPreco(e.target.value as "padrao" | "menor" | "maior")}
+              aria-label="Ordenar ofertas por preço"
+              className={`btn-modern cursor-pointer appearance-none rounded-full py-2 pl-3 pr-8 text-xs font-semibold outline-none ring-1 ${ordemPreco !== "padrao" ? "bg-gold text-bg ring-gold" : "bg-card text-text-muted ring-white/10 hover:text-text"}`}
+            >
+              <option value="padrao">Preço: padrão</option>
+              <option value="menor">Preço: menor primeiro</option>
+              <option value="maior">Preço: maior primeiro</option>
+            </select>
+            <span aria-hidden="true" className="pointer-events-none absolute right-3 text-xs">▾</span>
+          </label>
         </div>
       </Container>
 
