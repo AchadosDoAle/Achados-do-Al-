@@ -46,13 +46,13 @@ export default function TermosCupom({
       role="presentation"
     >
       <div
-        className="relative max-h-[82vh] w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-card shadow-2xl"
+        className="relative flex max-h-[min(82dvh,760px)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-card shadow-2xl"
         onClick={(evento) => evento.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`termos-${nomeCupom}`}
       >
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-card/95 px-5 py-4 backdrop-blur sm:px-6">
+        <div className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-white/10 bg-card/95 px-5 py-4 backdrop-blur sm:px-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">
               Termos de uso
@@ -75,7 +75,7 @@ export default function TermosCupom({
           </button>
         </div>
 
-        <div className="max-h-[62vh] overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           <div className="space-y-5 text-sm leading-6 text-text-muted">
             {descricao?.trim() && (
               <section>
@@ -95,7 +95,7 @@ export default function TermosCupom({
           </div>
         </div>
 
-        <div className="border-t border-white/10 bg-card px-5 py-4 sm:px-6">
+        <div className="shrink-0 border-t border-white/10 bg-card px-5 py-3 sm:px-6">
           <button
             type="button"
             onClick={() => setAberto(false)}
