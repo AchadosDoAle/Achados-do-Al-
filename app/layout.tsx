@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Baloo_2, Inter } from "next/font/google";
 import AnalyticsConsentGate from "@/components/AnalyticsConsentGate";
+import AppInstallPrompt from "@/components/AppInstallPrompt";
 import LivePublicUpdates from "@/components/LivePublicUpdates";
 import { NOME_MARCA, URL_SITE } from "@/lib/seo-brand";
 import "./globals.css";
@@ -115,6 +116,7 @@ export default function RootLayout({
       <body className="font-sans">
         {children}
         <LivePublicUpdates />
+        <AppInstallPrompt />
         <AnalyticsConsentGate measurementId={GA_ID} />
       </body>
     </html>
