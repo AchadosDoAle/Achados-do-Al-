@@ -1,0 +1,66 @@
+PATCH — BANNER DO APP ABAIXO DO RODAPÉ — 15/10/2026
+SITE: https://achadosdoale.com
+
+Arquivos neste patch:
+- components/AndroidAppFooterBanner.tsx (NOVO)
+- components/Footer.tsx (ALTERADO — fragmento de rodapé e ponto de inserção)
+- app/manifest.ts (ALTERADO — related_applications)
+
+COMPORTAMENTO:
+- Somente telas móveis; não há modal, pop-up nem posição fixa.
+- O banner aparece DEPOIS do elemento <footer> nas páginas públicas.
+- Android: tenta verificar via navigator.getInstalledRelatedApps.
+- Se o navegador confirmar instalação: botão "Abrir app" com link intent://.
+- Se não houver confirmação: botão "Instalar" ou "Ver app", para Play Store.
+- iOS: detecção preparada mas convite desligado.
+- A antiga seção "Leve os achados com você" fica visível no desktop;
+  no celular, o novo banner evita a duplicidade visual.
+
+PASSOS PARA APLICAR:
+1. Faça um backup da pasta do site e trabalhe no projeto ATUAL (GitHub Desktop).
+2. Copie os três arquivos deste ZIP preservando as pastas.
+3. IMPORTANTE: se Footer.tsx ou app/manifest.ts tiverem mudanças mais
+   recentes que este backup, faça a MESCLAGEM dessas alterações,
+   não substitua cegamente os arquivos.
+4. Se o seu site ATUAL contém o antigo pop-up de instalação Android,
+   desative o componente antigo para não exibir os dois convites.
+   Ele não consta no ZIP-base enviado para esta correção, portanto
+   não foi possível removê-lo automaticamente.
+5. Execute npm install (se necessário), npm run typecheck e npm run build.
+6. Teste no Android Chrome/Samsung Internet, com e sem app instalado.
+7. GitHub Desktop: Commit to main > Push origin; aguarde Vercel concluir.
+
+ATENÇÃO — ASSOCIAÇÃO DO APP ANDROID É OBRIGATÓRIA:
+O website sozinho NÃO pode garantir a detecção de um app já instalado.
+O app Android com package com.achadodoale.app deve declarar uma associação
+verificada com https://achadosdoale.com em seu AndroidManifest.xml e
+strings.xml usando asset_statements / Digital Asset Links.
+Se o app já estiver publicado sem esta declaração, é necessária uma
+atualização DO APP para o navegador retornar uma confirmação positiva.
+Também é necessário que o app trate o link HTTPS com categoria BROWSABLE
+para o botão "Abrir app" poder iniciá-lo. Caso contrário o navegador
+poderá abrir a Play Store ou permanecer na página.
+
+EXEMPLO NO APP ANDROID (verifique manifest/strings existentes primeiro):
+AndroidManifest.xml, dentro da tag <application>:
+  <meta-data android:name="asset_statements"
+             android:resource="@string/asset_statements" />
+strings.xml:
+  <string name="asset_statements">[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://achadosdoale.com\"}}]</string>
+
+Para App Links Android verificados, configure assetlinks.json com o SHA-256
+VERDADEIRO do certificado de assinatura da Google Play. Não inclua SHA-256
+inventado. A configuração da Activity com intent-filter VIEW,
+DEFAULT, BROWSABLE e autoVerify é uma modificação do projeto Android.
+
+Para conferência da API:
+https://developer.chrome.com/docs/capabilities/get-installed-related-apps
+https://developer.chrome.com/docs/android/intents
+
+COMMIT SUGERIDO:
+feat: adiciona banner Android após rodapé e prepara detecção de app instalado
+
+TESTES DE EXECUÇÃO:
+- Arquivos modificados e integridade do ZIP: verificados.
+- Compilação Next.js: depende de npm install no seu projeto.
+- Detecção real/abertura do app: depende das declarações no Android e de teste físico.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Container from "./Container";
+import AndroidAppFooterBanner from "./AndroidAppFooterBanner";
 import { LINK_CANAL_WHATSAPP, REDES_SOCIAIS } from "@/lib/seo-brand";
 
 const INSTAGRAM_ALEXANDRE = "https://www.instagram.com/alexandre_a7x/";
@@ -73,6 +74,7 @@ export default function Footer({
     : [...redesRodape, { nome: "WhatsApp", url: LINK_CANAL_WHATSAPP }];
 
   return (
+    <>
     <footer className="mt-6 border-t border-white/5 bg-bg-secondary px-4 py-7 text-center">
       <Container>
         {destacarInstagramProjeto && instagramProjeto && (
@@ -130,7 +132,7 @@ export default function Footer({
         )}
 
         {/* Links oficiais dos aplicativos, sempre presentes no rodapé público. */}
-        <section aria-labelledby="apps-download-title" className="mx-auto mt-7 max-w-[620px] rounded-[22px] border border-white/10 bg-[#102640] px-4 py-5 shadow-[0_10px_32px_rgba(0,0,0,.16)] sm:px-6">
+        <section aria-labelledby="apps-download-title" className="mx-auto mt-7 hidden max-w-[620px] rounded-[22px] md:block border border-white/10 bg-[#102640] px-4 py-5 shadow-[0_10px_32px_rgba(0,0,0,.16)] sm:px-6">
           <p id="apps-download-title" className="font-display text-base font-bold text-white">
             Leve os achados com você
           </p>
@@ -213,5 +215,7 @@ export default function Footer({
         </Link>
       </Container>
     </footer>
+    <AndroidAppFooterBanner />
+    </>
   );
 }
