@@ -1,0 +1,12 @@
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -82,6 +82,9 @@
+ }) {
+   return (
+     <html lang="pt-BR" className={`${baloo.variable} ${inter.variable}`}>
++      <head>
++        <meta name="impact-site-verification" value="4ede9b56-c737-4654-bc16-fe2081d0f782" />
++      </head>
+       {GA_ID ? (
+         <>
+           <Script id="ga4-consent-default" strategy="beforeInteractive">

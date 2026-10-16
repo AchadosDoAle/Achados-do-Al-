@@ -1,30 +1,25 @@
-ACHADOS DO ALÊ — BOTÕES DE DOWNLOAD NO RODAPÉ + PÁGINA iOS
+PATCH DE VERIFICACAO IMPACT - ACHADOS DO ALE
 
-ALTERAÇÕES
-- No rodapé das páginas públicas: botão "Baixar Android", abrindo a Play Store oficial.
-  https://play.google.com/store/apps/details?id=com.achadodoale.app
-- Botão "App para iOS" que abre a página /app/ios no mesmo site.
-- Página /app/ios: título EM BREVE! acima de um GIF animado criado para a página,
-  com ilustração de prédio em construção e guindaste, além de link para a Home.
-- Identidade azul-marinho/dourado, sem interferir na barra de navegação móvel
-  que já é fixa na parte inferior da tela.
-- A seção de downloads fica sempre no rodapé reutilizado por todas as páginas
-  públicas. NÃO é uma barra flutuante cobrindo o conteúdo da tela.
-- Nenhum SQL, mudança no Supabase ou nos aplicativos é necessária.
+Objetivo: gerar exatamente a tag HTML solicitada no <head> do site:
+<meta name="impact-site-verification" value="4ede9b56-c737-4654-bc16-fe2081d0f782" />
 
-INSTALAÇÃO
-1. EXTRAIA o ZIP e COPIE as pastas 'components', 'app' e 'public' para a
-   RAIZ do projeto do seu site (onde está package.json).
-2. Autorize a substituição do arquivo 'components/Footer.tsx'.
-3. A página 'app/app/ios/page.tsx' e a imagem em 'public' são NOVAS.
-4. Confira as mudanças no GitHub Desktop.
-5. Summary: Adiciona botões dos apps Android e iOS no rodapé
-6. Description: Inclui acesso à Play Store e cria página EM BREVE para iOS
-   com GIF animado, preservando a navegação móvel.
-7. Commit to main, Push origin e aguarde a Vercel.
-8. Teste o rodapé em desktop e celular, o botão Android e a rota /app/ios.
+FORMA MAIS SEGURA (nao sobrescreve o projeto):
+1. Extraia este ZIP.
+2. Copie o arquivo Aplicar-Impact.ps1 para a PASTA RAIZ do projeto, onde fica package.json.
+3. Abra o PowerShell NESSA pasta e execute:
+   powershell -ExecutionPolicy Bypass -File .\Aplicar-Impact.ps1
+4. Confira a alteracao em app/layout.tsx no GitHub Desktop.
+5. Remova o arquivo Aplicar-Impact.ps1 e o backup app/layout.tsx.impact.bak antes do commit, se nao quiser inclui-los.
+6. Faca Commit e Push origin; aguarde o deploy da Vercel.
+7. Abra https://achadosdoale.com e inspecione o codigo-fonte HTML (Ctrl+U), procurando impact-site-verification.
 
-VERIFICAÇÃO
-- A sintaxe TSX foi verificada com o compilador TypeScript.
-- O GIF foi verificado com Pillow como animação válida.
-- O build completo da aplicação deve ser confirmado pela Vercel.
+ALTERACAO MANUAL (ainda mais simples):
+No app/layout.tsx, na funcao RootLayout, insira o seguinte logo apos a tag <html ...>:
+      <head>
+        <meta name="impact-site-verification" value="4ede9b56-c737-4654-bc16-fe2081d0f782" />
+      </head>
+
+Incluido: alteracao-impact.patch, como referencia de diferencas em relacao a um layout anterior.
+
+IMPORTANTE: Este ZIP NAO substitui arquivos inteiros do seu site. O script atua sobre
+seu projeto atual. Ele nao resolve outros erros de compilacao eventualmente existentes.
