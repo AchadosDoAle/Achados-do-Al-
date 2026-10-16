@@ -1,25 +1,15 @@
-PATCH DE VERIFICACAO IMPACT - ACHADOS DO ALE
+PATCH IMPACT - SUBSTITUI META TAG POR SCRIPT
 
-Objetivo: gerar exatamente a tag HTML solicitada no <head> do site:
-<meta name="impact-site-verification" value="4ede9b56-c737-4654-bc16-fe2081d0f782" />
-
-FORMA MAIS SEGURA (nao sobrescreve o projeto):
 1. Extraia este ZIP.
-2. Copie o arquivo Aplicar-Impact.ps1 para a PASTA RAIZ do projeto, onde fica package.json.
-3. Abra o PowerShell NESSA pasta e execute:
-   powershell -ExecutionPolicy Bypass -File .\Aplicar-Impact.ps1
-4. Confira a alteracao em app/layout.tsx no GitHub Desktop.
-5. Remova o arquivo Aplicar-Impact.ps1 e o backup app/layout.tsx.impact.bak antes do commit, se nao quiser inclui-los.
-6. Faca Commit e Push origin; aguarde o deploy da Vercel.
-7. Abra https://achadosdoale.com e inspecione o codigo-fonte HTML (Ctrl+U), procurando impact-site-verification.
+2. Copie Aplicar-Impact-Script.ps1 para a pasta raiz do site (onde esta package.json).
+3. Abra PowerShell nessa pasta e execute:
+   powershell -ExecutionPolicy Bypass -File .\Aplicar-Impact-Script.ps1
+4. Confira a diferenca em app/layout.tsx ou src/app/layout.tsx.
+5. Nao inclua o arquivo .impact.bak no commit.
+6. Faca Commit e Push origin no GitHub Desktop.
 
-ALTERACAO MANUAL (ainda mais simples):
-No app/layout.tsx, na funcao RootLayout, insira o seguinte logo apos a tag <html ...>:
-      <head>
-        <meta name="impact-site-verification" value="4ede9b56-c737-4654-bc16-fe2081d0f782" />
-      </head>
-
-Incluido: alteracao-impact.patch, como referencia de diferencas em relacao a um layout anterior.
-
-IMPORTANTE: Este ZIP NAO substitui arquivos inteiros do seu site. O script atua sobre
-seu projeto atual. Ele nao resolve outros erros de compilacao eventualmente existentes.
+O script remove a meta impact-site-verification antiga e adiciona
+o script Impact solicitado ao head do layout, sem substituir o restante.
+O script remoto podera transformar links e rastrear impressoes;
+verifique suas preferencias de consentimento e politica de privacidade.
+Este patch nao resolve outros erros de build do projeto.
