@@ -1,9 +1,25 @@
-PATCH VISUAL — Cupom Relâmpago (site web) — 09/10/2026
+CORRECAO VERCEL - ACHADOS DO ALE
 
-1) Extraia os dois arquivos preservando as pastas app/ e components/ na raiz de seu repositório Achado do Alê.
-2) A entrada fade/slide (animar-entrada) fica somente no contêiner EXTERNO quando o componente é montado (abertura/atualização da página).
-3) O hover no card interno relâmpago executa SOMENTE tremor horizontal discreto; foi removido hover:-translate-y-1. É respeitado prefers-reduced-motion.
-4) Não toca no Supabase nem altera apps.
-5) GitHub Desktop — Summary: Corrige animação dos cupons relâmpago
-Description: Separa a animação de entrada do hover, removendo a subida e o fade repetidos e preservando apenas a tremidinha discreta.
-6) Commit to main -> Push origin -> aguardar Vercel. Confira teste de mouse + refresh.
+O Next.js estava tentando validar o codigo TypeScript de uma Supabase Edge Function escrita em Deno.
+
+COMO APLICAR:
+1. Abra a pasta raiz do projeto do site, onde estao package.json e tsconfig.json.
+2. Faca backup do tsconfig.json existente.
+3. Substitua apenas o tsconfig.json pelo que acompanha este pacote.
+4. Abra o GitHub Desktop, confira que somente o tsconfig.json mudou.
+5. Commit: fix: exclui Edge Functions Deno da verificacao TypeScript do Next.js
+6. Clique em Push origin. Aguarde a nova compilacao na Vercel.
+
+O QUE FOI ALTERADO:
+- No tsconfig.json, a propriedade exclude passou de:
+  ["node_modules"]
+  para:
+  ["node_modules", "supabase/functions/**"]
+
+Nenhuma Edge Function foi removida: o arquivo supabase/functions/delete-my-account/index.ts
+continua presente no repositorio e deve ser implantado separadamente no Supabase.
+O sistema de tipagem do Next.js continua ativo para o restante do site.
+
+VALIDACAO:
+- tsconfig.json valido, exclui o arquivo Deno do conjunto TS do site.
+- Compilacao completa na Vercel ainda deve ser feita para confirmar eventuais outros erros.
