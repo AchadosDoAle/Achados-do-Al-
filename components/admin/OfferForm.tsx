@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Campo, classeInput } from "./Campo";
 import {
@@ -126,6 +126,25 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const router = useRouter();
   const supabase = criarClienteNavegador();
   const [valores, setValores] = useState<OfertaFormValues>(ofertaExistente ?? VALORES_INICIAIS);
+  // Conta os outros destaques com prazo vigente para orientar o administrador.
+  const [outrosDestaquesAtivos, setOutrosDestaquesAtivos] = useState<number | null>(null);
+  useEffect(() => {
+    let montado = true;
+    async function consultarDestaques() {
+      let consulta = supabase.from("offers")
+        .select("id", { count: "exact", head: true })
+        .eq("destaque_imperdivel", true)
+        .gt("destaque_ate", new Date().toISOString());
+      if (ofertaExistente?.id) consulta = consulta.neq("id", ofertaExistente.id);
+      const { count, error } = await consulta;
+      if (montado && !error) setOutrosDestaquesAtivos(count ?? 0);
+    }
+    void consultarDestaques();
+    return () => { montado = false; };
+    // A consulta é necessária só ao abrir o formulário ou trocar a oferta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ofertaExistente?.id]);
+
   const statusOpcoes = STATUS_OPCOES_BASE.includes(valores.status)
     ? STATUS_OPCOES_BASE
     : [valores.status, ...STATUS_OPCOES_BASE];
@@ -252,6 +271,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   }
 
   function atualizarDestaqueImperdivel(ativo: boolean) {
+    if (ativo && outrosDestaquesAtivos !== null && outrosDestaquesAtivos >= 5) {
+      setErros((atual) => ({ ...atual, destaqueAte: "O limite de 5 ofertas em destaque já foi atingido." }));
+      return;
+    }
     setValores((atual) => ({
       ...atual,
       destaqueImperdivel: ativo,
@@ -382,6 +405,9 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       novosErros.imagemPrincipal = "Cole o link completo da imagem (http:// ou https://).";
     }
     if (valores.destaqueImperdivel) {
+      if (outrosDestaquesAtivos !== null && outrosDestaquesAtivos >= 5) {
+        novosErros.destaqueAte = "O carrossel já tem 5 ofertas em destaque. Desmarque uma antes de adicionar outra.";
+      }
       if (!valores.destaqueAte) {
         novosErros.destaqueAte = "Informe até quando a promoção ficará em destaque.";
       } else {
@@ -405,6 +431,24 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     setSalvando(true);
     setErroSalvar("");
     try {
+      if (valores.destaqueImperdivel) {
+        let consulta = supabase.from("offers")
+          .select("id", { count: "exact", head: true })
+          .eq("destaque_imperdivel", true)
+          .gt("destaque_ate", new Date().toISOString());
+        if (ofertaExistente?.id) consulta = consulta.neq("id", ofertaExistente.id);
+        const { count, error } = await consulta;
+        if (error) throw error;
+        setOutrosDestaquesAtivos(count ?? 0);
+        if ((count ?? 0) >= 5) {
+          setErros((atual) => ({
+            ...atual,
+            destaqueAte: "Já existem 5 destaques vigentes. Desmarque um no painel antes de continuar.",
+          }));
+          setErroSalvar("Limite de 5 ofertas imperdíveis atingido.");
+          return;
+        }
+      }
       const valoresParaSalvar = normalizarTextosOferta(valores);
       if (ofertaExistente) {
         await atualizarOferta(supabase, ofertaExistente.id, valoresParaSalvar);
@@ -418,7 +462,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       router.refresh();
     } catch (erro) {
       console.error(erro);
-      setErroSalvar("Não foi possível salvar a oferta. Confira sua conexão e tente de novo.");
+      const mensagem = erro instanceof Error ? erro.message : "";
+      setErroSalvar(/limite de 5|cinco destaques|5 destaques/i.test(mensagem)
+        ? "O limite de 5 ofertas imperdíveis foi atingido. Desmarque um destaque vigente para liberar espaço."
+        : "Não foi possível salvar a oferta. Confira sua conexão e tente de novo.");
     } finally {
       setSalvando(false);
     }
@@ -1019,8 +1066,13 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               <label className="flex cursor-pointer items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-ink">🔥 Promoção imperdível na Home</p>
+                  <p className="mt-1 text-xs font-semibold text-[#9a6811]" aria-live="polite">
+                    {outrosDestaquesAtivos === null
+                      ? "Verificando vagas no carrossel..."
+                      : `${Math.min(5, outrosDestaquesAtivos + (valores.destaqueImperdivel ? 1 : 0))}/5 destaques ocupados`}
+                  </p>
                   <p className="mt-0.5 text-xs leading-5 text-ink/55">
-                    Coloca esta oferta no quadro principal da Home. Ao ativar outro produto, o destaque anterior sai automaticamente.
+                    Adiciona este produto ao carrossel da Home por até 24 horas. Até 5 ofertas podem ficar em destaque ao mesmo tempo.
                   </p>
                 </div>
                 <span className="relative inline-flex h-7 w-12 shrink-0 items-center">

@@ -1,0 +1,50 @@
+ACHADOS DO ALE - PATCH CARROSSEL DE OFERTAS
+
+ALTERACOES
+- Card grande horizontal: foto a esquerda; loja, titulo, antigo riscado, preco atual e cupom a direita.
+- Contagem regressiva em tempo real para os destaques vigentes (ate 24h).
+- Mostra 1 card de cada vez e avanca automaticamente a cada 7 segundos.
+- Setas e indicadores clicaveis; pausa ao interagir pelo mouse ou teclado.
+- Ate 5 destaques simultaneos; expirou, sai do carrossel automaticamente.
+- Sem destaque ativo: mostra 5 ultimas ofertas publicadas e ainda validas.
+- Area hero da Home maior no computador, mobile responsivo.
+- Administrativo: indicador de vagas do carrossel e bloqueio da 6a oferta.
+- Banco: migracao SQL remove a regra antiga que desligava o destaque anterior.
+
+APLICACAO (sem substituir todo o site)
+1. Extraia o ZIP.
+2. Copie TODOS os arquivos e subpastas extraidos para a RAIZ de seu projeto do site
+   (mesmo local do package.json). O pacote nao contem arquivos de sistema existentes.
+3. De dois cliques em APLICAR-PATCH-CARROSSEL.cmd.
+4. O aplicador localiza e modifica apenas app/page.tsx, components/Hero.tsx,
+   components/admin/OfferForm.tsx e cria components/DestaquesCarousel.tsx e a migration SQL.
+   Se algum trecho foi alterado demais em seu projeto, ele aborta SEM alterar nada.
+5. Na SUPABASE: abra seu projeto > SQL Editor > New query.
+   Abra o arquivo supabase/migrations/20261016_permitir_5_destaques_imperdiveis.sql
+   no Bloco de Notas, copie TODO o texto e cole na consulta. Clique RUN.
+   Espere confirmar que executou sem erro. ISSO E OBRIGATORIO!
+6. Abra o GitHub Desktop. Verifique que nao ha alteracoes inesperadas.
+   Commit: feat: carrossel de 5 ofertas imperdiveis com cronometro
+   Clique Push origin para a Vercel publicar.
+7. Abra o site no computador e em celular, configure 2 ofertas no painel
+   (Admin > Ofertas > Editar > Promocao imperdivel na Home) e teste.
+
+CUIDADOS
+- Use somente no projeto que contem componentes/Hero.tsx e OfferForm.tsx da base fornecida.
+- Nao precisa copiar .env nem revelar chaves do Supabase.
+- O patch NAO altera nem corrige integracoes Impact, Android ou problemas de Deno em builds antigos.
+- O ZIP NAO contem o site todo. E uma atualizacao cirurgica e preserva o restante.
+- Nenhuma oferta ou cupom sera apagado pela migration SQL.
+- A regra no banco continua limitando a DURACAO maxima a 24 horas por destaque.
+- A mudanca so afeta o site publicado apos rodar o SQL e fazer push.
+- O instalador faz backup do que modificou em backup-patch-carrossel/;
+  nao envie esta pasta de backups ao GitHub.
+- Preferencialmente crie um commit/backup antes de aplicar.
+- Se o patch abortar por divergencia, nao substitua arquivos na marra:
+  envie a versao atual do projeto para fazermos a mesclagem.
+
+TESTES REALIZADOS
+- Arquivos TSX analisados com o transpiler TypeScript sem erros sintaticos.
+- Aplicador testado contra a versao de projeto enviada.
+- O ambiente de execucao nao dispunha das dependencias completas para build Next.js.
+- SQL requer execucao no Supabase e nao pode ser testado no banco de producao daqui.

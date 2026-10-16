@@ -41,8 +41,8 @@ export default async function HomePage({
   const ofertasAtivas = ofertas.filter(
     (oferta) => oferta.status === "publicada" && !ofertaEstaExpirada(oferta)
   );
-  const promocaoImperdivel = ofertasAtivas.find(destaqueImperdivelAtivo);
-  const ofertaDestaque = promocaoImperdivel ?? ofertasAtivas[0];
+  const destaques = ofertasAtivas.filter(destaqueImperdivelAtivo).slice(0, 5);
+  const recentes = ofertasAtivas.slice(0, 5);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -125,7 +125,7 @@ export default async function HomePage({
           </section>
         </Container>
       ) : (
-        <Hero ofertaDestaque={ofertaDestaque} promocaoImperdivel={Boolean(promocaoImperdivel)} />
+        <Hero destaques={destaques} recentes={recentes} />
       )}
       <section id="ofertas" className="scroll-mt-24">
         <OfertasGrid ofertas={ofertasAtivas} />
