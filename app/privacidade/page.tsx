@@ -244,6 +244,7 @@ export default function Page() {
               </p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>preferências locais e consentimento permanecem no dispositivo até serem apagados pelo usuário ou pela aplicação;</li>
+                <li>clientes que entrarem com Google podem solicitar a exclusão da conta e das preferências vinculadas pelo app ou pela página <a href="/excluir-conta" className="font-semibold text-gold underline">Excluir minha conta</a>;</li>
                 <li>o cookie técnico de prevenção de avisos repetidos pode permanecer por até 1 ano;</li>
                 <li>tokens de notificação podem ser mantidos enquanto forem válidos e necessários para notificações habilitadas;</li>
                 <li>contas administrativas são mantidas enquanto houver autorização de acesso e pelo tempo adicional necessário a segurança, auditoria ou obrigações legais;</li>

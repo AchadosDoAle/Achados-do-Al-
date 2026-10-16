@@ -18,11 +18,11 @@ type NavigatorWithRelatedApps = Navigator & {
   getInstalledRelatedApps?: () => Promise<RelatedApp[]>;
 };
 
-// O clique do usuário pode abrir o app SE ele tratar o endereço HTTPS abaixo.
-// A atividade Android deve permitir CATEGORY_BROWSABLE e o domínio precisa
-// estar associado ao app. Sem isso, o Chrome usa a URL de fallback.
+// Para abrir o aplicativo já instalado, usamos o scheme declarado no Expo:
+// achadodoale://home. O Chrome pode bloquear intent:// em alguns contextos;
+// a URL da Play Store permanece como fallback.
 const APP_OPEN_URL =
-  `intent://achadosdoale.com/#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
+  `intent://home#Intent;scheme=achadodoale;package=${ANDROID_PACKAGE};` +
   `S.browser_fallback_url=${encodeURIComponent(PLAY_STORE_URL)};end`;
 
 export default function AndroidAppFooterBanner() {

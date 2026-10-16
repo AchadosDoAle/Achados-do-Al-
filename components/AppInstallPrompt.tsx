@@ -20,19 +20,40 @@ function detectPlatform(): Platform {
 export default function AppInstallPrompt() {
   const [platform, setPlatform] = useState<Platform>("other");
   const [visible, setVisible] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
+    let vivo = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const current = detectPlatform();
     setPlatform(current);
     if (current !== "android" && !(current === "ios" && IOS_PROMPT_ENABLED && IOS_URL)) return;
-    // Evita convidar usuários que já acessam o site dentro do app Android.
-    if (typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone)) return;
+    if (window.matchMedia("(display-mode: standalone)").matches ||
+        (navigator as Navigator & { standalone?: boolean }).standalone) return;
     try {
-      const until = Number(localStorage.getItem(STORAGE_KEY) || 0);
-      if (until > Date.now()) return;
-    } catch { /* Navegação privada: exibir normalmente. */ }
-    const timer = window.setTimeout(() => setVisible(true), 3500);
-    return () => window.clearTimeout(timer);
+      if (Number(localStorage.getItem(STORAGE_KEY) || 0) > Date.now()) return;
+    } catch { /* Armazenamento indisponível. */ }
+
+    const preparar = async () => {
+      if (current === "android") {
+        const navegador = navigator as Navigator & {
+          getInstalledRelatedApps?: () => Promise<Array<{ platform?: string; id?: string }>>;
+        };
+        if (typeof navegador.getInstalledRelatedApps === "function") {
+          try {
+            const apps = await navegador.getInstalledRelatedApps();
+            if (!vivo) return;
+            if (apps.some(a => a.platform === "play" && a.id === "com.achadodoale.app")) {
+              setInstalled(true);
+              return; // Não oferecer instalação a quem já possui o aplicativo.
+            }
+          } catch { /* Alguns navegadores não suportam a verificação. */ }
+        }
+      }
+      if (vivo) timer = window.setTimeout(() => { if (vivo) setVisible(true); }, 3500);
+    };
+    void preparar();
+    return () => { vivo = false; if (timer) window.clearTimeout(timer); };
   }, []);
 
   function dismiss() {
@@ -40,7 +61,7 @@ export default function AppInstallPrompt() {
     try { localStorage.setItem(STORAGE_KEY, String(Date.now() + DISMISS_DAYS * 86400000)); } catch { /* Storage indisponível */ }
   }
 
-  if (!visible || (platform !== "android" && !(platform === "ios" && IOS_PROMPT_ENABLED && IOS_URL))) return null;
+  if (!visible || installed || (platform !== "android" && !(platform === "ios" && IOS_PROMPT_ENABLED && IOS_URL))) return null;
   const url = platform === "android" ? ANDROID_URL : IOS_URL;
 
   return (
