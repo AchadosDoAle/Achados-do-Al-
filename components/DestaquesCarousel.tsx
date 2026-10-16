@@ -6,10 +6,11 @@ import type { FocusEvent } from "react";
 import type { Oferta } from "@/lib/types";
 
 const INTERVALO_SLIDE = 7000;
-const DURACAO_TRANSICAO = 680;
+const DURACAO_TRANSICAO = 260;
 const MAXIMO_CARDS = 5;
 type Direcao = 1 | -1;
-type CardSaindo = { oferta: Oferta; posicao: number; eraDestaque: boolean };
+type SlideSnapshot = { oferta: Oferta; posicao: number; eraDestaque: boolean };
+type TransicaoSlide = { origem: SlideSnapshot; destino: SlideSnapshot; direcao: Direcao };
 
 function precoEmReais(valor: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
@@ -118,8 +119,8 @@ export default function DestaquesCarousel({
   const [agora, setAgora] = useState(0);
   const [indice, setIndice] = useState(0);
   const [pausado, setPausado] = useState(false);
-  const [direcao, setDirecao] = useState<Direcao>(1);
-  const [saindo, setSaindo] = useState<CardSaindo | null>(null);
+  const [transicao, setTransicao] = useState<TransicaoSlide | null>(null);
+  const transicaoRef = useRef<TransicaoSlide | null>(null);
   const transicaoAtiva = useRef(false);
   const timerTransicao = useRef<number | null>(null);
 
@@ -146,21 +147,47 @@ export default function DestaquesCarousel({
   const atualRef = useRef({ slides, posicao, mostrandoDestaques });
   atualRef.current = { slides, posicao, mostrandoDestaques };
 
+  const finalizarTransicao = useCallback(() => {
+    const movimento = transicaoRef.current;
+    if (!movimento) return;
+    transicaoRef.current = null;
+    transicaoAtiva.current = false;
+    if (timerTransicao.current !== null) {
+      window.clearTimeout(timerTransicao.current);
+      timerTransicao.current = null;
+    }
+    // Atualiza o card ativo e remove a trilha em uma única renderização:
+    // nenhum frame intermediário vazio e nenhuma mudança na altura do card.
+    setIndice(movimento.destino.posicao);
+    setTransicao(null);
+  }, []);
+
   const navegar = useCallback((destino: number, sentido: Direcao) => {
     const atual = atualRef.current;
     const quantidade = atual.slides.length;
     if (quantidade < 2 || transicaoAtiva.current) return;
     const proximoIndice = ((destino % quantidade) + quantidade) % quantidade;
     if (proximoIndice === atual.posicao) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setSaindo(null); setIndice(proximoIndice); return; }
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setIndice(proximoIndice);
+      return;
+    }
+    const movimento: TransicaoSlide = {
+      origem: { oferta: atual.slides[atual.posicao], posicao: atual.posicao, eraDestaque: atual.mostrandoDestaques },
+      destino: { oferta: atual.slides[proximoIndice], posicao: proximoIndice, eraDestaque: atual.mostrandoDestaques },
+      direcao: sentido,
+    };
     transicaoAtiva.current = true;
-    setSaindo({ oferta: atual.slides[atual.posicao], posicao: atual.posicao, eraDestaque: atual.mostrandoDestaques });
-    setDirecao(sentido);
-    setIndice(proximoIndice);
+    transicaoRef.current = movimento;
+    setTransicao(movimento);
+    // Segurança para abas em segundo plano que não emitirem animationend.
+    timerTransicao.current = window.setTimeout(finalizarTransicao, DURACAO_TRANSICAO + 160);
+  }, [finalizarTransicao]);
+
+  useEffect(() => () => {
     if (timerTransicao.current !== null) window.clearTimeout(timerTransicao.current);
-    timerTransicao.current = window.setTimeout(() => { setSaindo(null); transicaoAtiva.current = false; timerTransicao.current = null; }, DURACAO_TRANSICAO);
   }, []);
-  useEffect(() => () => { if (timerTransicao.current !== null) window.clearTimeout(timerTransicao.current); }, []);
+
   useEffect(() => {
     if (total < 2 || pausado) return;
     const timer = window.setInterval(() => { if (document.visibilityState !== "hidden") navegar(atualRef.current.posicao + 1, 1); }, INTERVALO_SLIDE);
@@ -186,22 +213,47 @@ export default function DestaquesCarousel({
         {oferta ? (
           <>
             <div className="relative isolate h-[635px] overflow-hidden rounded-2xl sm:h-[390px] lg:h-[408px]" aria-live="off">
-              {saindo && (
-                <div key={`saida-${saindo.oferta.id}`} aria-hidden="true" className={`pointer-events-none absolute inset-0 z-10 h-full ale-carousel-saida-${direcao === 1 ? "esquerda" : "direita"}`}>
-                  <SlideCard oferta={saindo.oferta} posicao={saindo.posicao} eraDestaque={saindo.eraDestaque} agora={agora} saindo />
+              {transicao ? (
+                <div
+                  key={`slide-${transicao.origem.oferta.id}-${transicao.destino.oferta.id}-${transicao.direcao}`}
+                  className={`flex h-full w-[200%] will-change-transform ${transicao.direcao === 1 ? "ale-trilho-proximo" : "ale-trilho-anterior"}`}
+                  onAnimationEnd={(evento) => {
+                    if (evento.target === evento.currentTarget) finalizarTransicao();
+                  }}
+                >
+                  {transicao.direcao === 1 ? (
+                    <>
+                      <div className="h-full w-1/2 min-w-0 shrink-0" aria-hidden="true">
+                        <SlideCard {...transicao.origem} agora={agora} saindo />
+                      </div>
+                      <div className="h-full w-1/2 min-w-0 shrink-0">
+                        <SlideCard {...transicao.destino} agora={agora} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-full w-1/2 min-w-0 shrink-0">
+                        <SlideCard {...transicao.destino} agora={agora} />
+                      </div>
+                      <div className="h-full w-1/2 min-w-0 shrink-0" aria-hidden="true">
+                        <SlideCard {...transicao.origem} agora={agora} saindo />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="h-full w-full">
+                  <SlideCard oferta={oferta} posicao={posicao} eraDestaque={mostrandoDestaques} agora={agora} />
                 </div>
               )}
-              <div key={`entrada-${oferta.id}-${indice}`} className={`h-full ${saindo ? `ale-carousel-entrada-${direcao === 1 ? "direita" : "esquerda"}` : ""}`}>
-                <SlideCard oferta={oferta} posicao={posicao} eraDestaque={mostrandoDestaques} agora={agora} />
-              </div>
             </div>
 
             {total > 1 && (
               <div className="mt-5 flex items-center justify-between gap-4 border-t border-white/10 pt-4">
                 <button type="button" onClick={anterior} aria-label="Oferta anterior" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-xl font-bold text-text transition hover:bg-white/15">‹</button>
-                <div className="flex flex-wrap items-center justify-center gap-2" aria-label={`${posicao + 1} de ${total} ofertas`}>
+                <div className="flex flex-wrap items-center justify-center gap-2" aria-label={`${transicao ? transicao.destino.posicao + 1 : posicao + 1} de ${total} ofertas`}>
                   {slides.map((item, i) => (
-                    <button key={item.id} type="button" onClick={() => navegar(i, i >= posicao ? 1 : -1)} aria-label={`Ver oferta ${i + 1}`} aria-current={posicao === i ? "true" : undefined} className={`h-2.5 rounded-full transition-all ${posicao === i ? "w-7 bg-gold" : "w-2.5 bg-white/35 hover:bg-white/60"}`} />
+                    <button key={item.id} type="button" onClick={() => navegar(i, i >= posicao ? 1 : -1)} aria-label={`Ver oferta ${i + 1}`} aria-current={(transicao ? transicao.destino.posicao : posicao) === i ? "true" : undefined} className={`h-2.5 rounded-full transition-all ${posicao === i ? "w-7 bg-gold" : "w-2.5 bg-white/35 hover:bg-white/60"}`} />
                   ))}
                 </div>
                 <button type="button" onClick={proximo} aria-label="Próxima oferta" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-xl font-bold text-text transition hover:bg-white/15">›</button>
@@ -217,15 +269,24 @@ export default function DestaquesCarousel({
         )}
       </div>
       <style jsx global>{`
-        @keyframes ale-entra-direita { from { opacity: 0; transform: translate3d(12%,0,0) scale(.985); } to { opacity: 1; transform: none; } }
-        @keyframes ale-entra-esquerda { from { opacity: 0; transform: translate3d(-12%,0,0) scale(.985); } to { opacity: 1; transform: none; } }
-        @keyframes ale-sai-esquerda { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(-12%,0,0) scale(.985); } }
-        @keyframes ale-sai-direita { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(12%,0,0) scale(.985); } }
-        .ale-carousel-entrada-direita { animation: ale-entra-direita 680ms cubic-bezier(.22,1,.36,1) both; }
-        .ale-carousel-entrada-esquerda { animation: ale-entra-esquerda 680ms cubic-bezier(.22,1,.36,1) both; }
-        .ale-carousel-saida-esquerda { animation: ale-sai-esquerda 680ms cubic-bezier(.4,0,.2,1) both; }
-        .ale-carousel-saida-direita { animation: ale-sai-direita 680ms cubic-bezier(.4,0,.2,1) both; }
-        @media (prefers-reduced-motion: reduce) { .ale-carousel-entrada-direita, .ale-carousel-entrada-esquerda, .ale-carousel-saida-esquerda, .ale-carousel-saida-direita { animation: none !important; } }
+        /* Dois cards ocupam a mesma trilha horizontal: movimento real, sem fade ou zoom. */
+        @keyframes ale-trilho-proximo {
+          from { transform: translate3d(0, 0, 0); }
+          to { transform: translate3d(-50%, 0, 0); }
+        }
+        @keyframes ale-trilho-anterior {
+          from { transform: translate3d(-50%, 0, 0); }
+          to { transform: translate3d(0, 0, 0); }
+        }
+        .ale-trilho-proximo {
+          animation: ale-trilho-proximo 260ms cubic-bezier(.2,.75,.3,1) both;
+        }
+        .ale-trilho-anterior {
+          animation: ale-trilho-anterior 260ms cubic-bezier(.2,.75,.3,1) both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ale-trilho-proximo, .ale-trilho-anterior { animation: none !important; }
+        }
       `}</style>
     </div>
   );
