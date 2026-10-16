@@ -22,4 +22,23 @@ const nextConfig = {
   },
 };
 
+
+// BEGIN ACHADOS_DO_ALE_IMPACT_URL_VERIFICATION
+// A URL publica contem ':'; o caractere precisa ser escapado no matcher do Next.js.
+const impactVerificationRewrite = {
+  source: "/Impact-Site-Verification\\:4ede9b56-c737-4654-bc16-fe2081d0f782",
+  destination: "/impact-site-verification.html",
+};
+const rewritesAnterioresImpact = nextConfig.rewrites?.bind(nextConfig);
+nextConfig.rewrites = async () => {
+  const atuais = rewritesAnterioresImpact ? await rewritesAnterioresImpact() : [];
+  if (Array.isArray(atuais)) return [impactVerificationRewrite, ...atuais];
+  return {
+    beforeFiles: [impactVerificationRewrite, ...(atuais.beforeFiles || [])],
+    afterFiles: atuais.afterFiles || [],
+    fallback: atuais.fallback || [],
+  };
+};
+// END ACHADOS_DO_ALE_IMPACT_URL_VERIFICATION
+
 export default nextConfig;

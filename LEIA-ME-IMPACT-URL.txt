@@ -1,0 +1,43 @@
+ACHADOS DO ALE — VERIFICACAO IMPACT POR URL (SEM META TAG / SEM SCRIPT)
+===================================================================
+
+OBJETIVO
+- Remover a meta antiga: impact-site-verification.
+- Remover o script anterior que carrega utt.impactcdn.com/P-A7982813-36c6-4d24-8deb-feba17dc957b1.js.
+- Publicar o conteudo de verificacao no endereco EXATO:
+  https://achadosdoale.com/Impact-Site-Verification:4ede9b56-c737-4654-bc16-fe2081d0f782
+- Nao alterar o restante do site, seus links de afiliados ou consentimento de cookies.
+
+COMO APLICAR NO WINDOWS (GITHUB DESKTOP)
+1. Extraia o ZIP.
+2. Copie os dois arquivos para a PASTA PRINCIPAL do projeto, ao lado do package.json:
+   - APLICAR-VERIFICACAO-IMPACT.cmd
+   - Aplicar-Verificacao-Impact.cjs
+3. De dois cliques em APLICAR-VERIFICACAO-IMPACT.cmd.
+   (Ou abra PowerShell na pasta principal e execute:
+    node .\Aplicar-Verificacao-Impact.cjs )
+4. Confirme que a janela exibiu 'Verificacao Impact aplicada com sucesso!'.
+5. No GitHub Desktop, revise e publique APENAS as alteracoes no projeto:
+   - app/layout.tsx (se tinha scripts/meta antigas)
+   - next.config.mjs
+   - public/impact-site-verification.html
+6. Commit sugerido:
+   fix: substitui tags Impact por verificacao de URL
+7. Clique em Push origin e aguarde a Vercel concluir a publicacao.
+8. Abra no navegador o endereco EXATO informado acima.
+   A pagina deve aparecer com o texto:
+   Impact-Site-Verification:4ede9b56-c737-4654-bc16-fe2081d0f782
+9. Na Impact, escolha o metodo 'Editing content' / 'Editar conteudo',
+   cole o endereco EXATO no campo URL e envie para verificacao.
+
+OBSERVACOES IMPORTANTES
+- O endereco nao funcionara antes do deploy, nem somente ao abrir o arquivo local.
+- No Windows, ':' nao pode aparecer no nome de arquivo. Por isso o patch cria
+  um arquivo HTML seguro e uma 'rewrite' do Next.js que atende ao URL solicitado.
+- Se a Vercel falhar no build devido a erros em supabase/functions ou outros arquivos,
+  a verificacao nao sera publicada ate que o build seja corrigido.
+- O patch inclui copia de seguranca dos arquivos alterados em uma pasta temporaria
+  fora do repositorio, cujo caminho e exibido apos executar.
+- O patch nao promete validar a conta: a Impact precisa conferir o dominio.
+- Se o script acusar estrutura de arquivo diferente, ele nao prosseguira para evitar
+  sobrescrever personalizacoes recentes. Envie os arquivos citados para ajuste.
