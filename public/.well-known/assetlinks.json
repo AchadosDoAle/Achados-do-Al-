@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.achadodoale.app",
+      "sha256_cert_fingerprints": [
+        "89:78:D0:E8:D7:27:49:AF:73:B7:E2:60:16:31:0A:89:B9:52:80:49:E1:07:4F:25:E4:A2:E7:79:C5:2E:ED:C3"
+      ]
+    }
+  }
+]

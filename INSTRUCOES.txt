@@ -1,0 +1,15 @@
+ACHADOS DO ALÊ — ASSOCIAR SITE E APP ANDROID (GOOGLE PLAY)
+
+1. Extraia este ZIP.
+2. Na pasta atual do seu projeto site (com package.json e .git), copie a pasta public extraída para dentro da pasta do projeto, aceitando mesclar (NÃO apague outros arquivos public).
+3. Verifique a criação de public/.well-known/assetlinks.json.
+4. No GitHub Desktop, faça commit e Push origin.
+5. Após o deploy Vercel, acesse https://achadosdoale.com/.well-known/assetlinks.json . Deve abrir como JSON (HTTP 200) sem redirecionamento.
+6. Teste detecção em Chrome Android depois que o app Android 2.3 Build 30 estiver instalado (tem asset_statements).
+
+Commit sugerido: feat: associa dominio ao app Android com SHA-256 do Google Play
+
+A SHA-256 usada veio da seção Chave de assinatura do app, em uso, Google Play Console.
+Pacote Android: com.achadodoale.app.
+Atenção: não copie a chave de upload e não crie uma nova chave de assinatura.
+A detecção no Chrome depende também do app atualizado e do web manifest relacionado.
