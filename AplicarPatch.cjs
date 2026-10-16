@@ -82,7 +82,7 @@ try {
     process.exit(0);
   }
   const momento = new Date().toISOString().replace(/[:.]/g,'-');
-  const backup = path.join(raiz, 'backup-patch-carrossel', momento);
+  const backup = path.join(path.dirname(raiz), path.basename(raiz) + '-backups-carrossel', momento);
   // Validação concluída: salva todos os backups antes de escrever.
   for (const destino of escritas.keys()) {
     if (!fs.existsSync(destino)) continue;

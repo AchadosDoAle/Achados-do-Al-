@@ -7,3 +7,6 @@ npm-debug.log*
 .DS_Store
 
 *.tsbuildinfo
+
+# Copias antigas do patch (nao publicar)
+/backup-patch-carrossel/

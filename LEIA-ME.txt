@@ -1,15 +1,35 @@
-PATCH IMPACT - SUBSTITUI META TAG POR SCRIPT
+ACHADOS DO ALE — CORRECAO DO ERRO NO BUILD DA VERCEL
 
+ERRO:
+./backup-patch-carrossel/.../app/page.tsx:128:15
+Property 'ofertaDestaque' does not exist on type '{ destaques: Oferta[]; recentes: Oferta[]; }'.
+
+CAUSA: backups do codigo antigo foram criados dentro da pasta do site.
+O TypeScript os estava tratando como codigo de producao.
+
+COMO CORRIGIR:
 1. Extraia este ZIP.
-2. Copie Aplicar-Impact-Script.ps1 para a pasta raiz do site (onde esta package.json).
-3. Abra PowerShell nessa pasta e execute:
-   powershell -ExecutionPolicy Bypass -File .\Aplicar-Impact-Script.ps1
-4. Confira a diferenca em app/layout.tsx ou src/app/layout.tsx.
-5. Nao inclua o arquivo .impact.bak no commit.
-6. Faca Commit e Push origin no GitHub Desktop.
+2. Copie CORRIGIR-BUILD.cmd e CorrigirBuild.cjs para a RAIZ do projeto,
+   na mesma pasta do package.json e tsconfig.json.
+3. De dois cliques no arquivo CORRIGIR-BUILD.cmd e aguarde.
+4. Abra o GitHub Desktop e confira todas as mudancas.
+   A pasta backup-patch-carrossel aparecera como REMOVIDA (caso tenha sido
+   incluida no Git anteriormente). ISTO E CORRETO: os arquivos foram
+   MOVIDOS para fora da pasta do projeto, nao apagados.
+5. Faca commit das alteracoes E REMOCOES e clique em Push origin.
+6. Confira o novo build na Vercel.
 
-O script remove a meta impact-site-verification antiga e adiciona
-o script Impact solicitado ao head do layout, sem substituir o restante.
-O script remoto podera transformar links e rastrear impressoes;
-verifique suas preferencias de consentimento e politica de privacidade.
-Este patch nao resolve outros erros de build do projeto.
+O APLICADOR:
+- exclui backup-patch-carrossel da verificacao TypeScript (tsconfig.json);
+- impede que futuros backups dessa pasta sejam incluidos no Git (.gitignore);
+- move backups antigos para fora do projeto SEM APAGA-LOS;
+- adapta o antigo AplicarPatch.cjs para salvar backups futuros fora do projeto.
+
+Nao altera app/page.tsx, componentes do carrossel, banco Supabase ou ofertas.
+Nenhum SQL necessario nesta correcao.
+
+Commit sugerido:
+fix: remove backups antigos da compilacao da Vercel
+
+OBS: O erro do log e resolvido pela exclusao dos backups. Outros erros de
+TypeScript so podem ser confirmados com o proximo build de producao.
