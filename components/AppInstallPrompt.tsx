@@ -24,7 +24,7 @@ export default function AppInstallPrompt() {
 
   useEffect(() => {
     let vivo = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let timer: number | undefined;
     const current = detectPlatform();
     setPlatform(current);
     if (current !== "android" && !(current === "ios" && IOS_PROMPT_ENABLED && IOS_URL)) return;
@@ -53,7 +53,7 @@ export default function AppInstallPrompt() {
       if (vivo) timer = window.setTimeout(() => { if (vivo) setVisible(true); }, 3500);
     };
     void preparar();
-    return () => { vivo = false; if (timer) window.clearTimeout(timer); };
+    return () => { vivo = false; if (timer !== undefined) window.clearTimeout(timer); };
   }, []);
 
   function dismiss() {
