@@ -29,7 +29,10 @@ export function imagensSociaisDaOferta(
 ) {
   const principal = imagemAbsolutaDaOferta(oferta);
   const fallback = imagemSocialDaOferta(oferta);
-  return Array.from(new Set([principal, fallback].filter((v): v is string => Boolean(v))));
+  // O primeiro og:image e o preferido por WhatsApp/Meta. Priorize sempre
+  // a imagem servida pelo proprio dominio, evitando URLs externas bloqueadas
+  // ou miniaturas de CDN que podem produzir previas ruins.
+  return Array.from(new Set([fallback, principal].filter((v): v is string => Boolean(v))));
 }
 
 export function precoPrincipalDaOferta(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {
