@@ -920,13 +920,14 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                     <input
                       type="number"
                       step="0.01"
+                      min="0"
                       className={`${classeInput} bg-white font-semibold`}
                       value={valores.precoAtual ?? ""}
-                      readOnly
-                      placeholder="Calculado automaticamente pelas parcelas"
+                      onChange={(e) => atualizarCampo("precoAtual", e.target.value ? Number(e.target.value) : undefined)}
+                      placeholder="Total parcelado anunciado"
                     />
                     <p className="mt-1 text-xs text-ink/50">
-                      Calculado automaticamente: quantidade de parcelas × valor da parcela.
+                      O total informado no texto é preservado, mesmo com arredondamentos nas parcelas. Se alterar a quantidade ou o valor das parcelas, o total será recalculado; você pode ajustá-lo manualmente.
                     </p>
                   </Campo>
                 </div>
