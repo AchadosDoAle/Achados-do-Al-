@@ -202,10 +202,10 @@ export default async function PaginaOferta({
           </div>
         )}
 
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start md:gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-10">
           {/* Imagem */}
-          <div className="order-1 mx-auto w-full max-w-[500px] shrink-0 md:order-2">
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 md:h-[500px] md:w-[500px]">
+          <div className="order-1 mx-auto w-full max-w-[500px] min-w-0 md:mx-0 md:max-w-none">
+            <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={oferta.imagemPrincipal || "/icon.png"}
@@ -234,7 +234,7 @@ export default async function PaginaOferta({
           </div>
 
           {/* Informações */}
-          <div className="order-2 md:order-1 md:flex-1">
+          <div className="order-2 min-w-0">
             <p className="text-xs font-medium text-text-muted">
               🏪 {oferta.loja}
             </p>
