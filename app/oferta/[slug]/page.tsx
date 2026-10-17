@@ -202,10 +202,10 @@ export default async function PaginaOferta({
           </div>
         )}
 
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start md:gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
           {/* Imagem */}
-          <div className="order-1 mx-auto w-full max-w-[500px] min-w-0 md:mx-0 md:max-w-none">
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5">
+          <div className="order-1 mx-auto w-full max-w-[500px] shrink-0 md:order-2">
+            <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 md:h-[500px] md:w-[500px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={oferta.imagemPrincipal || "/icon.png"}
@@ -234,7 +234,7 @@ export default async function PaginaOferta({
           </div>
 
           {/* Informações */}
-          <div className="order-2 min-w-0">
+          <div className="order-2 md:order-1 md:flex-1">
             <p className="text-xs font-medium text-text-muted">
               🏪 {oferta.loja}
             </p>
@@ -361,18 +361,6 @@ export default async function PaginaOferta({
               </p>
             )}
 
-            {oferta.textoPublicacao && (
-              <div className="mt-5 whitespace-pre-wrap rounded-xl2 bg-card p-4 text-sm text-text-muted ring-1 ring-white/5">
-                {oferta.textoPublicacao}
-              </div>
-            )}
-
-            {oferta.publicadoEm && (
-              <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.08em] text-text-muted/55">
-                OFERTA POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
-              </p>
-            )}
-
             <div className="mt-6 flex flex-col gap-2 sm:flex-row">
               <a
                 href={linkFinal}
@@ -391,6 +379,18 @@ export default async function PaginaOferta({
                 url={urlCurtaDaOferta(oferta.slug)}
               />
             </div>
+
+            {oferta.textoPublicacao && (
+              <div className="mt-5 whitespace-pre-wrap rounded-xl2 bg-card p-4 text-sm text-text-muted ring-1 ring-white/5">
+                {oferta.textoPublicacao}
+              </div>
+            )}
+
+            {oferta.publicadoEm && (
+              <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.08em] text-text-muted/55">
+                OFERTA POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
+              </p>
+            )}
 
             {!expirada && <ReportarOferta ofertaId={oferta.id} />}
 
