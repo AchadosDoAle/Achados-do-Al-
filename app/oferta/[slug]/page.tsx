@@ -361,7 +361,7 @@ export default async function PaginaOferta({
               </p>
             )}
 
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-6 hidden gap-2 md:flex">
               <a
                 href={linkFinal}
                 target="_blank"
@@ -391,6 +391,25 @@ export default async function PaginaOferta({
                 OFERTA POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
               </p>
             )}
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row md:hidden">
+              <a
+                href={linkFinal}
+                target="_blank"
+                rel="noopener noreferrer nofollow sponsored"
+                className="flex-1 rounded-xl2 bg-gold py-3 text-center font-semibold text-bg hover:bg-gold-light"
+              >
+                🛒 Acessar oferta
+              </a>
+              <BotaoCompartilhar
+                titulo={oferta.titulo}
+                loja={oferta.loja}
+                precoAntigo={oferta.precoAntigo}
+                preco={precoPrincipalDaOferta(oferta)}
+                precoPix={precoPrincipalEhPix(oferta)}
+                url={urlCurtaDaOferta(oferta.slug)}
+              />
+            </div>
 
             {!expirada && <ReportarOferta ofertaId={oferta.id} />}
 
