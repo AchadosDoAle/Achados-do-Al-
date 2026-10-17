@@ -11,6 +11,15 @@ export type ResultadoLeituraOferta = {
   camposDetectados: string[];
 };
 
+/** Normaliza Markdown/WhatsApp sem alterar o texto original. */
+function normalizarEntrada(texto: string) {
+  return texto
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u00A0\u202F]/g, " ")
+    .replace(/\\([*_~])/g, "$1")
+    .replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, "");
+}
+
 function limparMarkdown(texto: string) {
   return texto
     .replace(/[\*_~`]/g, "")
@@ -20,6 +29,7 @@ function limparMarkdown(texto: string) {
     // interpretada como nome do produto.
     .replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, "")
     .replace(/\s+/g, " ")
+    .replace(/^[^\p{L}\p{N}]+/gu, "")
     .trim();
 }
 
@@ -327,7 +337,7 @@ function detectarModelo(titulo?: string, texto?: string, marca?: string, categor
 
 function detectarTitulo(texto: string, loja?: string) {
   const tituloExplicito = primeiroMatch(texto, [
-    /(?:^|\n)\s*(?:PRODUTO|ITEM|OFERTA)\s*[:\-–—]\s*([^\n]{6,180})/i,
+    /(?:^|\n)\s*(?:NOME\s+(?:DO\s+)?PRODUTO|PRODUTO|ITEM|T[IÍ]TULO(?:\s+DO\s+PRODUTO)?|OFERTA)\s*[:\-–—]\s*([^\n]{6,180})/i,
   ]);
   if (tituloExplicito && !/R\$\s*\d/i.test(tituloExplicito)) {
     return limparMarkdown(tituloExplicito).replace(/[;,.]+$/, "");
@@ -351,6 +361,7 @@ function detectarTitulo(texto: string, loja?: string) {
     if (/^COMPRE\s+AQUI\b/i.test(linha)) return true;
     if (/^VAGAS\s+NO\s+GRUPO\b/i.test(linha)) return true;
     if (/^FRETE\b/i.test(linha)) return true;
+    if (/^(?:OU\s+EM|EM\s+AT[EÉ]\s+\d+\s*[X×]|TOTAL\s+PARCELADO|VENDIDO\s+E\s+ENTREGUE|CONFIRA\s+AQUI|VALIDO\s+ATE|LINK\s+DO\s+GRUPO|PAGAMENTO)\b/i.test(linha)) return true;
     if (/^OFERTA$/i.test(linha)) return true;
 
     // Avisos/rodapés comuns dos textos prontos nunca devem virar título.
@@ -405,11 +416,12 @@ function detectarTitulo(texto: string, loja?: string) {
     let pontos = Math.min(linha.length, 100);
 
     if (/\b(NO PRECINHO|EM OFERTA|PROMOÇÃO|PROMOCAO|ACHADINHO|CORRE|APROVEITE)\b/.test(l)) {
-      pontos -= 80;
+      pontos -= 150;
     }
     if (/\b\d+(?:[.,]\d+)?\s*(W|V|L|ML|KG|GB|TB|CM|MM|UN|UNIDADES?)\b/.test(l)) {
       pontos += 25;
     }
+    if (/\b(?:FONE|KIT|SMARTPHONE|NOTEBOOK|TENIS|TÊNIS|PANELA|SABONETE|CAMISETA|PERFUME)\b/.test(l)) pontos += 12;
     if (/\b(MASCULIN[AO]|FEMININ[AO]|BRANCO|BRANCA|PRETO|PRETA|BIVOLT|DRY-FIT|ULTRA|PRO|PLUS)\b/.test(l)) {
       pontos += 15;
     }
@@ -514,7 +526,8 @@ function detectarCupomOferta(texto: string) {
   return undefined;
 }
 
-export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
+export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraOferta {
+  const texto = normalizarEntrada(textoOriginal);
   const valores: Partial<OfertaFormValues> = {};
   const detectados: string[] = [];
 
@@ -588,19 +601,27 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("preço atual");
   }
 
-  const parcelasMatch = textoPrecos.match(
-    new RegExp(`\\b(\\d{1,2})\\s*x\\s*(?:de\\s*)?R\\s*\\$\\s*(${VALOR_BR})`, "i")
-  );
-  if (parcelasMatch) {
+  // Reconhece "3x de aproximadamente R$ 37,70", "3x R$37,70",
+  // "3 vezes de R$ 37,70" e "3 parcelas de R$ 37,70".
+  const parcelasMatch = textoPrecos.match(/\b(\d{1,2})\s*(?:x|×|vezes|parcelas)\s*(?:de\s*)?(?:(?:aproximadamente|aprox\.?|cerca\s+de|em\s+torno\s+de)\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)(?!\d)/i);
+  const totalParcelado = matchMoeda(textoPrecos, [/\b(?:total\s*(?:parcelado|das?\s+parcelas|a\s+pagar)|valor\s+total(?:\s+parcelado)?)\s*(?:informado|final|aproximado)?\s*[:\-–—]?\s*(?:de\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i]);
+  if (parcelasMatch && Number(parcelasMatch[1]) > 0) {
     valores.ofereceParcelamento = true;
     valores.parcelas = Number(parcelasMatch[1]);
     valores.valorParcela = moedaParaNumero(parcelasMatch[2]);
-    valores.parcelamentoSemJuros = /sem\s+juros/i.test(texto);
-    if (valores.valorParcela != null) {
-      valores.precoAtual =
-        Math.round(Number(parcelasMatch[1]) * valores.valorParcela * 100) / 100;
+    const inicioParcelas = parcelasMatch.index ?? 0;
+    const contexto = textoPrecos.slice(inicioParcelas, inicioParcelas + parcelasMatch[0].length + 100);
+    valores.parcelamentoSemJuros = /\b(?:sem\s+juros|s\s*\/\s*juros|sem\s+acr[eé]scimo)\b/i.test(contexto);
+    if (totalParcelado != null) {
+      valores.precoAtual = totalParcelado;
+      detectados.push("total parcelado informado");
+    } else if (valores.valorParcela != null) {
+      valores.precoAtual = Math.round(valores.parcelas * valores.valorParcela * 100) / 100;
     }
     detectados.push("parcelamento");
+  } else if (totalParcelado != null) {
+    valores.precoAtual = totalParcelado;
+    detectados.push("total parcelado informado");
   }
 
   const urls = Array.from(texto.matchAll(/https?:\/\/[^\s)\]}]+/gi)).map((m) =>
@@ -664,13 +685,18 @@ export function interpretarTextoOferta(texto: string): ResultadoLeituraOferta {
     detectados.push("frete");
   }
 
-  const validade = texto.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
-  if (validade) {
-    valores.validadePromocao = `${validade[3]}-${validade[2]}-${validade[1]}`;
+  const validadeBr = texto.match(/\b(?:validade|v[aá]lido\s+at[eé]|expira\s+em)[^\n]{0,35}?(\d{1,2})\/(\d{1,2})\/(\d{4})\b/i)
+    ?? texto.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+  const validadeIso = texto.match(/\b(?:validade|v[aá]lido\s+at[eé]|expira\s+em)[^\n]{0,35}?(\d{4})-(\d{2})-(\d{2})\b/i);
+  if (validadeBr) {
+    valores.validadePromocao = [validadeBr[3], validadeBr[2].padStart(2, '0'), validadeBr[1].padStart(2, '0')].join('-');
+    detectados.push("validade");
+  } else if (validadeIso) {
+    valores.validadePromocao = [validadeIso[1], validadeIso[2], validadeIso[3]].join('-');
     detectados.push("validade");
   }
 
-  valores.textoPublicacao = texto;
+  valores.textoPublicacao = textoOriginal;
 
   return { valores, camposDetectados: detectados };
 }
