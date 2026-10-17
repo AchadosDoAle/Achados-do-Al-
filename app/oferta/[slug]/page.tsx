@@ -231,6 +231,18 @@ export default async function PaginaOferta({
               ) : null}
             </div>
             {detalhesProduto ? <div className="mt-4 hidden md:block">{detalhesProduto}</div> : null}
+            <div className="mt-4 hidden md:block">
+            {!expirada && <ReportarOferta ofertaId={oferta.id} />}
+
+            <a
+              href="/grupo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 block rounded-xl2 bg-trust/15 py-3 text-center text-sm font-medium text-trust"
+            >
+              Entrar no canal do WhatsApp
+            </a>
+            </div>
           </div>
 
           {/* Informações */}
@@ -411,6 +423,7 @@ export default async function PaginaOferta({
               />
             </div>
 
+            <div className="md:hidden">
             {!expirada && <ReportarOferta ofertaId={oferta.id} />}
 
             <a
@@ -421,6 +434,7 @@ export default async function PaginaOferta({
             >
               Entrar no canal do WhatsApp
             </a>
+            </div>
           </div>
         </div>
       </Container>
