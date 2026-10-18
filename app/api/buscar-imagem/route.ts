@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { usuarioEhAdmin } from "@/lib/admin-auth";
 import { criarClienteServidor } from "@/lib/supabase/server";
+import { criarClienteAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,47 @@ const USER_AGENTS = [
 ];
 
 const MAX_REDIRECTS = 10;
+
+
+/**
+ * Aceita tanto a sessão web por cookie quanto o Bearer token enviado pelo
+ * aplicativo Android administrativo. O token é validado pelo Supabase e o
+ * usuário precisa existir em admin_users. A service role permanece SOMENTE
+ * no servidor e nunca é enviada ao APK.
+ */
+async function autenticarAdminDaRequisicao(req: Request) {
+  const authorization = req.headers.get("authorization") || "";
+  const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+
+  if (bearer) {
+    try {
+      const supabaseAdmin = criarClienteAdmin();
+      const {
+        data: { user },
+        error,
+      } = await supabaseAdmin.auth.getUser(bearer);
+      if (error || !user) return null;
+
+      const { data: admin, error: adminError } = await supabaseAdmin
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (adminError || !admin) return null;
+      return user;
+    } catch {
+      return null;
+    }
+  }
+
+  // Mantém 100% compatível com o painel web atual.
+  if (!(await usuarioEhAdmin())) return null;
+  const supabase = criarClienteServidor();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user || null;
+}
 
 function limparUrl(valor: string) {
   return valor
@@ -39,10 +81,13 @@ function urlHttpValida(valor: string) {
     if (
       host === "localhost" ||
       host === "127.0.0.1" ||
+      host === "0.0.0.0" ||
       host === "::1" ||
+      host === "metadata.google.internal" ||
       /^10\./.test(host) ||
       /^192\.168\./.test(host) ||
-      /^169\.254\./.test(host)
+      /^169\.254\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host)
     ) {
       return false;
     }
@@ -125,6 +170,13 @@ function procurarImagemEmJson(valor: unknown, profundidade = 0): string | null {
       "pictures",
       "primaryImage",
       "mainImage",
+      "originalImage",
+      "largeImage",
+      "zoomImage",
+      "highResolutionImage",
+      "mediaUrl",
+      "desktopImage",
+      "mobileImage",
     ];
     for (const chave of chavesImagem) {
       if (obj[chave] != null) {
@@ -184,7 +236,7 @@ function extrairImagemDeScripts(html: string, urlBase: string) {
   }
 
   const padroes = [
-    /["'](?:imageUrl|image_url|imageURL|primaryImage|mainImage|thumbnailUrl|secure_url)["']\s*:\s*["']([^"']+)["']/gi,
+    /["'](?:imageUrl|image_url|imageURL|primaryImage|mainImage|originalImage|largeImage|zoomImage|highResolutionImage|mediaUrl|desktopImage|mobileImage|thumbnailUrl|secure_url)["']\s*:\s*["']([^"']+)["']/gi,
     /["'](?:image|thumbnail|picture)["']\s*:\s*["'](https?:\\?\/\\?\/[^"']+)["']/gi,
   ];
   for (const padrao of padroes) {
@@ -352,7 +404,7 @@ function extrairDestinoDosParametros(link: string) {
   const destinos: string[] = [];
   try {
     const url = new URL(link);
-    for (const chave of ["url", "u", "target", "dest", "destination", "redirect", "redirect_url", "redirect_uri", "deeplink", "link"]) {
+    for (const chave of ["url", "u", "target", "dest", "destination", "redirect", "redirect_url", "redirect_uri", "deeplink", "link", "to", "out", "r", "goto"]) {
       const valor = url.searchParams.get(chave);
       if (!valor) continue;
       let atual = valor;
@@ -517,21 +569,14 @@ async function baixarImagem(resultado: ResultadoPagina) {
 }
 
 export async function POST(req: Request) {
-  if (!(await usuarioEhAdmin())) {
+  const usuario = await autenticarAdminDaRequisicao(req);
+  if (!usuario) {
     return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
   }
 
   const { link } = await req.json();
   if (!link || typeof link !== "string" || !urlHttpValida(link)) {
     return NextResponse.json({ erro: "Link inválido." }, { status: 400 });
-  }
-
-  const supabase = criarClienteServidor();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ erro: "Não autenticado." }, { status: 401 });
   }
 
   try {
@@ -560,6 +605,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         imagemUrl: resultado.imagem,
         origem: "externa",
+        finalUrl: resultado.pagina,
         aviso: "Imagem localizada no preview do link e usada diretamente.",
       });
     }
@@ -587,12 +633,13 @@ export async function POST(req: Request) {
       return NextResponse.json({
         imagemUrl: resultado.imagem,
         origem: "externa",
+        finalUrl: resultado.pagina,
         aviso: "Imagem encontrada, mas não foi possível copiá-la para o Storage; usando a URL original.",
       });
     }
 
     const { data } = supabase.storage.from("ofertas").getPublicUrl(nomeArquivo);
-    return NextResponse.json({ imagemUrl: data.publicUrl, origem: "storage" });
+    return NextResponse.json({ imagemUrl: data.publicUrl, origem: "storage", finalUrl: resultado.pagina });
   } catch (erro) {
     console.error(erro);
     return NextResponse.json(

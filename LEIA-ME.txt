@@ -1,35 +1,22 @@
-ACHADOS DO ALE — CORRECAO DO ERRO NO BUILD DA VERCEL
+PATCH DO SITE — BUSCA DE IMAGEM PARA O APP ADMIN ANDROID
 
-ERRO:
-./backup-patch-carrossel/.../app/page.tsx:128:15
-Property 'ofertaDestaque' does not exist on type '{ destaques: Oferta[]; recentes: Oferta[]; }'.
+Por que este patch existe:
+O Android não consegue ler com confiabilidade páginas de muitas lojas e links curtos por causa de redirecionamentos, anti-bot e páginas carregadas por JavaScript. O site já possuía uma rota de servidor muito mais robusta em /api/buscar-imagem. Este patch permite que o app administrativo autenticado use a MESMA rota com seu token Supabase.
 
-CAUSA: backups do codigo antigo foram criados dentro da pasta do site.
-O TypeScript os estava tratando como codigo de producao.
+O que muda:
+- mantém o painel web funcionando por cookie;
+- aceita Authorization: Bearer <token> do app Android;
+- valida o token no Supabase e confirma admin_users no servidor;
+- não expõe service role no APK;
+- amplia aliases de campos de imagem e parâmetros de redirecionamento;
+- mantém a cópia da imagem para o bucket ofertas quando possível;
+- devolve finalUrl apenas como informação; o app preserva o link afiliado original.
 
-COMO CORRIGIR:
-1. Extraia este ZIP.
-2. Copie CORRIGIR-BUILD.cmd e CorrigirBuild.cjs para a RAIZ do projeto,
-   na mesma pasta do package.json e tsconfig.json.
-3. De dois cliques no arquivo CORRIGIR-BUILD.cmd e aguarde.
-4. Abra o GitHub Desktop e confira todas as mudancas.
-   A pasta backup-patch-carrossel aparecera como REMOVIDA (caso tenha sido
-   incluida no Git anteriormente). ISTO E CORRETO: os arquivos foram
-   MOVIDOS para fora da pasta do projeto, nao apagados.
-5. Faca commit das alteracoes E REMOCOES e clique em Push origin.
-6. Confira o novo build na Vercel.
+COMO APLICAR
+1. No projeto atual do site achadosdoale.com, substitua apenas:
+   app/api/buscar-imagem/route.ts
+2. Rode npm run typecheck e npm run build.
+3. Faça commit/push e aguarde o deploy da Vercel.
+4. Depois, no app Admin, use o patch FOTO-MULTILOJAS correspondente.
 
-O APLICADOR:
-- exclui backup-patch-carrossel da verificacao TypeScript (tsconfig.json);
-- impede que futuros backups dessa pasta sejam incluidos no Git (.gitignore);
-- move backups antigos para fora do projeto SEM APAGA-LOS;
-- adapta o antigo AplicarPatch.cjs para salvar backups futuros fora do projeto.
-
-Nao altera app/page.tsx, componentes do carrossel, banco Supabase ou ofertas.
-Nenhum SQL necessario nesta correcao.
-
-Commit sugerido:
-fix: remove backups antigos da compilacao da Vercel
-
-OBS: O erro do log e resolvido pela exclusao dos backups. Outros erros de
-TypeScript so podem ser confirmados com o proximo build de producao.
+Nenhuma tabela, migration ou SQL é necessário.
