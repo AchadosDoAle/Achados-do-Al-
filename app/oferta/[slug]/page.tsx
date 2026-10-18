@@ -231,6 +231,18 @@ export default async function PaginaOferta({
               ) : null}
             </div>
             {detalhesProduto ? <div className="mt-4 hidden md:block">{detalhesProduto}</div> : null}
+            <div className="mt-4 hidden md:block">
+            {!expirada && <ReportarOferta ofertaId={oferta.id} />}
+
+            <a
+              href="/grupo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 block rounded-xl2 bg-trust/15 py-3 text-center text-sm font-medium text-trust"
+            >
+              Entrar no canal do WhatsApp
+            </a>
+            </div>
           </div>
 
           {/* Informações */}
@@ -361,19 +373,7 @@ export default async function PaginaOferta({
               </p>
             )}
 
-            {oferta.textoPublicacao && (
-              <div className="mt-5 whitespace-pre-wrap rounded-xl2 bg-card p-4 text-sm text-text-muted ring-1 ring-white/5">
-                {oferta.textoPublicacao}
-              </div>
-            )}
-
-            {oferta.publicadoEm && (
-              <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.08em] text-text-muted/55">
-                OFERTA POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
-              </p>
-            )}
-
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-6 hidden gap-2 md:flex">
               <a
                 href={linkFinal}
                 target="_blank"
@@ -392,6 +392,38 @@ export default async function PaginaOferta({
               />
             </div>
 
+            {oferta.textoPublicacao && (
+              <div className="mt-5 whitespace-pre-wrap rounded-xl2 bg-card p-4 text-sm text-text-muted ring-1 ring-white/5">
+                {oferta.textoPublicacao}
+              </div>
+            )}
+
+            {oferta.publicadoEm && (
+              <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.08em] text-text-muted/55">
+                OFERTA POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
+              </p>
+            )}
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row md:hidden">
+              <a
+                href={linkFinal}
+                target="_blank"
+                rel="noopener noreferrer nofollow sponsored"
+                className="flex-1 rounded-xl2 bg-gold py-3 text-center font-semibold text-bg hover:bg-gold-light"
+              >
+                🛒 Acessar oferta
+              </a>
+              <BotaoCompartilhar
+                titulo={oferta.titulo}
+                loja={oferta.loja}
+                precoAntigo={oferta.precoAntigo}
+                preco={precoPrincipalDaOferta(oferta)}
+                precoPix={precoPrincipalEhPix(oferta)}
+                url={urlCurtaDaOferta(oferta.slug)}
+              />
+            </div>
+
+            <div className="md:hidden">
             {!expirada && <ReportarOferta ofertaId={oferta.id} />}
 
             <a
@@ -402,6 +434,7 @@ export default async function PaginaOferta({
             >
               Entrar no canal do WhatsApp
             </a>
+            </div>
           </div>
         </div>
       </Container>
