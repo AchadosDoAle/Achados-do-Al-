@@ -579,29 +579,38 @@ export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraO
     detectados.push("preço antigo");
   }
 
-  // Regra do fluxo do Achado do Alê: sempre que a publicação usar
-  // "POR R$ ...", esse é o preço à vista/principal, mesmo sem a palavra PIX.
-  const precoPix = matchMoeda(textoPrecos, [
-    new RegExp(`\\bPIX\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`R\\s*\\$\\s*(${VALOR_BR})\\s*(?:NO\\s*)?PIX\\b`, "i"),
-    new RegExp(`(?:À|A)\\s*VISTA\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`\\bPOR\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})\\s*(?:NO\\s*PIX|À\\s*VISTA)\\b`, "i"),
+  // Campos declarados têm prioridade sobre frases livres e valores de parcelas.
+  // Lê PIX mesmo em linhas do WhatsApp com emoji, *negrito* ou ~riscado~.
+  const linhasPreco = textoPrecos.split("\n").map((linha) => linha.trim()).filter(Boolean);
+  const obterPrecoLinha = (padroes: RegExp[]) => {
+    for (const padrao of padroes) {
+      for (const linha of linhasPreco) {
+        const achado = linha.match(padrao);
+        if (achado?.[1]) return moedaParaNumero(achado[1]);
+      }
+    }
+    return undefined;
+  };
+
+  const precoPix = obterPrecoLinha([
+    /\b(?:PRE[CÇ]O\s*(?:NO\s*)?)?PIX\s*[:\-–—]?\s*(?:POR\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i,
+    /\bPOR\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)\s*(?:NO\s*)?PIX\b/i,
+    /\bR\s*\$\s*([\d.]+(?:,\d{1,2})?)\s*(?:NO\s*)?PIX\b/i,
+    /\b(?:À|A)\s*VISTA\s*(?:NO\s*PIX)?\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i,
   ]);
   if (precoPix != null) {
     valores.precoPix = precoPix;
     detectados.push("preço no Pix");
   }
 
-  // "POR" não entra aqui: no fluxo do site ele sempre representa preço à vista.
-  const precoAtual = matchMoeda(textoPrecos, [
-    new RegExp(`(?:preço|preco)\\s*(?:atual|final|parcelado)\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`\\b(?:POR|AGORA)\\s*:?\\s*R\\s*\\$\\s*(${VALOR_BR})(?![0-9,.])(?!(?:\\s*(?:NO\\s*PIX|À\\s*VISTA)))`, "i"),
+  const precoAtual = obterPrecoLinha([
+    /\bPRE[CÇ]O\s*(?:ATUAL|FINAL|PARCELADO)\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i,
+    /\b(?:POR|AGORA)\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)(?![\d,.])(?!(?:\s*(?:NO\s*PIX|À\s*VISTA)))/i,
   ]);
   if (precoAtual != null) {
     valores.precoAtual = precoAtual;
     detectados.push("preço atual");
   }
-
   // Reconhece "3x de aproximadamente R$ 37,70", "3x R$37,70",
   // "3 vezes de R$ 37,70" e "3 parcelas de R$ 37,70".
   const parcelasMatch = textoPrecos.match(/\b(\d{1,2})\s*(?:x|×|vezes|parcelas)\s*(?:de\s*)?(?:(?:aproximadamente|aprox\.?|cerca\s+de|em\s+torno\s+de)\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)(?!\d)/i);
