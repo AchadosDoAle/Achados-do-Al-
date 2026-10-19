@@ -595,7 +595,7 @@ export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraO
   // "POR" não entra aqui: no fluxo do site ele sempre representa preço à vista.
   const precoAtual = matchMoeda(textoPrecos, [
     new RegExp(`(?:preço|preco)\\s*(?:atual|final|parcelado)\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`\\b(?:POR|AGORA)\\s*:?\\s*R\\s*\\$\\s*(${VALOR_BR})(?!\\s*(?:NO\\s*PIX|À\\s*VISTA))`, "i"),
+    new RegExp(`\\b(?:POR|AGORA)\\s*:?\\s*R\\s*\\$\\s*(${VALOR_BR})(?![0-9,.])(?!(?:\\s*(?:NO\\s*PIX|À\\s*VISTA)))`, "i"),
   ]);
   if (precoAtual != null) {
     valores.precoAtual = precoAtual;
