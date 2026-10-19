@@ -582,10 +582,10 @@ export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraO
   // Regra do fluxo do Achado do Alê: sempre que a publicação usar
   // "POR R$ ...", esse é o preço à vista/principal, mesmo sem a palavra PIX.
   const precoPix = matchMoeda(textoPrecos, [
-    new RegExp(`(?:^|\\n)[^\\n]*?\\bPOR\\s*:?[\\s]*(?:APENAS\\s*)?R?\\s*\\$?\\s*(${VALOR_BR})(?!\\s*[xX])(?=\\s|$|[^0-9,])`, "i"),
-    new RegExp(`R\\s*\\$\\s*(${VALOR_BR})\\s*(?:à\\s*vista\\s*)?(?:no\\s*)?pix\\b`, "i"),
-    new RegExp(`\\bpix\\s*:?[\\s]*(?:por\\s*)?R\\s*\\$\\s*(${VALOR_BR})`, "i"),
-    new RegExp(`\\b(?:à|a)\\s*vista\\s*:?[\\s]*(?:por\\s*)?R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`\\bPIX\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`R\\s*\\$\\s*(${VALOR_BR})\\s*(?:NO\\s*)?PIX\\b`, "i"),
+    new RegExp(`(?:À|A)\\s*VISTA\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`\\bPOR\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})\\s*(?:NO\\s*PIX|À\\s*VISTA)\\b`, "i"),
   ]);
   if (precoPix != null) {
     valores.precoPix = precoPix;
@@ -594,7 +594,8 @@ export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraO
 
   // "POR" não entra aqui: no fluxo do site ele sempre representa preço à vista.
   const precoAtual = matchMoeda(textoPrecos, [
-    new RegExp(`(?:preço|preco)\\s*(?:atual|final|parcelado)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`(?:preço|preco)\\s*(?:atual|final|parcelado)\\s*:?\\s*R?\\s*\\$?\\s*(${VALOR_BR})`, "i"),
+    new RegExp(`\\b(?:POR|AGORA)\\s*:?\\s*R\\s*\\$\\s*(${VALOR_BR})(?!\\s*(?:NO\\s*PIX|À\\s*VISTA))`, "i"),
   ]);
   if (precoAtual != null) {
     valores.precoAtual = precoAtual;
@@ -604,19 +605,18 @@ export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraO
   // Reconhece "3x de aproximadamente R$ 37,70", "3x R$37,70",
   // "3 vezes de R$ 37,70" e "3 parcelas de R$ 37,70".
   const parcelasMatch = textoPrecos.match(/\b(\d{1,2})\s*(?:x|×|vezes|parcelas)\s*(?:de\s*)?(?:(?:aproximadamente|aprox\.?|cerca\s+de|em\s+torno\s+de)\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)(?!\d)/i);
+  const parcelasSemValor = textoPrecos.match(/\b(?:em\s*)?(?:at[eé]\s*)?(\d{1,2})\s*(?:x|×|vezes|parcelas)\b/i);
   const totalParcelado = matchMoeda(textoPrecos, [/\b(?:total\s*(?:parcelado|das?\s+parcelas|a\s+pagar)|valor\s+total(?:\s+parcelado)?)\s*(?:informado|final|aproximado)?\s*[:\-–—]?\s*(?:de\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i]);
-  if (parcelasMatch && Number(parcelasMatch[1]) > 0) {
+  if ((parcelasMatch || parcelasSemValor) && Number((parcelasMatch || parcelasSemValor)![1]) > 0) {
     valores.ofereceParcelamento = true;
-    valores.parcelas = Number(parcelasMatch[1]);
-    valores.valorParcela = moedaParaNumero(parcelasMatch[2]);
-    const inicioParcelas = parcelasMatch.index ?? 0;
-    const contexto = textoPrecos.slice(inicioParcelas, inicioParcelas + parcelasMatch[0].length + 100);
+    valores.parcelas = Number((parcelasMatch || parcelasSemValor)![1]);
+    if (parcelasMatch) valores.valorParcela = moedaParaNumero(parcelasMatch[2]);
+    const inicioParcelas = (parcelasMatch || parcelasSemValor)!.index ?? 0;
+    const contexto = textoPrecos.slice(inicioParcelas, inicioParcelas + (parcelasMatch || parcelasSemValor)![0].length + 50);
     valores.parcelamentoSemJuros = /\b(?:sem\s+juros|s\s*\/\s*juros|sem\s+acr[eé]scimo)\b/i.test(contexto);
     if (totalParcelado != null) {
       valores.precoAtual = totalParcelado;
       detectados.push("total parcelado informado");
-    } else if (valores.valorParcela != null) {
-      valores.precoAtual = Math.round(valores.parcelas * valores.valorParcela * 100) / 100;
     }
     detectados.push("parcelamento");
   } else if (totalParcelado != null) {
