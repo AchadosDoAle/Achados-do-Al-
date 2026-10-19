@@ -214,15 +214,8 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   }
 
   function atualizarParcelamento(campo: "parcelas" | "valorParcela", valor: number | undefined) {
-    setValores((atual) => {
-      const parcelas = campo === "parcelas" ? valor : atual.parcelas;
-      const valorParcela = campo === "valorParcela" ? valor : atual.valorParcela;
-      const precoAtual =
-        parcelas && parcelas > 0 && valorParcela && valorParcela > 0
-          ? Math.round(parcelas * valorParcela * 100) / 100
-          : undefined;
-      return { ...atual, parcelas, valorParcela, precoAtual };
-    });
+    // Parcelamento não é preço à vista nem preço atual.
+    setValores((atual) => ({ ...atual, [campo]: valor }));
   }
 
   function atualizarOfereceParcelamento(oferece: boolean) {
