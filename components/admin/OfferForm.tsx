@@ -1180,6 +1180,9 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                       const ativo = valores.status === status;
                       const estilos: Record<StatusOferta, string> = {
                         rascunho: "border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200",
+                        pronta_para_revisar: "border-sky-300 bg-sky-100 text-sky-900 hover:bg-sky-200",
+                        aprovada: "border-teal-300 bg-teal-100 text-teal-900 hover:bg-teal-200",
+                        enviada_whatsapp: "border-cyan-300 bg-cyan-100 text-cyan-900 hover:bg-cyan-200",
                         agendada: "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200",
                         publicada: "border-emerald-300 bg-emerald-100 text-emerald-900 hover:bg-emerald-200",
                         expirada: "border-orange-300 bg-orange-100 text-orange-900 hover:bg-orange-200",
