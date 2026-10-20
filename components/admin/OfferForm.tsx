@@ -1173,7 +1173,32 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             <div className="flex flex-col gap-4">
               <Campo rotulo="Observações internas"><textarea className={`${classeInput} uppercase`} rows={3} value={valores.observacoes} onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))} /></Campo>
               <div className="grid gap-4 md:grid-cols-2">
-                <Campo rotulo="Status da publicação" obrigatorio><select className={classeInput} value={valores.status} onChange={(e) => atualizarCampo("status", e.target.value as StatusOferta)}>{statusOpcoes.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></Campo>
+                <div className="md:col-span-2">
+                  <p className="mb-2 text-sm font-semibold text-ink">Status da publicação <span className="text-red-600">*</span></p>
+                  <div role="group" aria-label="Status da publicação" className="flex flex-wrap gap-2">
+                    {statusOpcoes.map((status) => {
+                      const ativo = valores.status === status;
+                      const estilos: Record<StatusOferta, string> = {
+                        rascunho: "border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200",
+                        agendada: "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200",
+                        publicada: "border-emerald-300 bg-emerald-100 text-emerald-900 hover:bg-emerald-200",
+                        expirada: "border-orange-300 bg-orange-100 text-orange-900 hover:bg-orange-200",
+                        arquivada: "border-violet-300 bg-violet-100 text-violet-900 hover:bg-violet-200",
+                      };
+                      return (
+                        <button
+                          key={status}
+                          type="button"
+                          aria-pressed={ativo}
+                          onClick={() => atualizarCampo("status", status)}
+                          className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${estilos[status]} ${ativo ? "ring-2 ring-brand ring-offset-2 shadow-sm" : "opacity-85"}`}
+                        >
+                          {STATUS_LABEL[status]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 {valores.status === "agendada" && <Campo rotulo="Agendar para"><input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} /></Campo>}
               </div>
               {ofertaExistente?.publicadoEm && (
@@ -1187,7 +1212,13 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       </div>
 
       {erroSalvar && <p className="text-center text-sm text-accent-dark">{erroSalvar}</p>}
-      <button type="submit" disabled={salvando} className="admin-action admin-btn-modern rounded-[18px] border px-6 py-3 text-center font-semibold shadow-sm disabled:opacity-60">{salvando ? "Salvando..." : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}</button>
+      <button
+        type="submit"
+        disabled={salvando}
+        className={`admin-action admin-btn-modern min-w-[220px] rounded-[18px] border px-8 py-3.5 text-center font-bold shadow-sm disabled:opacity-60 sm:min-w-[265px] ${valores.status === "publicada" ? "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700" : ""}`}
+      >
+        {salvando ? "Salvando..." : valores.status === "publicada" ? "Salvar e publicar" : valores.status === "agendada" ? "Salvar e agendar" : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}
+      </button>
     </form>
   );
 }
