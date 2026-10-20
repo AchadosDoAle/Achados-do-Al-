@@ -623,6 +623,7 @@ export async function POST(req: Request) {
       : "jpg";
     const nomeArquivo = `${crypto.randomUUID()}-auto.${extensao}`;
 
+    const supabase = criarClienteAdmin();
     const { error } = await supabase.storage.from("ofertas").upload(nomeArquivo, imagem.bytes, {
       contentType: imagem.tipo,
       upsert: false,
