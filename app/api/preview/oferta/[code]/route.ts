@@ -35,7 +35,10 @@ async function carregarImagemPublica(endereco: string): Promise<{ bytes: ArrayBu
         redirect: "manual",
         signal: AbortSignal.timeout(4500),
         cache: "no-store",
-        headers: { Accept: "image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8" },
+        headers: {
+          Accept: "image/webp,image/png,image/jpeg,image/*;q=0.8",
+          "User-Agent": "facebookexternalhit/1.1",
+        },
       });
       if ([301, 302, 303, 307, 308].includes(resposta.status)) {
         const destino = resposta.headers.get("location");
@@ -77,7 +80,9 @@ export async function GET(_request: Request, { params }: { params: { code: strin
       });
     }
     return gerarImagemSocialFallback(oferta);
-  } catch {
-    return new NextResponse(null, { status: 503 });
+  } catch (erro) {
+    console.error("Falha na miniatura social:", erro);
+    // Evita resposta 503 sem imagem para o robô do WhatsApp.
+    return NextResponse.redirect(new URL("/icon.png", _request.url), 307);
   }
 }
