@@ -382,7 +382,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     setCamposParaRevisar([]);
   }
 
-  function validar() {
+  function validar(statusDestino: StatusOferta) {
     const novosErros: Record<string, string> = {};
     if (!valores.titulo.trim()) novosErros.titulo = "Informe o nome do produto.";
     if (lojaSelecionada === LOJA_OUTROS && !lojaPersonalizada.trim()) {
@@ -413,13 +413,18 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
         }
       }
     }
+    if (statusDestino === "agendada") {
+      const dataAgendada = valores.agendadoPara ? new Date(valores.agendadoPara).getTime() : NaN;
+      if (!Number.isFinite(dataAgendada) || dataAgendada <= Date.now()) {
+        novosErros.agendadoPara = "Escolha uma data e hora futuras para o agendamento.";
+      }
+    }
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   }
 
-  async function aoEnviar(evento: React.FormEvent) {
-    evento.preventDefault();
-    if (!validar()) return;
+  async function salvarComStatus(statusDestino: StatusOferta) {
+    if (salvando || !validar(statusDestino)) return;
 
     setSalvando(true);
     setErroSalvar("");
@@ -442,7 +447,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           return;
         }
       }
-      const valoresParaSalvar = normalizarTextosOferta(valores);
+      const valoresParaSalvar = normalizarTextosOferta({ ...valores, status: statusDestino, agendadoPara: statusDestino === "agendada" ? valores.agendadoPara : "" });
       if (ofertaExistente) {
         await atualizarOferta(supabase, ofertaExistente.id, valoresParaSalvar);
         if (ofertaExistente.status === "expirada" && valoresParaSalvar.status === "publicada") {
@@ -531,7 +536,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   ];
 
   return (
-    <form onSubmit={aoEnviar} className="flex flex-col gap-5 pb-10">
+    <form onSubmit={(evento) => evento.preventDefault()} className="flex flex-col gap-5 pb-10">
       {ofertaExistenteExpirada && (
         <section className="rounded-[22px] border border-discount/50 bg-discount/10 p-5 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1193,16 +1198,32 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                           key={status}
                           type="button"
                           aria-pressed={ativo}
-                          onClick={() => atualizarCampo("status", status)}
-                          className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${estilos[status]} ${ativo ? "ring-2 ring-brand ring-offset-2 shadow-sm" : "opacity-85"}`}
+                          disabled={salvando}
+                          onClick={() => {
+                            if (status === "agendada") {
+                              atualizarCampo("status", status);
+                              return;
+                            }
+                            void salvarComStatus(status);
+                          }}
+                          className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-wait disabled:opacity-60 ${estilos[status]} ${status === "publicada" ? "sm:min-w-[180px]" : ""} ${ativo ? "ring-2 ring-brand ring-offset-2 shadow-sm" : "opacity-85"}`}
                         >
-                          {STATUS_LABEL[status]}
+                          {salvando && valores.status === status ? "Salvando..." : status === "publicada" ? "Salvar e publicar" : STATUS_LABEL[status]}
                         </button>
                       );
                     })}
                   </div>
                 </div>
-                {valores.status === "agendada" && <Campo rotulo="Agendar para"><input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} /></Campo>}
+                {valores.status === "agendada" && (
+                  <div className="md:col-span-2 flex flex-col gap-2">
+                    <Campo rotulo="Agendar para" obrigatorio erro={erros.agendadoPara}>
+                      <input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} />
+                    </Campo>
+                    <button type="button" disabled={salvando} onClick={() => void salvarComStatus("agendada")} className="w-fit min-w-[190px] rounded-xl border border-amber-500 bg-amber-400 px-5 py-3 text-sm font-bold text-amber-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60">
+                      {salvando ? "Salvando..." : "Salvar agendamento"}
+                    </button>
+                  </div>
+                )}
               </div>
               {ofertaExistente?.publicadoEm && (
                 <div className="rounded-xl border border-ink/10 bg-cream px-3 py-2 text-xs text-ink/55">
@@ -1215,13 +1236,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
       </div>
 
       {erroSalvar && <p className="text-center text-sm text-accent-dark">{erroSalvar}</p>}
-      <button
-        type="submit"
-        disabled={salvando}
-        className={`admin-action admin-btn-modern min-w-[220px] rounded-[18px] border px-8 py-3.5 text-center font-bold shadow-sm disabled:opacity-60 sm:min-w-[265px] ${valores.status === "publicada" ? "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700" : ""}`}
-      >
-        {salvando ? "Salvando..." : valores.status === "publicada" ? "Salvar e publicar" : valores.status === "agendada" ? "Salvar e agendar" : ofertaExistente ? "Salvar alterações" : "Salvar oferta"}
-      </button>
+
     </form>
   );
 }
