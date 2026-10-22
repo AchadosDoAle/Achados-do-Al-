@@ -298,7 +298,7 @@ export default function ListaOfertasPage() {
               return (
                 <li
                   key={oferta.id}
-                  className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm md:p-3.5"
+                  className={`rounded-[22px] border p-4 shadow-sm md:p-3.5 ${oferta.ofertaBlack ? "border-zinc-700 !bg-[#111111] text-white" : "border-brand/10 bg-white"}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -312,12 +312,12 @@ export default function ListaOfertasPage() {
 
                   <div className={`mt-4 flex flex-wrap items-center gap-3 text-sm md:mt-3 md:gap-2 ${oferta.ofertaBlack ? "text-zinc-100" : "text-ink/60"}`}>
                     {oferta.precoPix != null && (
-                      <div className="rounded-full bg-trust/10 px-3 py-1 text-trust">
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-trust/10 text-trust"}`}>
                         Pix: {oferta.precoPix.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     )}
                     {oferta.precoAtual != null && (
-                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-700 text-white" : "bg-cream"}`}>
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-cream"}`}>
                         Atual: {oferta.precoAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     )}
@@ -325,13 +325,13 @@ export default function ListaOfertasPage() {
                       <div className="rounded-full bg-cream px-3 py-1">Preço não informado</div>
                     )}
                     {oferta.precoAntigo ? (
-                      <div className="rounded-full bg-brand/5 px-3 py-1">
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-brand/5"}`}>
                         Antes: {oferta.precoAntigo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     ) : null}
-                    {oferta.cupom ? <div className="rounded-full bg-trust/10 px-3 py-1 text-trust">Cupom: {oferta.cupom}</div> : null}
+                    {oferta.cupom ? <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-trust/10 text-trust"}`}>Cupom: {oferta.cupom}</div> : null}
                     {oferta.ofertaBlack ? (
-                      <div className="rounded-full bg-black px-3 py-1 font-bold text-[#f6c843]">OFERTA BLACK</div>
+                      <div className="rounded-full bg-zinc-200 px-3 py-1 font-bold text-zinc-950">OFERTA BLACK</div>
                     ) : null}
                     {destaqueImperdivelAtivo(oferta) ? (
                       <div className="rounded-full bg-amber-100 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-300/70">🔥 IMPERDÍVEL</div>
@@ -339,7 +339,7 @@ export default function ListaOfertasPage() {
                   </div>
 
                   {oferta.publicadoEm && (
-                    <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.06em] text-ink/40">
+                    <p className={`mt-3 text-[10px] font-medium uppercase tracking-[0.06em] ${oferta.ofertaBlack ? "text-zinc-400" : "text-ink/40"}`}>
                       POSTADA EM: {formatarDataPublicacao(oferta.publicadoEm)}
                     </p>
                   )}
