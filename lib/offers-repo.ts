@@ -309,6 +309,20 @@ export async function duplicarOferta(
   });
 }
 
+/** Arquiva sem apagar o registro nem alterar a data original de publicação. */
+export async function arquivarOferta(supabase: SupabaseClient, id: string): Promise<void> {
+  const { error } = await supabase.from("offers")
+    .update({
+      status: "arquivada",
+      agendado_para: null,
+      destaque_imperdivel: false,
+      destaque_ate: null,
+      atualizado_em: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
 export async function excluirOferta(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("offers").delete().eq("id", id);
   if (error) throw error;
