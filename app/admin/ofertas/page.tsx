@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Oferta } from "@/lib/types";
 import {
   duplicarOferta,
+  arquivarOferta,
   excluirOferta,
   listarOfertasPaginadas,
   listarOfertasParaBuscaAdmin,
@@ -193,6 +194,22 @@ export default function ListaOfertasPage() {
     }
   }
 
+  async function aoArquivar(oferta: Oferta) {
+    if (oferta.status === "arquivada" || acaoEmAndamento) return;
+    if (!window.confirm(`Arquivar "${oferta.titulo}"? A oferta será ocultada dos clientes, mas continuará disponível no painel administrativo.`)) return;
+    setErroAcao("");
+    setAcaoEmAndamento(oferta.id);
+    try {
+      await arquivarOferta(supabase, oferta.id);
+      await recarregar();
+    } catch (erro) {
+      console.error(erro);
+      setErroAcao("Não foi possível arquivar esta oferta. Tente novamente.");
+    } finally {
+      setAcaoEmAndamento(null);
+    }
+  }
+
   async function aoExcluir(id: string) {
     const confirmou = window.confirm(
       "Tem certeza que deseja excluir esta oferta? Essa ação não pode ser desfeita."
@@ -307,17 +324,17 @@ export default function ListaOfertasPage() {
                         {oferta.loja} · {oferta.categoria}
                       </p>
                     </div>
-                    <StatusBadge status={statusVisual} />
+                    <span className={oferta.ofertaBlack && statusVisual === "publicada" ? "rounded-full bg-[#f3c45c] text-[#241800] [&>span]:!bg-transparent [&>span]:!text-[#241800] [&>span]:!font-bold" : ""}><StatusBadge status={statusVisual} /></span>
                   </div>
 
                   <div className={`mt-4 flex flex-wrap items-center gap-3 text-sm md:mt-3 md:gap-2 ${oferta.ofertaBlack ? "text-zinc-100" : "text-ink/60"}`}>
                     {oferta.precoPix != null && (
-                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-trust/10 text-trust"}`}>
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-[#e9cb86] text-[#221a0c]" : "bg-trust/10 text-trust"}`}>
                         Pix: {oferta.precoPix.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     )}
                     {oferta.precoAtual != null && (
-                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-cream"}`}>
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-[#e9cb86] text-[#221a0c]" : "bg-cream"}`}>
                         Atual: {oferta.precoAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     )}
@@ -325,13 +342,13 @@ export default function ListaOfertasPage() {
                       <div className="rounded-full bg-cream px-3 py-1">Preço não informado</div>
                     )}
                     {oferta.precoAntigo ? (
-                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-brand/5"}`}>
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-[#e9cb86] text-[#221a0c]" : "bg-brand/5"}`}>
                         Antes: {oferta.precoAntigo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     ) : null}
-                    {oferta.cupom ? <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-200 text-zinc-900" : "bg-trust/10 text-trust"}`}>Cupom: {oferta.cupom}</div> : null}
+                    {oferta.cupom ? <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-[#e9cb86] text-[#221a0c]" : "bg-trust/10 text-trust"}`}>Cupom: {oferta.cupom}</div> : null}
                     {oferta.ofertaBlack ? (
-                      <div className="rounded-full bg-zinc-200 px-3 py-1 font-bold text-zinc-950">OFERTA BLACK</div>
+                      <div className="rounded-full bg-[#e9cb86] px-3 py-1 font-bold text-[#221a0c]">OFERTA BLACK</div>
                     ) : null}
                     {destaqueImperdivelAtivo(oferta) ? (
                       <div className="rounded-full bg-amber-100 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-300/70">🔥 IMPERDÍVEL</div>
@@ -364,6 +381,15 @@ export default function ListaOfertasPage() {
                       className="admin-action-soft rounded-xl border px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Duplicar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void aoArquivar(oferta)}
+                      disabled={executando || oferta.status === "arquivada"}
+                      className={`rounded-xl border px-3 py-2 disabled:cursor-default ${oferta.status === "arquivada" ? "border-zinc-500 bg-zinc-600 text-white opacity-80" : "border-amber-500 bg-amber-100 font-semibold text-amber-950 hover:bg-amber-200 disabled:opacity-50"}`}
+                      aria-label={oferta.status === "arquivada" ? "Oferta arquivada" : "Arquivar oferta"}
+                    >
+                      {oferta.status === "arquivada" ? "Arquivado" : executando ? "Aguarde..." : "Arquivar"}
                     </button>
                     <button
                       onClick={() => aoExcluir(oferta.id)}
