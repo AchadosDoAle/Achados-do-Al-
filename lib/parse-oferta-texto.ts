@@ -561,77 +561,63 @@ export function interpretarTextoOferta(textoOriginal: string): ResultadoLeituraO
     detectados.push("modelo");
   }
 
-  // Leitura de preços tolerante a valores com ou sem centavos.
-  // Exemplos aceitos: DE R$ 129,90 | DE R$129 | POR R$ 89 | R$ 79,9 NO PIX.
-  // O preço antigo tem prioridade absoluta quando vier no padrão "DE R$...".
-  const textoPrecos = texto
-    .replace(/\u00A0/g, " ")
-    .replace(/[\*_~`]/g, " ")
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, " ")
-    .replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, " ");
-
-  const precoAntigo = matchMoeda(textoPrecos, [
-    new RegExp(`(?:^|\\n)\\s*DE\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})(?=\\s|$|[^0-9,])`, "i"),
-    new RegExp(`(?:preço|preco)\\s*(?:antigo|de)\\s*:?[\\s]*R\\s*\\$\\s*(${VALOR_BR})`, "i"),
-  ]);
-  if (precoAntigo != null) {
-    valores.precoAntigo = precoAntigo;
-    detectados.push("preço antigo");
-  }
-
-  // Campos declarados têm prioridade sobre frases livres e valores de parcelas.
-  // Lê PIX mesmo em linhas do WhatsApp com emoji, *negrito* ou ~riscado~.
-  const linhasPreco = textoPrecos.split("\n").map((linha) => linha.trim()).filter(Boolean);
-  const obterPrecoLinha = (padroes: RegExp[]) => {
+  // Analisa cada linha independentemente, sem misturar valores de parcelamento.
+  const linhasPreco = texto.split("\n").map((linha) => limparMarkdown(linha)).filter(Boolean);
+  const extrair = (padroes: RegExp[]) => {
     for (const padrao of padroes) {
       for (const linha of linhasPreco) {
-        const achado = linha.match(padrao);
-        if (achado?.[1]) return moedaParaNumero(achado[1]);
+        const match = linha.match(padrao);
+        if (match?.[1]) return moedaParaNumero(match[1]);
       }
     }
     return undefined;
   };
-
-  const precoPix = obterPrecoLinha([
-    /\b(?:PRE[CÇ]O\s*(?:NO\s*)?)?PIX\s*[:\-–—]?\s*(?:POR\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i,
-    /\bPOR\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)\s*(?:NO\s*)?PIX\b/i,
-    /\bR\s*\$\s*([\d.]+(?:,\d{1,2})?)\s*(?:NO\s*)?PIX\b/i,
-    /\b(?:À|A)\s*VISTA\s*(?:NO\s*PIX)?\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i,
+  const moeda = String.raw`R\s*\$\s*(${VALOR_BR})`;
+  const precoAntigo = extrair([
+    new RegExp(String.raw`\b(?:DE|ERA|ANTES|PRE[CÇ]O\s+ANTIGO)\s*[:\-–—]?\s*${moeda}`, "i"),
   ]);
-  if (precoPix != null) {
-    valores.precoPix = precoPix;
-    detectados.push("preço no Pix");
-  }
-
-  const precoAtual = obterPrecoLinha([
-    /\bPRE[CÇ]O\s*(?:ATUAL|FINAL|PARCELADO)\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i,
-    /\b(?:POR|AGORA)\s*[:\-–—]?\s*R\s*\$\s*([\d.]+(?:,\d{1,2})?)(?![\d,.])(?!(?:\s*(?:NO\s*PIX|À\s*VISTA)))/i,
+  if (precoAntigo != null) { valores.precoAntigo = precoAntigo; detectados.push("preço antigo"); }
+  const precoPix = extrair([
+    new RegExp(String.raw`\b(?:PRE[CÇ]O\s+(?:NO\s+)?)?PIX\s*[:\-–—]?\s*(?:POR\s*)?${moeda}`, "i"),
+    new RegExp(String.raw`\b(?:POR|AGORA)\s*[:\-–—]?\s*${moeda}\s*(?:NO\s+PIX|[ÀA]\s+VISTA)\b`, "i"),
+    new RegExp(String.raw`${moeda}\s*(?:NO\s+PIX|[ÀA]\s+VISTA)\b`, "i"),
   ]);
-  if (precoAtual != null) {
-    valores.precoAtual = precoAtual;
-    detectados.push("preço atual");
-  }
-  // Reconhece "3x de aproximadamente R$ 37,70", "3x R$37,70",
-  // "3 vezes de R$ 37,70" e "3 parcelas de R$ 37,70".
-  const parcelasMatch = textoPrecos.match(/\b(\d{1,2})\s*(?:x|×|vezes|parcelas)\s*(?:de\s*)?(?:(?:aproximadamente|aprox\.?|cerca\s+de|em\s+torno\s+de)\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)(?!\d)/i);
-  const parcelasSemValor = textoPrecos.match(/\b(?:em\s*)?(?:at[eé]\s*)?(\d{1,2})\s*(?:x|×|vezes|parcelas)\b/i);
-  const totalParcelado = matchMoeda(textoPrecos, [/\b(?:total\s*(?:parcelado|das?\s+parcelas|a\s+pagar)|valor\s+total(?:\s+parcelado)?)\s*(?:informado|final|aproximado)?\s*[:\-–—]?\s*(?:de\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i]);
-  if ((parcelasMatch || parcelasSemValor) && Number((parcelasMatch || parcelasSemValor)![1]) > 0) {
+  if (precoPix != null) { valores.precoPix = precoPix; detectados.push("preço no Pix"); }
+  const precoAtual = extrair([
+    new RegExp(String.raw`\bPRE[CÇ]O\s+(?:ATUAL|FINAL|PARCELADO)\s*[:\-–—]?\s*${moeda}`, "i"),
+    new RegExp(String.raw`\b(?:POR|AGORA)\s*[:\-–—]?\s*${moeda}(?![\d,.])(?!\s*(?:NO\s+PIX|[ÀA]\s+VISTA))`, "i"),
+  ]);
+  if (precoAtual != null) { valores.precoAtual = precoAtual; detectados.push("preço atual"); }
+  // Primeiro encontra a parcela, depois interpreta juros só na própria linha.
+  const linhaParcelas = linhasPreco.find((linha) => /\b\d{1,2}\s*(?:x|×|vezes|parcelas)\b/i.test(linha));
+  const mParcelas = linhaParcelas?.match(/\b(\d{1,2})\s*(?:x|×|vezes|parcelas)\s*(?:de\s*)?(?:aproximadamente\s*)?R\s*\$\s*([\d.]+(?:,\d{1,2})?)/i);
+  const mQuantidade = linhaParcelas?.match(/\b(\d{1,2})\s*(?:x|×|vezes|parcelas)\b/i);
+  const quantidade = Number((mParcelas ?? mQuantidade)?.[1] || 0);
+  const parcela = mParcelas ? moedaParaNumero(mParcelas[2]) : undefined;
+  const semJuros = Boolean(linhaParcelas && /\b(?:sem\s+juros|s\s*\/\s*juros)\b/i.test(linhaParcelas));
+  const comJuros = Boolean(linhaParcelas && /\b(?:com\s+juros|c\s*\/\s*juros)\b/i.test(linhaParcelas));
+  const totalDeclarado = extrair([new RegExp(String.raw`\b(?:TOTAL\s+PARCELADO|VALOR\s+TOTAL\s+PARCELADO)\s*[:\-–—]?\s*${moeda}`, "i")]);
+  if (quantidade > 0) {
     valores.ofereceParcelamento = true;
-    valores.parcelas = Number((parcelasMatch || parcelasSemValor)![1]);
-    if (parcelasMatch) valores.valorParcela = moedaParaNumero(parcelasMatch[2]);
-    const inicioParcelas = (parcelasMatch || parcelasSemValor)!.index ?? 0;
-    const contexto = textoPrecos.slice(inicioParcelas, inicioParcelas + (parcelasMatch || parcelasSemValor)![0].length + 50);
-    valores.parcelamentoSemJuros = /\b(?:sem\s+juros|s\s*\/\s*juros|sem\s+acr[eé]scimo)\b/i.test(contexto);
-    if (totalParcelado != null) {
-      valores.precoAtual = totalParcelado;
-      detectados.push("total parcelado informado");
+    valores.parcelas = quantidade;
+    valores.parcelamentoSemJuros = semJuros;
+    if (parcela != null) valores.valorParcela = parcela;
+    const base = precoAtual ?? precoPix;
+    if (semJuros && parcela == null && base != null) {
+      valores.valorParcela = Math.round((base / quantidade) * 100) / 100;
     }
+    if (parcela != null) {
+      const total = Math.round(quantidade * parcela * 100) / 100;
+      if (comJuros) {
+        valores.precoAtual = total;
+      } else if (semJuros && precoAtual == null) {
+        valores.precoAtual = total;
+      }
+    }
+    if (!semJuros && !comJuros) detectados.push("juros não informados — conferir");
     detectados.push("parcelamento");
-  } else if (totalParcelado != null) {
-    valores.precoAtual = totalParcelado;
-    detectados.push("total parcelado informado");
   }
+  if (totalDeclarado != null && !comJuros) valores.precoAtual = totalDeclarado;
 
   const urls = Array.from(texto.matchAll(/https?:\/\/[^\s)\]}]+/gi)).map((m) =>
     m[0].replace(/[.,;]+$/, "")
