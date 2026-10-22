@@ -214,8 +214,21 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   }
 
   function atualizarParcelamento(campo: "parcelas" | "valorParcela", valor: number | undefined) {
-    // Parcelamento não é preço à vista nem preço atual.
-    setValores((atual) => ({ ...atual, [campo]: valor }));
+    setValores((atual) => {
+      const proximo = { ...atual, [campo]: valor };
+      const quantidade = proximo.parcelas;
+      const parcela = proximo.valorParcela;
+      const base = proximo.precoAtual ?? proximo.precoPix;
+      if (!quantidade || quantidade <= 0) return proximo;
+      if (campo === "parcelas" && proximo.parcelamentoSemJuros && base != null && base > 0) {
+        proximo.valorParcela = Math.round((base / quantidade) * 100) / 100;
+      } else if (parcela != null && parcela > 0) {
+        proximo.precoAtual = Math.round(quantidade * parcela * 100) / 100;
+      } else if (proximo.parcelamentoSemJuros && base != null && base > 0) {
+        proximo.valorParcela = Math.round((base / quantidade) * 100) / 100;
+      }
+      return proximo;
+    });
   }
 
   function atualizarOfereceParcelamento(oferece: boolean) {
@@ -906,7 +919,13 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                         type="radio"
                         name="juros"
                         checked={Boolean(valores.parcelamentoSemJuros)}
-                        onChange={() => atualizarCampo("parcelamentoSemJuros", true)}
+                        onChange={() => setValores((atual) => ({
+                          ...atual,
+                          parcelamentoSemJuros: true,
+                          valorParcela: atual.parcelas && (atual.precoAtual ?? atual.precoPix) != null
+                            ? Math.round(((atual.precoAtual ?? atual.precoPix) as number) / atual.parcelas * 100) / 100
+                            : atual.valorParcela,
+                        }))}
                       />
                       Sem juros
                     </label>
@@ -925,7 +944,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                       placeholder="Total parcelado anunciado"
                     />
                     <p className="mt-1 text-xs text-ink/50">
-                      O total informado no texto é preservado, mesmo com arredondamentos nas parcelas. Se alterar a quantidade ou o valor das parcelas, o total será recalculado; você pode ajustá-lo manualmente.
+                      O total informado no texto é preservado, mesmo com arredondamentos nas parcelas. Sem juros: parcela e total são calculados quando possível. Com juros: total = parcelas × valor da parcela. Confira arredondamentos antes de publicar.
                     </p>
                   </Campo>
                 </div>
@@ -1042,10 +1061,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               <Campo rotulo="Validade da promoção"><input type="date" className={classeInput} value={valores.validadePromocao} onChange={(e) => atualizarCampo("validadePromocao", e.target.value)} /><p className="mt-1 text-xs text-ink/50">Depois dessa data, a oferta fica visualmente esgotada automaticamente.</p></Campo>
             </div>
 
-            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-ink/10 bg-white px-4 py-3 transition hover:border-ink/20">
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-zinc-600 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-800 px-4 py-3 text-white shadow-sm transition hover:border-zinc-400">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink">Oferta Black Friday</p>
-                <p className="mt-0.5 text-xs leading-5 text-ink/50">
+                <p className="text-sm font-semibold text-white">Oferta Black Friday</p>
+                <p className="mt-0.5 text-xs leading-5 text-zinc-300">
                   Opcional. Quando ativo, exibe a faixa preta <strong>OFERTA BLACK</strong> na página pública do produto.
                 </p>
               </div>
