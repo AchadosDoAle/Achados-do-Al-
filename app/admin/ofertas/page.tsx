@@ -208,7 +208,7 @@ export default function ListaOfertasPage() {
         <div className="flex flex-col items-start gap-3 md:justify-center md:pl-1">
           <div>
             <h1 className="font-display text-2xl font-bold text-ink">Ofertas</h1>
-            <p className="mt-1 text-sm text-ink/55">
+            <p className={`mt-1 text-sm ${oferta.ofertaBlack ? "text-zinc-300" : "text-ink/55"}`}>
               Gerencie rascunhos, agendamentos, publicações e ofertas vencidas.
             </p>
           </div>
@@ -222,7 +222,7 @@ export default function ListaOfertasPage() {
 
         <form
           onSubmit={aoPesquisar}
-          className="rounded-[22px] border border-brand/10 bg-white p-4 shadow-sm md:p-3.5"
+          className={`min-w-0 rounded-[22px] border p-4 shadow-sm md:p-3.5 ${oferta.ofertaBlack ? "border-zinc-600 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 text-white" : "border-brand/10 bg-white"}`}
         >
           <label htmlFor="pesquisa-ofertas" className="text-sm font-semibold text-ink">
             Pesquisar ofertas
@@ -302,7 +302,7 @@ export default function ListaOfertasPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-base font-semibold text-ink">{oferta.titulo}</p>
+                      <p className={`text-base font-semibold ${oferta.ofertaBlack ? "text-white" : "text-ink"}`}>{oferta.titulo}</p>
                       <p className="mt-1 text-sm text-ink/55">
                         {oferta.loja} · {oferta.categoria}
                       </p>
@@ -310,14 +310,14 @@ export default function ListaOfertasPage() {
                     <StatusBadge status={statusVisual} />
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/60 md:mt-3 md:gap-2">
+                  <div className={`mt-4 flex flex-wrap items-center gap-3 text-sm md:mt-3 md:gap-2 ${oferta.ofertaBlack ? "text-zinc-100" : "text-ink/60"}`}>
                     {oferta.precoPix != null && (
                       <div className="rounded-full bg-trust/10 px-3 py-1 text-trust">
                         Pix: {oferta.precoPix.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     )}
                     {oferta.precoAtual != null && (
-                      <div className="rounded-full bg-cream px-3 py-1">
+                      <div className={`rounded-full px-3 py-1 ${oferta.ofertaBlack ? "bg-zinc-700 text-white" : "bg-cream"}`}>
                         Atual: {oferta.precoAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </div>
                     )}
