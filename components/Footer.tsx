@@ -54,6 +54,15 @@ function LinkedinIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function PortfolioIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="7" width="18" height="14" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13a19 19 0 0 0 18 0M10 12.5h4" />
+    </svg>
+  );
+}
+
 export default function Footer({
   destacarInstagramProjeto = false,
 }: {
@@ -182,9 +191,28 @@ export default function Footer({
 
         <div className="mx-auto mt-4 flex max-w-xl flex-col items-center gap-2 border-t border-white/10 pt-4">
           <p className="text-[11px] text-text-muted/75">
-            Desenvolvido por Alexandre do Nascimento
+            Desenvolvido por{" "}
+            <a
+              href="https://anascimento.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-text-muted underline decoration-white/20 underline-offset-4 transition-colors hover:text-gold hover:decoration-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              title="Conheça o portfólio de Alexandre do Nascimento"
+            >
+              Alexandre do Nascimento
+            </a>
           </p>
           <div className="flex items-center gap-2" aria-label="Redes sociais do desenvolvedor">
+            <a
+              href="https://anascimento.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Portfólio profissional de Alexandre do Nascimento"
+              title="Portfólio — anascimento.dev"
+              className="btn-icon-modern inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-text-muted hover:border-gold/40 hover:text-gold"
+            >
+              <PortfolioIcon />
+            </a>
             <a
               href={INSTAGRAM_ALEXANDRE}
               target="_blank"
