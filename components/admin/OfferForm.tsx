@@ -437,7 +437,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   }
 
   async function salvarComStatus(statusDestino: StatusOferta) {
-    if (salvando || !validar(statusDestino)) return;
+    if (salvando || enviandoImagem || !validar(statusDestino)) return;
 
     setSalvando(true);
     setErroSalvar("");
@@ -520,22 +520,36 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   async function aoEscolherImagem(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0];
     if (!arquivo) return;
-    setPreviewImagem(URL.createObjectURL(arquivo));
+    // Remove de imediato a URL antiga para evitar que ela seja salva por engano.
+    setValores((atual) => ({ ...atual, imagemPrincipal: "" }));
     setErroPreviewImagem(false);
     setEnviandoImagem(true);
     setErroImagem("");
+    setStatusImagemAuto("");
+    const previaLocal = URL.createObjectURL(arquivo);
+    setPreviewImagem(previaLocal);
     try {
-      const nomeArquivo = `${crypto.randomUUID()}-${arquivo.name}`;
-      const { error } = await supabase.storage.from("ofertas").upload(nomeArquivo, arquivo, { upsert: false });
-      if (error) throw error;
-      const { data } = supabase.storage.from("ofertas").getPublicUrl(nomeArquivo);
-      atualizarCampo("imagemPrincipal", data.publicUrl);
-      setPreviewImagem(data.publicUrl);
+      const dadosEnvio = new FormData();
+      dadosEnvio.append("imagem", arquivo);
+      const resposta = await fetch("/api/admin/upload-imagem", {
+        method: "POST",
+        body: dadosEnvio,
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok || !dados.imagemUrl) {
+        throw new Error(dados.erro || "Falha no upload da imagem.");
+      }
+      setValores((atual) => ({ ...atual, imagemPrincipal: dados.imagemUrl }));
+      setPreviewImagem(dados.imagemUrl);
+      setErroPreviewImagem(false);
     } catch (erro) {
       console.error(erro);
-      setErroImagem("Não foi possível enviar a imagem. Confira o Storage do Supabase e tente de novo.");
+      setPreviewImagem(undefined);
+      setErroImagem(erro instanceof Error ? erro.message : "Não foi possível enviar a foto.");
     } finally {
+      URL.revokeObjectURL(previaLocal);
       setEnviandoImagem(false);
+      evento.target.value = "";
     }
   }
 
@@ -1217,7 +1231,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                           key={status}
                           type="button"
                           aria-pressed={ativo}
-                          disabled={salvando}
+                          disabled={salvando || enviandoImagem}
                           onClick={() => {
                             if (status === "agendada") {
                               atualizarCampo("status", status);
@@ -1238,7 +1252,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                     <Campo rotulo="Agendar para" obrigatorio erro={erros.agendadoPara}>
                       <input type="datetime-local" className={classeInput} value={valores.agendadoPara} onChange={(e) => atualizarCampo("agendadoPara", e.target.value)} />
                     </Campo>
-                    <button type="button" disabled={salvando} onClick={() => void salvarComStatus("agendada")} className="w-fit min-w-[190px] rounded-xl border border-amber-500 bg-amber-400 px-5 py-3 text-sm font-bold text-amber-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60">
+                    <button type="button" disabled={salvando || enviandoImagem} onClick={() => void salvarComStatus("agendada")} className="w-fit min-w-[190px] rounded-xl border border-amber-500 bg-amber-400 px-5 py-3 text-sm font-bold text-amber-950 hover:bg-amber-300 disabled:cursor-wait disabled:opacity-60">
                       {salvando ? "Salvando..." : "Salvar agendamento"}
                     </button>
                   </div>
