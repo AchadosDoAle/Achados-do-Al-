@@ -74,6 +74,14 @@ export const LOJAS_AFILIADAS = [
   "Samsung",
   "Sephora",
   "ShopTIMÃO",
+  // Anunciantes adicionais da Awin (sem duplicar Adidas e Nike).
+  "Arno",
+  "C&A",
+  "Drogal",
+  "Fut Fanatics",
+  "Intimissimi",
+  "KaBuM!",
+  "Stanley",
 ];
 
 export const LOJA_OUTROS = "Outros";
