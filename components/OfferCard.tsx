@@ -29,7 +29,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
 
   return (
     <div
-      className="offer-card-modern relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
+      className="offer-card-modern relative mx-auto flex h-full w-full max-w-[220px] flex-col animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
       style={{ animationDelay: `${Math.min(atraso, 8) * 0.05}s` }}
     >
       <button
@@ -43,7 +43,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
         {favorito ? "♥" : "♡"}
       </button>
 
-      <Link href={`/oferta/${oferta.slug}`} className="group block">
+      <Link href={`/oferta/${oferta.slug}`} className="group flex h-full flex-col">
         <div className="relative aspect-[4/5] overflow-hidden bg-bg-secondary">
           <img
             loading="lazy"
@@ -69,7 +69,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1 p-3">
+        <div className="flex flex-1 flex-col gap-1 px-3 pb-[2px] pt-3">
           <span className="line-clamp-2 text-sm font-medium text-text">{oferta.titulo}</span>
 
           <div>
@@ -109,7 +109,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           )}
 
           <span className="text-xs text-text-muted">🏪 {oferta.loja}</span>
-          <span className={`btn-modern mt-2 block rounded-lg py-2 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
+          <span className={`btn-modern mt-auto block rounded-lg py-2 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
             {expirada ? "Ver oferta esgotada" : "Acessar promoção"}
           </span>
         </div>
