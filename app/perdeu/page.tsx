@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import Container from "@/components/Container";
-import OfferCard from "@/components/OfferCard";
+import BuscaOfertasEncerradas from "@/components/BuscaOfertasEncerradas";
 import { criarClientePublico } from "@/lib/supabase/public";
 import { listarOfertasResumo } from "@/lib/offers-repo";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
@@ -53,17 +53,7 @@ export default async function PerdeuPage() {
           </span>
         </div>
 
-        {expiradas.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-white/10 bg-card/70 p-6 text-center">
-            <p className="text-sm text-text-muted">Nenhuma promoção encerrada por enquanto. Melhor ainda: você chegou cedo. 😄</p>
-          </div>
-        ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {expiradas.map((oferta, indice) => (
-              <OfferCard key={oferta.id} oferta={oferta} atraso={indice} />
-            ))}
-          </div>
-        )}
+        <BuscaOfertasEncerradas ofertas={expiradas} />
       </Container>
       <Footer />
       <BottomNav />
