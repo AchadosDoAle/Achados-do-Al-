@@ -4,6 +4,7 @@ import BotaoNomeCupom from "./BotaoNomeCupom";
 import BotaoCompartilharCupom from "./BotaoCompartilharCupom";
 import TermosCupom from "./TermosCupom";
 import AvisoCupomVencendo from "./AvisoCupomVencendo";
+import ContagemCupomRelampago from "./ContagemCupomRelampago";
 import { formatarDataPublicacao } from "@/lib/datas";
 
 function formatarValidade(valor: string) {
@@ -67,7 +68,8 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
             ) : (
               <p>Sem data de validade informada</p>
             )}
-            {!expirado && <AvisoCupomVencendo validade={cupom.validade} />}
+            {relampago && <ContagemCupomRelampago validade={cupom.validade} />}
+            {!expirado && !relampago && <AvisoCupomVencendo validade={cupom.validade} />}
             {cupom.publicadoEm && (
               <p className="coupon-voucher-posted">CUPOM POSTADO EM: {formatarDataPublicacao(cupom.publicadoEm)}</p>
             )}
