@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Container from "./Container";
-import AndroidAppFooterBanner from "./AndroidAppFooterBanner";
 import { LINK_CANAL_WHATSAPP, REDES_SOCIAIS } from "@/lib/seo-brand";
 
 const INSTAGRAM_ALEXANDRE = "https://www.instagram.com/alexandre_a7x/";
@@ -244,7 +243,6 @@ export default function Footer({
         </Link>
       </Container>
     </footer>
-    <AndroidAppFooterBanner />
     </>
   );
 }
