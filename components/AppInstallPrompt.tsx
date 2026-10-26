@@ -12,11 +12,23 @@ const ANDROID_OPEN_URL =
   ";S.browser_fallback_url=" + encodeURIComponent(PLAY_STORE_URL) + ";end";
 
 type Platform = "android" | "ios" | "other";
+type AndroidAppStatus = "checking" | "installed" | "download";
 type RelatedApp = { platform?: string; id?: string };
 type RelatedAppsNavigator = Navigator & {
   getInstalledRelatedApps?: () => Promise<RelatedApp[]>;
   standalone?: boolean;
 };
+
+function GooglePlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="h-5 w-5 shrink-0">
+      <path fill="#34A853" d="M3.5 2.5v19L13.7 12 3.5 2.5Z" />
+      <path fill="#4285F4" d="M3.5 2.5 15.7 9.6l-2 2.4L3.5 2.5Z" />
+      <path fill="#FBBC04" d="m13.7 12 2-2.4 4.1 2.3c.7.4.7.8 0 1.2l-4.1 2.4-2-3.5Z" />
+      <path fill="#EA4335" d="m3.5 21.5 12.2-7.1-2-2.4-10.2 9.5Z" />
+    </svg>
+  );
+}
 
 function plataformaAtual(): Platform {
   const ua = navigator.userAgent || "";
@@ -37,7 +49,7 @@ export default function AppInstallPrompt() {
   const [platform, setPlatform] = useState<Platform>("other");
   const [dismissed, setDismissed] = useState(false);
   const [standalone, setStandalone] = useState(false);
-  const [installedConfirmed, setInstalledConfirmed] = useState(false);
+  const [androidAppStatus, setAndroidAppStatus] = useState<AndroidAppStatus>("checking");
   const [bannerHeight, setBannerHeight] = useState(0);
   const bannerRef = useRef<HTMLDivElement>(null);
 
@@ -48,17 +60,40 @@ export default function AppInstallPrompt() {
       Boolean((navigator as RelatedAppsNavigator).standalone)
     );
 
+    if (plataformaAtual() !== "android") return;
+
     const nav = navigator as RelatedAppsNavigator;
-    if (typeof nav.getInstalledRelatedApps !== "function") return;
+    if (typeof nav.getInstalledRelatedApps !== "function") {
+      // Sem acesso à lista de aplicativos: oferecer o download, sem supor
+      // que o usuário não tem o app instalado.
+      setAndroidAppStatus("download");
+      return;
+    }
+
     let active = true;
+    const timeout = window.setTimeout(() => {
+      if (active) setAndroidAppStatus((current) =>
+        current === "checking" ? "download" : current
+      );
+    }, 2200);
+
     nav.getInstalledRelatedApps()
       .then((apps) => {
-        if (active && apps.some((app) =>
+        if (!active) return;
+        const installed = apps.some((app) =>
           app.platform === "play" && app.id === ANDROID_PACKAGE
-        )) setInstalledConfirmed(true);
+        );
+        setAndroidAppStatus(installed ? "installed" : "download");
       })
-      .catch(() => { /* Ausência de suporte não significa app desinstalado. */ });
-    return () => { active = false; };
+      .catch(() => {
+        if (active) setAndroidAppStatus("download");
+      })
+      .finally(() => window.clearTimeout(timeout));
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+    };
   }, []);
 
   const isPublicPage = !/^\/(?:admin|login|auth)(?:\/|$)/.test(pathname || "") &&
@@ -91,7 +126,9 @@ export default function AppInstallPrompt() {
   if (!visible) return null;
 
   const isAndroid = platform === "android";
-  const actionLabel = isAndroid ? "Abrir app" : "Ver app iOS";
+  const installedConfirmed = androidAppStatus === "installed";
+  const checkingAndroid = androidAppStatus === "checking";
+  const actionLabel = installedConfirmed ? "Abrir app" : "Baixar app";
 
   return (
     <>
@@ -115,7 +152,9 @@ export default function AppInstallPrompt() {
                 {isAndroid
                   ? installedConfirmed
                     ? "Abra o app para ver seus favoritos e alertas."
-                    : "Abra o app ou baixe na Play Store."
+                    : checkingAndroid
+                      ? "Verificando o aplicativo no aparelho..."
+                      : "Instale o aplicativo pela Play Store."
                   : "A versão para iPhone está em desenvolvimento."}
               </p>
             </div>
@@ -130,19 +169,31 @@ export default function AppInstallPrompt() {
           </div>
           <div className="mt-2 flex items-center gap-2">
             {isAndroid ? (
-              <a
-                href={ANDROID_OPEN_URL}
-                className="inline-flex min-h-9 flex-1 items-center justify-center rounded-lg bg-gold px-3 py-2 text-xs font-extrabold text-[#091724] hover:bg-[#ffd16b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-              >
-                {actionLabel}
-              </a>
+              checkingAndroid ? (
+                <button type="button" disabled
+                  className="inline-flex min-h-9 flex-1 items-center justify-center rounded-lg bg-gold/80 px-3 py-2 text-xs font-extrabold text-[#091724] opacity-80"
+                >
+                  Verificando app...
+                </button>
+              ) : (
+                <a
+                  href={installedConfirmed ? ANDROID_OPEN_URL : PLAY_STORE_URL}
+                  target={installedConfirmed ? undefined : "_blank"}
+                  rel={installedConfirmed ? undefined : "noopener noreferrer"}
+                  aria-label={installedConfirmed ? "Abrir Achados do Alê no Android" : "Baixar Achados do Alê na Google Play Store"}
+                  className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg bg-gold px-3 py-2 text-xs font-extrabold text-[#091724] hover:bg-[#ffd16b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                >
+                  {!installedConfirmed && <GooglePlayIcon />}
+                  {actionLabel}
+                </a>
+              )
             ) : (
               <Link
                 href="/app/ios"
                 onClick={() => setDismissed(true)}
                 className="inline-flex min-h-9 flex-1 items-center justify-center rounded-lg bg-gold px-3 py-2 text-xs font-extrabold text-[#091724] hover:bg-[#ffd16b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
               >
-                {actionLabel}
+                Ver app iOS
               </Link>
             )}
             <button
@@ -153,14 +204,7 @@ export default function AppInstallPrompt() {
               Continuar no site
             </button>
           </div>
-          {isAndroid && !installedConfirmed && (
-            <p className="mt-1.5 text-center text-[11px] text-[#c3d0e1]">
-              Ainda não tem?{" "}
-              <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-gold underline underline-offset-2">
-                Baixar na Play Store
-              </a>
-            </p>
-          )}
+
         </div>
       </aside>
     </>
