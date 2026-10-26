@@ -114,9 +114,9 @@ export default function RootLayout({
         </>
       ) : null}
       <body className="font-sans">
+        <AppInstallPrompt />
         {children}
         <LivePublicUpdates />
-        <AppInstallPrompt />
         <AnalyticsConsentGate measurementId={GA_ID} />
       </body>
     </html>
