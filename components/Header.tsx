@@ -50,7 +50,7 @@ export default function Header() {
   const perdeuAtivo = pathname === "/perdeu";
 
   return (
-    <header className="sticky top-0 z-20 bg-bg-secondary/95 backdrop-blur">
+    <header className="sticky top-[var(--app-top-prompt-height,0px)] z-20 bg-bg-secondary/95 backdrop-blur md:top-0">
       <Container className="px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 shrink-0">
