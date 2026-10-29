@@ -97,7 +97,7 @@ type Demografia = {
 };
 
 type DiagnosticoRastreamento = {
-  status: "ok" | "missing_rpc" | "permission" | "error";
+  status: "ok" | "warning" | "missing_rpc" | "permission" | "error";
   message: string;
 };
 
@@ -166,10 +166,10 @@ export default function RelatoriosPage() {
   const [diagnostico, setDiagnostico] = useState<DiagnosticoRastreamento | null>(null);
   const [diagnosticando, setDiagnosticando] = useState(false);
 
-  const testarRastreamento = useCallback(async () => {
+  const testarRastreamento = useCallback(async (testeReal = false) => {
     setDiagnosticando(true);
     try {
-      const resposta = await fetch("/api/admin/analytics-diagnostics", { cache: "no-store" });
+      const resposta = await fetch("/api/admin/analytics-diagnostics", { method: testeReal ? "POST" : "GET", cache: "no-store" });
       if (!resposta.ok) throw new Error("Não foi possível consultar o diagnóstico.");
       setDiagnostico((await resposta.json()) as DiagnosticoRastreamento);
     } catch {
@@ -369,10 +369,10 @@ export default function RelatoriosPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-base font-bold text-ink">Diagnóstico do rastreamento</h2>
-            <p className="mt-1 text-sm text-ink/55">Confere se visitantes podem registrar visualizações sem gravar um acesso de teste.</p>
+            <p className="mt-1 text-sm text-ink/55">Consulta os registros atuais. Ao clicar em testar, cria uma visita temporária, verifica a gravação e a leitura e depois a remove.</p>
           </div>
-          <button type="button" onClick={() => void testarRastreamento()} disabled={diagnosticando} className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50">
-            {diagnosticando ? "Verificando..." : "Verificar novamente"}
+          <button type="button" onClick={() => void testarRastreamento(true)} disabled={diagnosticando} className="admin-action-soft rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50">
+            {diagnosticando ? "Testando..." : "Testar gravação e leitura"}
           </button>
         </div>
         <p className={`mt-3 text-sm font-medium ${diagnostico?.status === "ok" ? "text-emerald-700" : diagnostico ? "text-amber-800" : "text-ink/55"}`}>
