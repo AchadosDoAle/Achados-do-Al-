@@ -5,6 +5,42 @@ import { criarClienteNavegador } from "@/lib/supabase/client";
 
 type Periodo = "24h" | "7d" | "30d" | "todos";
 
+// O Supabase/PostgREST pode devolver no máximo 1.000 linhas por requisição,
+// mesmo que o cliente peça 5.000. Percorrer páginas evita que o "Todo o
+// período" e os gráficos parem silenciosamente nos primeiros 1.000 registros.
+const TAMANHO_LOTE = 1000;
+type TabelaRelatorio = "offers" | "analytics_pageviews" | "analytics_sessions" | "clicks" | "publications";
+
+async function consultarTodosRegistros<T>(
+  supabase: ReturnType<typeof criarClienteNavegador>,
+  tabela: TabelaRelatorio,
+  campos: string,
+  colunaOrdenacao: string,
+  colunaDesempate: string,
+  desde: string | null
+): Promise<{ data: T[]; error: { message: string } | null }> {
+  const acumulados: T[] = [];
+  let inicio = 0;
+
+  for (;;) {
+    let consulta = supabase
+      .from(tabela)
+      .select(campos)
+      .order(colunaOrdenacao, { ascending: false })
+      .order(colunaDesempate, { ascending: false })
+      .range(inicio, inicio + TAMANHO_LOTE - 1);
+    if (desde) consulta = consulta.gte(colunaOrdenacao, desde);
+
+    const { data, error } = await consulta;
+    if (error) return { data: [], error };
+
+    const lote = (data ?? []) as unknown as T[];
+    acumulados.push(...lote);
+    if (lote.length < TAMANHO_LOTE) return { data: acumulados, error: null };
+    inicio += TAMANHO_LOTE;
+  }
+}
+
 type OfertaResumo = {
   id: string;
   slug: string;
@@ -124,6 +160,9 @@ export default function RelatoriosPage() {
   const [demografia, setDemografia] = useState<Demografia>({ configured: false, age: [], gender: [] });
   const [erroPageviews, setErroPageviews] = useState<string | null>(null);
   const [erroSessoes, setErroSessoes] = useState<string | null>(null);
+  const [erroCliques, setErroCliques] = useState<string | null>(null);
+  const [erroPublicacoes, setErroPublicacoes] = useState<string | null>(null);
+  const [erroOfertas, setErroOfertas] = useState<string | null>(null);
   const [diagnostico, setDiagnostico] = useState<DiagnosticoRastreamento | null>(null);
   const [diagnosticando, setDiagnosticando] = useState(false);
 
@@ -142,55 +181,39 @@ export default function RelatoriosPage() {
 
   const carregarOnline = useCallback(async () => {
     const desde = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("analytics_sessions")
-      .select("visitor_id")
+      .select("visitor_id", { count: "exact", head: true })
       .gte("last_seen", desde);
 
-    if (!error) setOnlineAgora((data ?? []).length);
+    if (!error) setOnlineAgora(count ?? 0);
   }, [supabase]);
 
   const carregar = useCallback(async () => {
     setCarregando(true);
     const desde = inicioPeriodo(periodo);
 
-    let consultaPageviews = supabase
-      .from("analytics_pageviews")
-      .select("visitor_id,path,referrer,source,device_type,utm_source,utm_medium,utm_campaign,criado_em")
-      .order("criado_em", { ascending: false })
-      .limit(5000);
-
-    let consultaSessoes = supabase
-      .from("analytics_sessions")
-      .select("visitor_id,last_seen,source,device_type,current_path,utm_source,utm_medium,utm_campaign")
-      .order("last_seen", { ascending: false })
-      .limit(5000);
-
-    let consultaCliques = supabase
-      .from("clicks")
-      .select("offer_id,origem,criado_em,offers(titulo,loja,categoria)")
-      .order("criado_em", { ascending: false })
-      .limit(5000);
-
-    let consultaPublicacoes = supabase
-      .from("publications")
-      .select("status,enviado_em")
-      .order("enviado_em", { ascending: false })
-      .limit(5000);
-
-    if (desde) {
-      consultaPageviews = consultaPageviews.gte("criado_em", desde);
-      consultaSessoes = consultaSessoes.gte("last_seen", desde);
-      consultaCliques = consultaCliques.gte("criado_em", desde);
-      consultaPublicacoes = consultaPublicacoes.gte("enviado_em", desde);
-    }
-
     const [resOfertas, resPageviews, resSessoes, resCliques, resPublicacoes] = await Promise.all([
-      supabase.from("offers").select("id,slug,titulo,loja,categoria,status,validade_promocao"),
-      consultaPageviews,
-      consultaSessoes,
-      consultaCliques,
-      consultaPublicacoes,
+      consultarTodosRegistros<OfertaResumo>(
+        supabase, "offers", "id,slug,titulo,loja,categoria,status,validade_promocao", "criado_em", "id", null
+      ),
+      consultarTodosRegistros<Pageview>(
+        supabase, "analytics_pageviews",
+        "visitor_id,path,referrer,source,device_type,utm_source,utm_medium,utm_campaign,criado_em",
+        "criado_em", "id", desde
+      ),
+      consultarTodosRegistros<Sessao>(
+        supabase, "analytics_sessions",
+        "visitor_id,last_seen,source,device_type,current_path,utm_source,utm_medium,utm_campaign",
+        "last_seen", "visitor_id", desde
+      ),
+      consultarTodosRegistros<LinhaClique>(
+        supabase, "clicks", "offer_id,origem,criado_em,offers(titulo,loja,categoria)",
+        "criado_em", "id", desde
+      ),
+      consultarTodosRegistros<{ status: string; enviado_em: string | null }>(
+        supabase, "publications", "status,enviado_em", "enviado_em", "id", desde
+      ),
     ]);
 
     setOfertas((resOfertas.data ?? []) as OfertaResumo[]);
@@ -198,9 +221,15 @@ export default function RelatoriosPage() {
     setSessoes((resSessoes.data ?? []) as Sessao[]);
     setCliques((resCliques.data ?? []) as unknown as LinhaClique[]);
     setPublicacoes((resPublicacoes.data ?? []) as { status: string; enviado_em: string | null }[]);
-    setErroAnalytics(Boolean(resPageviews.error || resSessoes.error));
+    setErroAnalytics(Boolean(
+      resPageviews.error || resSessoes.error || resCliques.error ||
+      resOfertas.error || resPublicacoes.error
+    ));
     setErroPageviews(resPageviews.error?.message ?? null);
     setErroSessoes(resSessoes.error?.message ?? null);
+    setErroCliques(resCliques.error?.message ?? null);
+    setErroPublicacoes(resPublicacoes.error?.message ?? null);
+    setErroOfertas(resOfertas.error?.message ?? null);
 
     try {
       const respostaDemografia = await fetch(`/api/admin/ga4-demographics?periodo=${periodo}`, { cache: "no-store" });
@@ -329,6 +358,9 @@ export default function RelatoriosPage() {
           <p className="font-bold">Não foi possível consultar todas as métricas do Supabase.</p>
           {erroPageviews && <p className="mt-1">Visualizações: {erroPageviews}</p>}
           {erroSessoes && <p className="mt-1">Sessões: {erroSessoes}</p>}
+          {erroCliques && <p className="mt-1">Cliques: {erroCliques}</p>}
+          {erroPublicacoes && <p className="mt-1">Publicações: {erroPublicacoes}</p>}
+          {erroOfertas && <p className="mt-1">Ofertas: {erroOfertas}</p>}
           <p className="mt-2">Verifique as tabelas, as permissões e o script <strong>supabase/analytics.sql</strong>. Não execute SQL sem antes confirmar o erro.</p>
         </div>
       )}
