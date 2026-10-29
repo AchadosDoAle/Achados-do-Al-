@@ -322,8 +322,8 @@ export default function RelatoriosPage() {
   if (carregando) return <p className="text-sm text-ink/60">Carregando relatório...</p>;
 
   return (
-    <div className="flex flex-col gap-6 print:gap-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-6 print:gap-4">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand/60">Analytics</p>
           <h1 className="mt-1 font-display text-2xl font-bold text-ink">Relatórios do site</h1>
@@ -380,7 +380,7 @@ export default function RelatoriosPage() {
         </p>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
+      <section className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
         <Cartao rotulo="Online c/ métricas" valor={onlineAgora} destaque />
         <Cartao rotulo="Visualizações" valor={pageviews.length} />
         <Cartao rotulo="Visitantes c/ métricas" valor={visitantesUnicos} />
@@ -391,7 +391,7 @@ export default function RelatoriosPage() {
         <Cartao rotulo="Envios / falhas" valor={`${enviados} / ${falhas}`} />
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2">
         <ListaContagem titulo="Acessos por dia" subtitulo="Evolução das visualizações no período selecionado." dados={acessosPorDia} total={pageviews.length} limite={14} />
         <ListaContagem titulo="Cliques por dia" subtitulo="Evolução dos cliques de saída para as lojas." dados={cliquesPorDia} total={cliques.length} limite={14} />
         <ListaContagem titulo="De onde vêm os acessos" subtitulo="Origem registrada somente nas sessões que autorizaram métricas adicionais." dados={fontes} total={sessoes.length} />
@@ -406,7 +406,7 @@ export default function RelatoriosPage() {
         <ListaContagem titulo="Campanhas UTM" subtitulo="Campanhas identificadas nas sessões que autorizaram métricas adicionais." dados={campanhas} total={sessoes.length} limite={10} />
       )}
 
-      <section className="rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
+      <section className="min-w-0 max-w-full rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">Idade e gênero</h2>
@@ -447,7 +447,7 @@ export default function RelatoriosPage() {
         </a>
       </section>
 
-      <section className="rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
+      <section className="min-w-0 max-w-full rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
         <h2 className="font-display text-lg font-bold text-ink">Acessos recentes</h2>
         <p className="mt-1 text-sm text-ink/55">Últimas páginas registradas no período selecionado.</p>
         {recentes.length === 0 ? (
@@ -464,7 +464,7 @@ export default function RelatoriosPage() {
             )}
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 w-full max-w-full overflow-x-auto">
             <table className="w-full min-w-[650px] text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-ink/45">
                 <tr>
@@ -498,7 +498,7 @@ export default function RelatoriosPage() {
 
 function Cartao({ rotulo, valor, destaque = false }: { rotulo: string; valor: string | number; destaque?: boolean }) {
   return (
-    <div className={`rounded-[20px] p-4 ring-1 shadow-sm ${destaque ? "bg-brand text-white ring-brand" : "bg-white text-ink ring-brand/10"}`}>
+    <div className={`min-w-0 rounded-[20px] p-4 ring-1 shadow-sm ${destaque ? "bg-brand text-white ring-brand" : "bg-white text-ink ring-brand/10"}`}>
       <p className={`text-xs font-semibold ${destaque ? "text-white/75" : "text-ink/45"}`}>{rotulo}</p>
       <p className="mt-1 text-2xl font-extrabold">{valor}</p>
       {destaque && <span className="mt-2 inline-flex items-center gap-1 text-[11px] text-white/75"><span className="h-2 w-2 rounded-full bg-trust" /> atualizado ao vivo</span>}
@@ -548,7 +548,7 @@ function ListaContagem({
   const maior = entradas[0]?.[1] ?? 1;
 
   return (
-    <section className="rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
+    <section className="min-w-0 max-w-full rounded-[22px] bg-white p-5 ring-1 ring-brand/10 shadow-sm">
       <h2 className="font-display text-lg font-bold text-ink">{titulo}</h2>
       {subtitulo && <p className="mt-1 text-sm text-ink/50">{subtitulo}</p>}
       {entradas.length === 0 ? (
