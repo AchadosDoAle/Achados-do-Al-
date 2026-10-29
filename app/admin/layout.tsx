@@ -22,11 +22,11 @@ export default function AdminLayout({
 }) {
   return (
     <div
-      className="admin-area min-h-screen bg-[#F1F2F4] text-ink"
+      className="admin-area min-h-screen w-full min-w-0 overflow-x-clip bg-[#F1F2F4] text-ink"
       style={{ colorScheme: "light" }}
     >
       <header className="sticky top-0 z-20 border-b border-brand/10 bg-white shadow-sm print:hidden">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div>
             <Link href="/admin" className="font-display text-lg font-bold text-ink sm:text-xl">
               Painel — Achados do Alê
@@ -40,7 +40,7 @@ export default function AdminLayout({
       </header>
 
       <div className="border-b border-brand/10 bg-white print:hidden">
-        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
+        <nav className="mx-auto flex w-full max-w-7xl min-w-0 gap-2 overflow-x-auto px-4 py-3 sm:px-6">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -53,7 +53,7 @@ export default function AdminLayout({
         </nav>
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6">{children}</main>
+      <main className="mx-auto w-full max-w-7xl min-w-0 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
     </div>
   );
 }
