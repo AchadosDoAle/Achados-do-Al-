@@ -22,6 +22,7 @@ import { interpretarTextoOferta } from "@/lib/parse-oferta-texto";
 import PreviaWhatsApp from "./PreviaWhatsApp";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
 import { formatarDataPublicacao } from "@/lib/datas";
+import { garantirTagAmazon } from "@/lib/amazon-affiliate";
 
 const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
@@ -460,7 +461,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           return;
         }
       }
-      const valoresParaSalvar = normalizarTextosOferta({ ...valores, status: statusDestino, agendadoPara: statusDestino === "agendada" ? valores.agendadoPara : "" });
+      const valoresParaSalvar = normalizarTextosOferta({ ...valores, linkProduto: garantirTagAmazon(valores.linkProduto), status: statusDestino, agendadoPara: statusDestino === "agendada" ? valores.agendadoPara : "" });
       if (ofertaExistente) {
         await atualizarOferta(supabase, ofertaExistente.id, valoresParaSalvar);
         if (ofertaExistente.status === "expirada" && valoresParaSalvar.status === "publicada") {
@@ -1203,6 +1204,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <Campo rotulo="Link do produto" obrigatorio erro={erros.linkProduto}><input className={classeInput} value={valores.linkProduto} onChange={(e) => atualizarCampo("linkProduto", e.target.value)} /></Campo>
+              {valores.loja.toLocaleLowerCase("pt-BR").includes("amazon") && <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">Amazon Associados: links diretos recebem automaticamente o ID <strong>alexandrea702-20</strong> ao salvar. Links curtos amzn.to devem ser gerados no SiteStripe da sua conta para manter o rastreamento.</p>}
               <button type="button" onClick={() => buscarImagemAutomaticamente()} disabled={buscandoImagemAuto} className="admin-action admin-btn-modern w-fit rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-60">{buscandoImagemAuto ? "Buscando imagem..." : "🔍 Buscar foto automaticamente"}</button>
               {statusImagemAuto && <p className="text-xs text-ink/60">{statusImagemAuto}</p>}
               {valores.linkProduto && !linkParecePertencerALoja(valores.linkProduto, valores.loja) && <p className="rounded-xl bg-accent/10 px-3 py-2 text-xs text-accent-dark">⚠️ Confira se o link pertence à loja selecionada.</p>}
