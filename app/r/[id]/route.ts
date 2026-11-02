@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
+import { garantirTagAmazon } from "@/lib/amazon-affiliate";
 
 export const dynamic = "force-dynamic";
 
@@ -10,5 +11,5 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const origem = req.nextUrl.searchParams.get("origem") || req.headers.get("referer") || "site";
   await supabase.from("clicks").insert({ offer_id: oferta.id, origem: String(origem).slice(0, 500) });
-  return NextResponse.redirect(oferta.link_produto, 302);
+  return NextResponse.redirect(garantirTagAmazon(oferta.link_produto), 302);
 }
