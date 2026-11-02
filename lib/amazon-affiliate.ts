@@ -3,7 +3,7 @@
  * O ID de associado não é uma credencial secreta: ele identifica a origem
  * das compras elegíveis para atribuição de comissão.
  */
-export const AMAZON_ASSOCIATE_TAG = "alexandrea702-20";
+export const AMAZON_ASSOCIATE_TAG = "achadosdoal0d-20";
 
 const HOSTS_AMAZON = new Set([
   "amazon.com.br",
