@@ -187,6 +187,9 @@ export default function Footer({
           © {new Date().getFullYear()} Achado do Alê. Ofertas sujeitas a
           disponibilidade e alteração de preço pela loja parceira.
         </p>
+        <p className="mt-2 text-[11px] leading-5 text-text-muted/80">
+          Como associado da Amazon, ganho com compras qualificadas.
+        </p>
 
         <div className="mx-auto mt-4 flex max-w-xl flex-col items-center gap-2 border-t border-white/10 pt-4">
           <p className="text-[11px] text-text-muted/75">
