@@ -23,6 +23,7 @@ import PreviaWhatsApp from "./PreviaWhatsApp";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
 import { formatarDataPublicacao } from "@/lib/datas";
 import { garantirTagAmazon } from "@/lib/amazon-affiliate";
+import { detectarBebidaAlcoolica } from "@/lib/bebida-alcoolica";
 
 const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
@@ -95,6 +96,7 @@ const VALORES_INICIAIS: OfertaFormValues = {
   textoPublicacao: "",
   observacoes: "",
   imagemPrincipal: "",
+  bebidaAlcoolica: false,
   ofertaBlack: false,
   destaqueImperdivel: false,
   destaqueAte: "",
@@ -185,7 +187,13 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
   const ofertaExistenteExpirada = ofertaExistente ? ofertaEstaExpirada(ofertaExistente) : false;
 
   function atualizarCampo<K extends keyof OfertaFormValues>(campo: K, valor: OfertaFormValues[K]) {
-    setValores((atual) => ({ ...atual, [campo]: valor }));
+    setValores((atual) => {
+      const proximo = { ...atual, [campo]: valor };
+      if ((campo === "titulo" || campo === "categoria") && detectarBebidaAlcoolica({ titulo: proximo.titulo, categoria: proximo.categoria })) {
+        proximo.bebidaAlcoolica = true;
+      }
+      return proximo;
+    });
   }
 
   function atualizarLinkImagemManual(link: string) {
@@ -317,6 +325,11 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           }
         : {}),
       ...resultado.valores,
+      bebidaAlcoolica: atual.bebidaAlcoolica || detectarBebidaAlcoolica({
+        titulo: String(resultado.valores.titulo ?? atual.titulo ?? ""),
+        categoria: String(resultado.valores.categoria ?? atual.categoria ?? ""),
+        texto,
+      }),
       textoPublicacao: texto,
     }));
 
@@ -695,6 +708,13 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             <Campo rotulo="Nome do produto" obrigatorio erro={erros.titulo}>
               <input className={`${classeInput} uppercase`} value={valores.titulo} onChange={(e) => atualizarCampo("titulo", paraCaixaAlta(e.target.value))} />
             </Campo>
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-[#ead6d7] bg-[#fff8f8] px-4 py-3">
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-[#54252b]">Bebida alcoólica · aviso 18+</span>
+                <span className="mt-0.5 block text-xs leading-5 text-[#76565a]">O reconhecimento sugere esta opção pelo nome/categoria. Confira e marque manualmente se necessário.</span>
+              </span>
+              <input type="checkbox" className="h-4 w-4 shrink-0 accent-[#6b3038]" checked={Boolean(valores.bebidaAlcoolica)} onChange={(e) => atualizarCampo("bebidaAlcoolica", e.target.checked)} />
+            </label>
             {camposParaRevisar.length > 0 && (
               <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
                 <strong>⚠️ Confira antes de publicar:</strong> não consegui reconhecer automaticamente {camposParaRevisar.join(", ")}.

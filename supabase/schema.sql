@@ -37,6 +37,7 @@ create table if not exists public.offers (
   texto_publicacao text,
   observacoes text,
   imagem_principal text,
+  bebida_alcoolica boolean not null default false,
   oferta_black boolean not null default false,
   destaque_imperdivel boolean not null default false,
   destaque_ate timestamptz,

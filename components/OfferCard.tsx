@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Oferta } from "@/lib/types";
 import { ehFavorito, alternarFavorito } from "@/lib/favoritos";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { ofertaEhBebidaAlcoolica } from "@/lib/bebida-alcoolica";
 
 function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -13,6 +14,7 @@ function formatarPreco(valor: number) {
 export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atraso?: number }) {
   const [favorito, setFavorito] = useState(false);
   const expirada = ofertaEstaExpirada(oferta);
+  const bebidaAlcoolica = ofertaEhBebidaAlcoolica(oferta);
 
   useEffect(() => {
     setFavorito(ehFavorito(oferta.id));
@@ -54,6 +56,11 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
               oferta.imagemPrincipal ? "object-cover" : "object-contain p-8 opacity-70"
             } ${expirada ? "grayscale opacity-60" : ""}`}
           />
+          {bebidaAlcoolica ? (
+            <span className="absolute bottom-2 right-2 z-10 rounded-full border border-white/20 bg-[#4b1f24]/90 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.06em] text-white shadow-md backdrop-blur-sm">
+              18+ · Bebida alcoólica
+            </span>
+          ) : null}
           {!expirada && desconto ? (
             <span className="absolute right-2 top-2 z-10 rounded-full bg-gold px-2 py-1 text-xs font-bold text-bg">
               -{desconto}%

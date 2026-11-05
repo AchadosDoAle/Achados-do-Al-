@@ -11,6 +11,7 @@ import Container from "@/components/Container";
 import ReportarOferta from "@/components/ReportarOferta";
 import OfertaCompraFixa from "@/components/OfertaCompraFixa";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
+import { ofertaEhBebidaAlcoolica } from "@/lib/bebida-alcoolica";
 import { formatarDataPublicacao } from "@/lib/datas";
 import {
   descricaoSocialDaOferta,
@@ -41,6 +42,7 @@ export async function generateMetadata({
   const descricao = descricaoSocialDaOferta(oferta);
   const tituloSocial = tituloSocialDaOferta(oferta);
   const expirada = ofertaEstaExpirada(oferta);
+  const bebidaAlcoolica = ofertaEhBebidaAlcoolica(oferta);
   const url = `${URL_SITE}/oferta/${oferta.slug}`;
   const imagensCompartilhamento = imagensSociaisDaOferta(oferta);
 
@@ -216,6 +218,11 @@ export default async function PaginaOferta({
                     : "object-contain p-16 opacity-70"
                 } ${expirada ? "grayscale opacity-60" : ""}`}
               />
+              {bebidaAlcoolica ? (
+                <span className="absolute bottom-3 right-3 z-10 rounded-full border border-white/20 bg-[#4b1f24]/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white shadow-md backdrop-blur-sm">
+                  18+ · Bebida alcoólica
+                </span>
+              ) : null}
               {!expirada && desconto ? (
                 <span className="absolute right-3 top-3 z-10 rounded-full bg-gold px-3 py-1 text-sm font-bold text-bg shadow-md">
                   -{desconto}%

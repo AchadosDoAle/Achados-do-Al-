@@ -42,6 +42,7 @@ export function linhaParaOferta(linha: any): Oferta {
     textoPublicacao: linha.texto_publicacao ?? undefined,
     observacoes: linha.observacoes ?? undefined,
     imagemPrincipal: linha.imagem_principal ?? undefined,
+    bebidaAlcoolica: linha.bebida_alcoolica ?? false,
     ofertaBlack: linha.oferta_black ?? false,
     destaqueImperdivel: linha.destaque_imperdivel ?? false,
     destaqueAte: isoParaDatetimeLocalBrasilia(linha.destaque_ate),
@@ -104,6 +105,7 @@ function ofertaParaLinha(valores: Partial<OfertaFormValues>) {
     texto_publicacao: valores.textoPublicacao || null,
     observacoes: valores.observacoes || null,
     imagem_principal: valores.imagemPrincipal || null,
+    bebida_alcoolica: valores.bebidaAlcoolica ?? false,
     oferta_black: valores.ofertaBlack ?? false,
     destaque_imperdivel: valores.destaqueImperdivel ?? false,
     destaque_ate: datetimeLocalBrasiliaParaIso(valores.destaqueAte),
@@ -210,7 +212,7 @@ const CAMPOS_CARD = [
   "preco_antigo", "preco_atual", "preco_pix", "oferece_parcelamento",
   "parcelas", "valor_parcela", "parcelamento_sem_juros", "cupom",
   "frete_gratis", "validade_promocao", "link_produto", "imagem_principal",
-  "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em", "publicado_em"
+  "bebida_alcoolica", "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em", "publicado_em"
 ].join(",");
 
 export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {

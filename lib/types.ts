@@ -62,6 +62,7 @@ export type Oferta = {
   textoPublicacao?: string;
   observacoes?: string;
   imagemPrincipal?: string;
+  bebidaAlcoolica?: boolean;
   ofertaBlack?: boolean;
   destaqueImperdivel?: boolean;
   destaqueAte?: string;
