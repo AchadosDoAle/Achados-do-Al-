@@ -31,7 +31,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
 
   return (
     <div
-      className="offer-card-modern relative mx-auto w-full max-w-[220px] animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
+      className="offer-card-modern relative mx-auto w-full max-w-[220px] min-w-0 animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
       style={{ animationDelay: `${Math.min(atraso, 8) * 0.05}s` }}
     >
       <button
@@ -76,8 +76,8 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1 p-3">
-          <span className="line-clamp-2 text-sm font-medium text-text">{oferta.titulo}</span>
+        <div className="flex min-w-0 flex-col gap-1 p-2.5 sm:p-3">
+          <span className="line-clamp-2 break-words text-[13px] font-medium leading-snug text-text sm:text-sm">{oferta.titulo}</span>
 
           <div>
             {oferta.precoAntigo && (
@@ -88,7 +88,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
 
             {oferta.precoPix != null ? (
               <>
-                <span className={`block text-lg font-bold ${expirada ? "text-text-muted" : "text-trust"}`}>
+                <span className={`offer-card-price block text-base font-bold leading-tight sm:text-lg ${expirada ? "text-text-muted" : "text-trust"}`}>
                   {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoPix)}
                 </span>
                 <span className={`block text-[11px] font-semibold ${expirada ? "text-text-muted/50" : "text-trust/80"}`}>
@@ -101,7 +101,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
                 )}
               </>
             ) : oferta.precoAtual != null ? (
-              <span className={`text-lg font-bold ${expirada ? "text-text-muted" : "text-gold"}`}>
+              <span className={`offer-card-price text-base font-bold leading-tight sm:text-lg ${expirada ? "text-text-muted" : "text-gold"}`}>
                 {expirada ? "ESGOTADO · " : ""}{formatarPreco(oferta.precoAtual)}
               </span>
             ) : (
