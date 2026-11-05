@@ -44,7 +44,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
   const temCronometro = Number.isFinite(vencimento) && (agora === 0 || vencimento > agora);
   const preco = oferta.precoPix ?? oferta.precoAtual;
   return (
-  <div className="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[205px_minmax(0,1fr)] gap-4 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] sm:grid-rows-1 sm:gap-5 lg:gap-6">
+  <div className="grid h-full min-h-0 w-full min-w-0 grid-cols-1 grid-rows-[165px_minmax(0,1fr)] gap-3 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] sm:grid-rows-1 sm:gap-5 lg:gap-6">
               <Link
                 href={`/oferta/${oferta.slug}`}
                 className="group relative flex h-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-3 sm:p-4"
@@ -64,7 +64,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                 )}
               </Link>
 
-              <div className="grid h-full min-h-0 min-w-0 grid-rows-[24px_44px_18px_76px_54px_38px_44px] content-between overflow-hidden py-1">
+              <div className="grid h-full min-h-0 min-w-0 grid-rows-[22px_36px_18px_minmax(54px,1fr)_auto_32px_40px] content-between overflow-hidden py-1">
                 <p className="min-w-0 truncate text-sm font-black uppercase tracking-[0.1em] text-gold sm:text-base">
                   🔥 OFERTA IMPERDÍVEL
                 </p>
@@ -86,7 +86,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                     <span className="shrink-0 text-xs text-text-muted line-through sm:text-sm">{precoEmReais(oferta.precoAntigo)}</span>
                   )}
                   {preco != null ? (
-                    <span className="font-display text-2xl font-black leading-none text-trust sm:text-3xl lg:text-4xl">
+                    <span className="break-words font-display text-xl font-black leading-tight text-trust sm:text-3xl lg:text-4xl">
                       {precoEmReais(preco)}
                       {oferta.precoPix != null && <span className="ml-1 whitespace-nowrap text-[10px] font-semibold text-trust sm:text-xs">no Pix</span>}
                     </span>
@@ -101,7 +101,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                   ) : <span aria-hidden="true" className="block h-full" />}
                 </div>
 
-                <Link href={`/oferta/${oferta.slug}`} tabIndex={saindo ? -1 : undefined} className="inline-flex h-full w-fit items-center justify-center self-end rounded-xl bg-gold px-4 text-sm font-extrabold text-bg transition hover:bg-gold-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:px-5">
+                <Link href={`/oferta/${oferta.slug}`} tabIndex={saindo ? -1 : undefined} className="inline-flex h-full w-full items-center justify-center self-end rounded-xl bg-gold px-3 text-center text-xs font-extrabold text-bg transition hover:bg-gold-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:w-fit sm:px-5 sm:text-sm">
                   Aproveitar oferta <span className="ml-2" aria-hidden="true">→</span>
                 </Link>
               </div>
@@ -209,10 +209,10 @@ export default function DestaquesCarousel({
       }}
     >
       <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-gold/15 via-transparent to-trust/10 blur-2xl" aria-hidden="true" />
-      <div className="relative rounded-[1.75rem] border border-gold/20 bg-[#0A1727] p-4 shadow-2xl shadow-black/30 sm:p-5 lg:p-6">
+      <div className="relative min-w-0 rounded-[1.35rem] border border-gold/20 bg-[#0A1727] p-3 shadow-2xl shadow-black/30 sm:rounded-[1.75rem] sm:p-5 lg:p-6">
         {oferta ? (
           <>
-            <div className="relative isolate h-[635px] overflow-hidden rounded-2xl sm:h-[390px] lg:h-[408px]" aria-live="off">
+            <div className="relative isolate h-[570px] min-w-0 overflow-hidden rounded-xl sm:h-[390px] sm:rounded-2xl lg:h-[408px]" aria-live="off">
               {transicao ? (
                 <div
                   key={`slide-${transicao.origem.oferta.id}-${transicao.destino.oferta.id}-${transicao.direcao}`}
