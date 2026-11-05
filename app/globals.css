@@ -619,3 +619,84 @@ body {
   .coupon-voucher-entrance { animation: none !important; }
   .coupon-voucher-flash:hover { animation: none !important; transform: none !important; }
 }
+
+
+/* =========================================================
+   RESPONSIVIDADE MOBILE — ajustes globais e safe areas
+   ========================================================= */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body,
+main,
+section,
+header,
+footer {
+  min-width: 0;
+}
+
+img,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  .pb-bottom-nav {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  .offer-card-modern {
+    max-width: none;
+  }
+
+  .offer-card-modern .offer-card-price {
+    overflow-wrap: anywhere;
+  }
+
+  .coupon-voucher-head,
+  .coupon-voucher-content {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .coupon-voucher-actions {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-mobile-item {
+    min-width: 0;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 10px;
+  }
+
+  .coupon-voucher-head {
+    padding-top: 16px;
+    padding-bottom: 14px;
+  }
+
+  .coupon-voucher-content {
+    padding-top: 15px;
+    padding-bottom: 14px;
+  }
+
+  .coupon-voucher-benefit {
+    font-size: 20px;
+  }
+}
