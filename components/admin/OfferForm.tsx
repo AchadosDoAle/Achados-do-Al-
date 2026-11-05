@@ -127,7 +127,13 @@ function normalizarTextosOferta(valores: OfertaFormValues): OfertaFormValues {
 export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Oferta }) {
   const router = useRouter();
   const supabase = criarClienteNavegador();
-  const [valores, setValores] = useState<OfertaFormValues>(ofertaExistente ?? VALORES_INICIAIS);
+  const [valores, setValores] = useState<OfertaFormValues>(() => {
+    const iniciais = ofertaExistente ?? VALORES_INICIAIS;
+    // Oferta fora da categoria "Bebidas" nunca mantém o aviso 18+.
+    return ofertaExistente?.categoria === "Bebidas"
+      ? iniciais
+      : { ...iniciais, bebidaAlcoolica: false };
+  });
   // Conta os outros destaques com prazo vigente para orientar o administrador.
   const [outrosDestaquesAtivos, setOutrosDestaquesAtivos] = useState<number | null>(null);
   useEffect(() => {
