@@ -29,7 +29,7 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-white/5 bg-bg-secondary py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around gap-0 border-t border-white/5 bg-bg-secondary px-1 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:hidden"
     >
       {ITENS.map((item) => {
         const ativo = itemAtivo(item.href);
@@ -38,7 +38,7 @@ export default function BottomNav() {
             key={item.label}
             href={item.href}
             aria-current={ativo ? "page" : undefined}
-            className={`nav-mobile-item flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[11px] ${
+            className={`nav-mobile-item flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1.5 py-1 text-[10px] leading-tight sm:text-[11px] ${
               ativo ? "bg-gold/10 font-semibold text-gold" : "text-text-muted"
             }`}
           >
