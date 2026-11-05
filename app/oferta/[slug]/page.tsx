@@ -181,7 +181,7 @@ export default async function PaginaOferta({
 
 
   return (
-    <main className="min-h-screen bg-bg pb-bottom-nav">
+    <main className="min-h-screen bg-bg pb-[calc(9.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -190,7 +190,7 @@ export default async function PaginaOferta({
       />
       <Header />
 
-      <Container className="p-4">
+      <Container className="px-3 py-4 sm:p-4">
         <Link
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-text-muted hover:text-gold"
@@ -258,7 +258,7 @@ export default async function PaginaOferta({
             <p className="text-xs font-medium text-text-muted">
               🏪 {oferta.loja}
             </p>
-            <h1 className="mt-1 font-display text-2xl font-bold text-text">
+            <h1 className="mt-1 break-words font-display text-[clamp(1.35rem,5.2vw,1.75rem)] font-bold leading-tight text-text">
               {oferta.titulo}
             </h1>
 
@@ -275,7 +275,7 @@ export default async function PaginaOferta({
                     💸 Preço no Pix
                   </p>
                   <p
-                    className={`mt-1 font-display text-4xl font-extrabold ${
+                    className={`mt-1 break-words font-display text-[clamp(1.65rem,7vw,2.25rem)] font-extrabold leading-tight ${
                       expirada ? "text-text-muted" : "text-trust"
                     }`}
                   >
@@ -285,7 +285,7 @@ export default async function PaginaOferta({
                 </div>
               ) : oferta.precoAtual != null ? (
                 <p
-                  className={`mt-2 font-display text-3xl font-bold ${
+                  className={`mt-2 break-words font-display text-[clamp(1.55rem,6.5vw,1.9rem)] font-bold leading-tight ${
                     expirada ? "text-text-muted" : "text-gold"
                   }`}
                 >
