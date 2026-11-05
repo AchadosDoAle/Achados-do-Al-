@@ -90,6 +90,7 @@ export default async function PaginaOferta({
   if (!oferta || !["publicada", "expirada"].includes(oferta.status)) notFound();
 
   const expirada = ofertaEstaExpirada(oferta);
+  const bebidaAlcoolica = ofertaEhBebidaAlcoolica(oferta);
 
   // Quando existe preço à vista no Pix, ele é o menor preço efetivo da oferta
   // e por isso é usado como referência para o percentual de desconto.
