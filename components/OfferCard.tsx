@@ -31,7 +31,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
 
   return (
     <div
-      className="offer-card-modern relative mx-auto w-full max-w-[220px] min-w-0 animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
+      className="offer-card-modern relative mx-auto flex h-full w-full max-w-[220px] min-w-0 flex-col animar-entrada overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5"
       style={{ animationDelay: `${Math.min(atraso, 8) * 0.05}s` }}
     >
       <button
@@ -45,7 +45,7 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
         {favorito ? "♥" : "♡"}
       </button>
 
-      <Link href={`/oferta/${oferta.slug}`} className="group block">
+      <Link href={`/oferta/${oferta.slug}`} className="group flex min-h-0 flex-1 flex-col">
         <div className="relative aspect-[4/5] overflow-hidden bg-bg-secondary">
           <img
             loading="lazy"
@@ -76,10 +76,10 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           ) : null}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-2 p-2.5 sm:p-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 sm:p-3.5">
           <span className="line-clamp-2 min-h-[2.35rem] break-words text-[13px] font-medium leading-snug text-text sm:min-h-[2.6rem] sm:text-sm">{oferta.titulo}</span>
 
-          <div className="min-h-[4.25rem] pt-1">
+          <div className="min-h-[5rem] pt-1">
             {oferta.precoAntigo && (
               <span className={`block text-xs line-through ${expirada ? "text-text-muted/45" : "text-text-muted"}`}>
                 {formatarPreco(oferta.precoAntigo)}
@@ -109,14 +109,16 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
             )}
           </div>
 
-          {oferta.cupom && (
-            <span className={`mt-1 inline-block w-fit max-w-full break-words rounded-md px-2 py-1 text-[11px] leading-snug font-semibold ${expirada ? "bg-white/5 text-text-muted/60" : "bg-trust/15 text-trust"}`}>
-              Cupom {oferta.cupom}
-            </span>
-          )}
+          <div className="mt-1 flex min-h-[2.15rem] items-start">
+            {oferta.cupom ? (
+              <span className={`inline-block w-fit max-w-full break-words rounded-md px-2 py-1 text-[11px] leading-snug font-semibold ${expirada ? "bg-white/5 text-text-muted/60" : "bg-trust/15 text-trust"}`}>
+                Cupom {oferta.cupom}
+              </span>
+            ) : null}
+          </div>
 
           <span className="mt-auto block pt-2 text-xs text-text-muted">🏪 {oferta.loja}</span>
-          <span className={`btn-modern mt-1 block rounded-lg py-2.5 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
+          <span className={`btn-modern mt-2 mb-1 block rounded-lg py-2.5 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
             {expirada ? "Ver oferta esgotada" : "Acessar promoção"}
           </span>
         </div>
