@@ -14,14 +14,16 @@ export function urlCurtaDaOferta(slug: string) {
   return `${URL_SITE}/p/${codigoCurtoDaOferta(slug)}`;
 }
 
-/** Imagem para compartilhamento entregue pelo nosso domínio (não pelo CDN da loja).
- * A versão muda quando a oferta é editada, reduzindo cache desatualizado. */
+/** Imagem social 1200×630 gerada pelo próprio site.
+ * Evita entregar ao WhatsApp a miniatura crua da loja, que pode ser pequena e
+ * ficar borrada quando ampliada. A versão muda quando a oferta é editada para
+ * reduzir cache desatualizado. */
 export function imagemSocialDaOferta(
   oferta: Pick<Oferta, "slug" | "atualizadoEm">
 ) {
   const versao = Date.parse(oferta.atualizadoEm);
   const sufixo = Number.isFinite(versao) ? `?v=${Math.floor(versao / 1000).toString(36)}` : "";
-  return `${URL_SITE}/api/preview/oferta/${codigoCurtoDaOferta(oferta.slug)}${sufixo}`;
+  return `${URL_SITE}/oferta/${oferta.slug}/opengraph-image${sufixo}`;
 }
 
 export function imagensSociaisDaOferta(
