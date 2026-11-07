@@ -47,7 +47,13 @@ export async function generateMetadata({
       url: urlCurta,
       siteName: "Achado do Alê",
       locale: "pt_BR",
-      images: imagensCompartilhamento.map((url) => ({ url, alt: oferta.titulo })),
+      images: imagensCompartilhamento.map((url) => ({
+        url,
+        alt: oferta.titulo,
+        width: 1200,
+        height: 630,
+        type: "image/png",
+      })),
     },
     twitter: {
       card: "summary_large_image",
