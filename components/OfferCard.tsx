@@ -117,8 +117,8 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
             ) : null}
           </div>
 
-          <span className="mt-auto block pt-2 text-xs text-text-muted">🏪 {oferta.loja}</span>
-          <span className={`btn-modern mt-2 mb-1 block rounded-lg py-2.5 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
+          <span className="mt-auto block min-h-5 pt-2 text-xs text-text-muted">🏪 {oferta.loja}</span>
+          <span className={`btn-modern mt-2 mb-2 flex min-h-[42px] items-center justify-center rounded-lg px-2 py-2.5 text-center text-xs font-semibold leading-tight ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
             {expirada ? "Ver oferta esgotada" : "Acessar promoção"}
           </span>
         </div>
