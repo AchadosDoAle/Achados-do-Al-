@@ -76,10 +76,10 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           ) : null}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-1 p-2.5 sm:p-3">
-          <span className="line-clamp-2 break-words text-[13px] font-medium leading-snug text-text sm:text-sm">{oferta.titulo}</span>
+        <div className="flex min-w-0 flex-1 flex-col gap-2 p-2.5 sm:p-3">
+          <span className="line-clamp-2 min-h-[2.35rem] break-words text-[13px] font-medium leading-snug text-text sm:min-h-[2.6rem] sm:text-sm">{oferta.titulo}</span>
 
-          <div>
+          <div className="min-h-[4.25rem] pt-1">
             {oferta.precoAntigo && (
               <span className={`block text-xs line-through ${expirada ? "text-text-muted/45" : "text-text-muted"}`}>
                 {formatarPreco(oferta.precoAntigo)}
@@ -110,13 +110,13 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
           </div>
 
           {oferta.cupom && (
-            <span className={`inline-block w-fit rounded-md px-2 py-0.5 text-xs font-semibold ${expirada ? "bg-white/5 text-text-muted/60" : "bg-trust/15 text-trust"}`}>
+            <span className={`mt-1 inline-block w-fit max-w-full break-words rounded-md px-2 py-1 text-[11px] leading-snug font-semibold ${expirada ? "bg-white/5 text-text-muted/60" : "bg-trust/15 text-trust"}`}>
               Cupom {oferta.cupom}
             </span>
           )}
 
-          <span className="text-xs text-text-muted">🏪 {oferta.loja}</span>
-          <span className={`btn-modern mt-2 block rounded-lg py-2 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
+          <span className="mt-auto block pt-2 text-xs text-text-muted">🏪 {oferta.loja}</span>
+          <span className={`btn-modern mt-1 block rounded-lg py-2.5 text-center text-xs font-semibold ${expirada ? "bg-white/10 text-text-muted" : "bg-gold text-bg"}`}>
             {expirada ? "Ver oferta esgotada" : "Acessar promoção"}
           </span>
         </div>
