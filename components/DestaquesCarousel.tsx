@@ -64,7 +64,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                 )}
               </Link>
 
-              <div className="grid h-full min-h-0 min-w-0 grid-rows-[22px_36px_18px_minmax(54px,1fr)_auto_32px_40px] content-between overflow-hidden py-1">
+              <div className="grid h-full min-h-0 min-w-0 grid-rows-[22px_36px_18px_minmax(0,1fr)_auto_auto_40px] gap-y-2 overflow-hidden py-1">
                 <p className="min-w-0 truncate text-sm font-black uppercase tracking-[0.1em] text-gold sm:text-base">
                   🔥 OFERTA IMPERDÍVEL
                 </p>
@@ -81,7 +81,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                 <p className="min-w-0 truncate text-xs font-extrabold uppercase tracking-[0.1em] text-gold-light">{oferta.loja}</p>
                 <h2 className="line-clamp-3 h-full min-w-0 overflow-hidden text-base font-bold leading-[1.4] text-text sm:text-lg lg:text-xl">{oferta.titulo}</h2>
 
-                <div className="flex h-full min-w-0 flex-wrap content-center items-baseline gap-x-3 gap-y-1 overflow-hidden">
+                <div className="flex h-full min-w-0 flex-wrap content-start items-baseline gap-x-3 gap-y-1 overflow-hidden pt-1">
                   {oferta.precoAntigo != null && (
                     <span className="shrink-0 text-xs text-text-muted line-through sm:text-sm">{precoEmReais(oferta.precoAntigo)}</span>
                   )}
@@ -95,7 +95,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                   )}
                 </div>
 
-                <div className="flex h-full min-w-0 items-center overflow-hidden">
+                <div className="flex min-h-[40px] min-w-0 items-start overflow-hidden pt-1">
                   {oferta.cupom ? (
                     <span className="block max-w-full truncate rounded-lg border border-dashed border-gold/40 bg-gold/10 px-2.5 py-2 text-[11px] font-bold text-gold-light sm:text-xs" title={`CUPOM DE DESCONTO: ${oferta.cupom}`}>CUPOM DE DESCONTO: {oferta.cupom}</span>
                   ) : <span aria-hidden="true" className="block h-full" />}
