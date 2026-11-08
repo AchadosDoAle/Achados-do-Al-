@@ -24,7 +24,7 @@ export function imagemSocialDaOferta(
   const codigo = codigoCurtoDaOferta(oferta.slug);
   // URL direta, estável e sem query. O endpoint sempre responde image/png
   // em 1200x630, o que é mais previsível para crawlers do WhatsApp/Meta.
-  return `${URL_SITE}/api/preview/oferta/${codigo}`;
+  return `${URL_SITE}/preview/oferta/${codigo}`;
 }
 
 export function imagensSociaisDaOferta(
