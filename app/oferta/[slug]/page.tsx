@@ -396,7 +396,7 @@ export default async function PaginaOferta({
                 precoAntigo={oferta.precoAntigo}
                 preco={precoPrincipalDaOferta(oferta)}
                 precoPix={precoPrincipalEhPix(oferta)}
-                url={urlCurtaDaOferta(oferta.slug)}
+                url={urlCurtaDaOferta(oferta.slug, oferta.atualizadoEm)}
               />
             </div>
 
@@ -427,7 +427,7 @@ export default async function PaginaOferta({
                 precoAntigo={oferta.precoAntigo}
                 preco={precoPrincipalDaOferta(oferta)}
                 precoPix={precoPrincipalEhPix(oferta)}
-                url={urlCurtaDaOferta(oferta.slug)}
+                url={urlCurtaDaOferta(oferta.slug, oferta.atualizadoEm)}
               />
             </div>
 

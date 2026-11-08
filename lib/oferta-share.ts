@@ -10,8 +10,12 @@ export function codigoCurtoDaOferta(slug: string) {
   return (match?.[1] || slug.slice(-8)).toLowerCase();
 }
 
-export function urlCurtaDaOferta(slug: string) {
-  return `${URL_SITE}/p/${codigoCurtoDaOferta(slug)}`;
+export function urlCurtaDaOferta(slug: string, atualizadoEm?: string) {
+  const base = `${URL_SITE}/p/${codigoCurtoDaOferta(slug)}`;
+  const versao = atualizadoEm ? Date.parse(atualizadoEm) : NaN;
+  return Number.isFinite(versao)
+    ? `${base}?v=${Math.floor(versao / 1000).toString(36)}`
+    : base;
 }
 
 /** Imagem para compartilhamento entregue pelo nosso domínio (não pelo CDN da loja).
@@ -21,7 +25,7 @@ export function imagemSocialDaOferta(
 ) {
   const versao = Date.parse(oferta.atualizadoEm);
   const sufixo = Number.isFinite(versao) ? `?v=${Math.floor(versao / 1000).toString(36)}` : "";
-  return `${URL_SITE}/api/preview/oferta/${codigoCurtoDaOferta(oferta.slug)}${sufixo}`;
+  return `${URL_SITE}/preview/oferta/${codigoCurtoDaOferta(oferta.slug)}${sufixo}`;
 }
 
 export function imagensSociaisDaOferta(
@@ -29,9 +33,9 @@ export function imagensSociaisDaOferta(
 ) {
   const principal = imagemAbsolutaDaOferta(oferta);
   const fallback = imagemSocialDaOferta(oferta);
-  // Prioriza a foto cadastrada do produto, que era o comportamento estável
-  // antes das mudanças de preview. A arte gerada pelo site fica apenas como fallback.
-  return Array.from(new Set([principal, fallback].filter((v): v is string => Boolean(v))));
+  // A primeira imagem fica no próprio domínio do Achado do Alê.
+  // A foto externa permanece apenas como fallback para outros crawlers.
+  return Array.from(new Set([fallback, principal].filter((v): v is string => Boolean(v))));
 }
 
 export function precoPrincipalDaOferta(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {

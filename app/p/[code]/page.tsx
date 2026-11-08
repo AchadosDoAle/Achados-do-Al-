@@ -22,13 +22,19 @@ async function buscar(code: string) {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: { code: string };
+  searchParams?: { v?: string };
 }): Promise<Metadata> {
   const oferta = await buscar(params.code);
   if (!oferta) return {};
 
-  const urlCurta = `${URL_SITE}/p/${params.code.toLowerCase()}`;
+  const versao = typeof searchParams?.v === "string" ? searchParams.v : "";
+  const urlCurtaBase = `${URL_SITE}/p/${params.code.toLowerCase()}`;
+  const urlCurta = versao
+    ? `${urlCurtaBase}?v=${encodeURIComponent(versao)}`
+    : urlCurtaBase;
   const urlLonga = `${URL_SITE}/oferta/${oferta.slug}`;
   const tituloSocial = tituloSocialDaOferta(oferta);
   const descricao = descricaoSocialDaOferta(oferta);
