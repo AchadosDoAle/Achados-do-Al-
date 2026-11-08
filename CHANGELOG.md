@@ -1,3 +1,12 @@
+## 2026-11-08 — Estado estável da miniatura no WhatsApp
+
+- **Estado confirmado como funcionando:** commit `12515e7f7d6559c1ac828c575b01f790b58619b1`.
+- O problema estava nos metadados de compartilhamento do **site**, não no robô do WhatsApp.
+- A `og:image` deve apontar primeiro para uma rota pública do próprio Achado do Alê em `/preview/oferta/CODIGO`, fora de `/api`.
+- A rota pública tenta carregar a foto real do produto e, se a origem externa falhar, devolve uma imagem de fallback válida.
+- O link curto compartilhado recebe uma versão (`?v=...`) para forçar nova leitura dos metadados e reduzir o efeito do cache antigo do WhatsApp.
+- **Não voltar** a depender somente de `/api/preview/oferta/...`, nem somente da URL externa da loja, nem remover o versionamento do link curto sem novo teste.
+- Esta configuração foi validada manualmente no WhatsApp em 08/11/2026 e a miniatura voltou a aparecer.
 
 ## 2026-10-07 — Patch único consolidado (páginas institucionais e melhorias)
 
