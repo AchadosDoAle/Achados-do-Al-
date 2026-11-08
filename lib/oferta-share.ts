@@ -29,12 +29,12 @@ export function imagemSocialDaOferta(
 export function imagensSociaisDaOferta(
   oferta: Pick<Oferta, "slug" | "atualizadoEm" | "imagemPrincipal">
 ) {
-  const principal = imagemAbsolutaDaOferta(oferta);
-  const fallback = imagemSocialDaOferta(oferta);
-  // O primeiro og:image e o preferido por WhatsApp/Meta. Priorize sempre
-  // a imagem servida pelo proprio dominio, evitando URLs externas bloqueadas
-  // ou miniaturas de CDN que podem produzir previas ruins.
-  return Array.from(new Set([fallback, principal].filter((v): v is string => Boolean(v))));
+  // Entregamos UMA ÚNICA og:image. O WhatsApp/Meta nem sempre respeita a
+  // ordem quando há múltiplas imagens e pode escolher a miniatura externa da
+  // loja, que costuma ser pequena e fica borrada quando ampliada no canal.
+  // A arte 1200×630 do próprio site continua podendo usar a foto do produto
+  // internamente, mas o crawler nunca recebe a URL externa como alternativa.
+  return [imagemSocialDaOferta(oferta)];
 }
 
 export function precoPrincipalDaOferta(oferta: Pick<Oferta, "precoPix" | "precoAtual">) {
