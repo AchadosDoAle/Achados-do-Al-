@@ -9,6 +9,7 @@ import {
 } from "@/lib/cupom-share";
 import { cupomExpirado } from "@/lib/coupons-repo";
 import { URL_SITE } from "@/lib/seo-brand";
+import { slugCardCupom } from "@/lib/cupom-preview-card";
 import RedirecionarCupom from "@/components/RedirecionarCupom";
 import { formatarDataPublicacao } from "@/lib/datas";
 
@@ -32,7 +33,7 @@ export async function generateMetadata({
   const url = `${URL_SITE}/c/${params.code}`;
   const titulo = `CUPOM LIBERADO: ${cupom.nomeCupom}`;
   const descricao = [beneficio, cupom.loja, `Validade: ${validade}`].filter(Boolean).join(" · ");
-  const imagem = `${url}/opengraph-image`;
+  const imagem = `${URL_SITE}/cupom-card/${slugCardCupom(cupom.loja)}/opengraph-image`;
 
   return {
     title: titulo,
