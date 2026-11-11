@@ -10,7 +10,7 @@ export type EstiloCardCupom = {
 export const CARDS_CUPOM_POR_LOJA: Record<string, EstiloCardCupom> = {
   "Mercado Livre": { slug: "mercado-livre", fundo: "#FFF8D8", cupom: "#FFE600", texto: "#1F2A44", contorno: "rgba(31, 42, 68, 0.18)" },
   Amazon: { slug: "amazon", fundo: "#FFF4E5", cupom: "#FF9900", texto: "#111827", contorno: "rgba(17, 24, 39, 0.18)" },
-  Netshoes: { slug: "netshoes", fundo: "#FDECEC", cupom: "#E31837", texto: "#FFFFFF", contorno: "rgba(255,255,255,.58)" },
+  Netshoes: { slug: "netshoes", fundo: "#F2E8FA", cupom: "#5B168C", texto: "#FFFFFF", contorno: "rgba(255,255,255,.58)" },
   "Magalu - Magazine Luiza": { slug: "magalu", fundo: "#EAF4FF", cupom: "#0086FF", texto: "#FFFFFF", contorno: "rgba(255,255,255,.60)", nome: "MAGALU" },
   Shopee: { slug: "shopee", fundo: "#FFF0E8", cupom: "#EE4D2D", texto: "#FFFFFF", contorno: "rgba(255,255,255,.60)" },
   "ZZ Mall": { slug: "zz-mall", fundo: "#F4ECFF", cupom: "#7C3AED", texto: "#FFFFFF", contorno: "rgba(255,255,255,.58)" },
