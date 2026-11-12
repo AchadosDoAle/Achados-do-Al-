@@ -714,7 +714,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           </div>
           <div className="flex flex-col gap-4">
             <Campo rotulo="Nome do produto" obrigatorio erro={erros.titulo}>
-              <input className={`${classeInput} uppercase`} value={valores.titulo} onChange={(e) => atualizarCampo("titulo", paraCaixaAlta(e.target.value))} />
+              <input className={`${classeInput} uppercase`} value={valores.titulo} onChange={(e) => atualizarCampo("titulo", e.target.value)} />
             </Campo>
             {camposParaRevisar.length > 0 && (
               <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
@@ -800,7 +800,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                     className={`${classeInput} uppercase ${camposParaRevisar.includes("marca") ? "border-amber-300 bg-amber-50/50" : ""}`}
                     value={valores.marca}
                     onChange={(e) => {
-                      atualizarCampo("marca", paraCaixaAlta(e.target.value));
+                      atualizarCampo("marca", e.target.value);
                       if (e.target.value.trim()) marcarCampoConferido("marca");
                     }}
                     placeholder="Ex.: SAMSUNG, MONDIAL, ADIDAS"
@@ -814,7 +814,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                     className={`${classeInput} uppercase ${camposParaRevisar.includes("modelo") ? "border-amber-300 bg-amber-50/50" : ""}`}
                     value={valores.modelo}
                     onChange={(e) => {
-                      atualizarCampo("modelo", paraCaixaAlta(e.target.value));
+                      atualizarCampo("modelo", e.target.value);
                       if (e.target.value.trim()) marcarCampoConferido("modelo");
                     }}
                     placeholder="Ex.: GALAXY A55 5G, AFN-50"
@@ -1023,7 +1023,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
               <input
                 className={`${classeInput} uppercase`}
                 value={valores.precoObservacao ?? ""}
-                onChange={(e) => atualizarCampo("precoObservacao", paraCaixaAlta(e.target.value))}
+                onChange={(e) => atualizarCampo("precoObservacao", e.target.value)}
                 placeholder="Ex.: SOMENTE PARA MEMBROS, À VISTA NO BOLETO, COM CARTÃO DA LOJA..."
               />
               <p className="mt-1 text-xs text-ink/50">Opcional. Use para uma condição de preço que não cabe nos campos acima.</p>
@@ -1038,10 +1038,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           </div>
           <div className="flex flex-col gap-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Cupom"><input className={`${classeInput} uppercase`} value={valores.cupom} onChange={(e) => atualizarCampo("cupom", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Cupom"><input className={`${classeInput} uppercase`} value={valores.cupom} onChange={(e) => atualizarCampo("cupom", e.target.value)} /></Campo>
               <Campo rotulo="Link do cupom"><input type="url" className={classeInput} value={valores.linkCupom} onChange={(e) => atualizarCampo("linkCupom", e.target.value)} /></Campo>
             </div>
-            <Campo rotulo="Descrição do cupom"><textarea className={`${classeInput} uppercase`} rows={2} value={valores.cupomDescricao} onChange={(e) => atualizarCampo("cupomDescricao", paraCaixaAlta(e.target.value))} /></Campo>
+            <Campo rotulo="Descrição do cupom"><textarea className={`${classeInput} uppercase`} rows={2} value={valores.cupomDescricao} onChange={(e) => atualizarCampo("cupomDescricao", e.target.value)} /></Campo>
             <div className="rounded-2xl bg-cream p-3 sm:p-4">
               <label className="flex items-center gap-2 text-sm font-medium text-ink">
                 <input
@@ -1100,14 +1100,14 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
                   <input
                     className={`${classeInput} uppercase`}
                     value={valores.freteCondicao ?? ""}
-                    onChange={(e) => atualizarCampo("freteCondicao", paraCaixaAlta(e.target.value))}
+                    onChange={(e) => atualizarCampo("freteCondicao", e.target.value)}
                     placeholder="Ex.: acima de R$ 79, MELI+ ou AMAZON PRIME"
                   />
                 </Campo>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Estoque"><input className={`${classeInput} uppercase`} value={valores.estoque} onChange={(e) => atualizarCampo("estoque", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Estoque"><input className={`${classeInput} uppercase`} value={valores.estoque} onChange={(e) => atualizarCampo("estoque", e.target.value)} /></Campo>
               <Campo rotulo="Validade da promoção"><input type="date" className={classeInput} value={valores.validadePromocao} onChange={(e) => atualizarCampo("validadePromocao", e.target.value)} /><p className="mt-1 text-xs text-ink/50">Depois dessa data, a oferta fica visualmente esgotada automaticamente.</p></Campo>
             </div>
 
@@ -1182,10 +1182,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
           <div className="rounded-2xl border border-ink/10 bg-cream/70 p-4">
             <p className="text-sm font-semibold text-ink">Características opcionais</p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <Campo rotulo="Voltagem"><input className={`${classeInput} uppercase`} value={valores.voltagem} onChange={(e) => atualizarCampo("voltagem", paraCaixaAlta(e.target.value))} /></Campo>
-              <Campo rotulo="Cor"><input className={`${classeInput} uppercase`} value={valores.cor} onChange={(e) => atualizarCampo("cor", paraCaixaAlta(e.target.value))} /></Campo>
-              <Campo rotulo="Tamanho"><input className={`${classeInput} uppercase`} value={valores.tamanho} onChange={(e) => atualizarCampo("tamanho", paraCaixaAlta(e.target.value))} /></Campo>
-              <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Voltagem"><input className={`${classeInput} uppercase`} value={valores.voltagem} onChange={(e) => atualizarCampo("voltagem", e.target.value)} /></Campo>
+              <Campo rotulo="Cor"><input className={`${classeInput} uppercase`} value={valores.cor} onChange={(e) => atualizarCampo("cor", e.target.value)} /></Campo>
+              <Campo rotulo="Tamanho"><input className={`${classeInput} uppercase`} value={valores.tamanho} onChange={(e) => atualizarCampo("tamanho", e.target.value)} /></Campo>
+              <Campo rotulo="Capacidade"><input className={`${classeInput} uppercase`} value={valores.capacidade} onChange={(e) => atualizarCampo("capacidade", e.target.value)} /></Campo>
             </div>
           </div>
           <div className="mt-4 space-y-4 rounded-2xl border border-dashed border-brand/20 bg-brand/5 p-4">
@@ -1246,7 +1246,7 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
 
             </div>
             <div className="flex flex-col gap-4">
-              <Campo rotulo="Observações internas"><textarea className={`${classeInput} uppercase`} rows={3} value={valores.observacoes} onChange={(e) => atualizarCampo("observacoes", paraCaixaAlta(e.target.value))} /></Campo>
+              <Campo rotulo="Observações internas"><textarea className={`${classeInput} uppercase`} rows={3} value={valores.observacoes} onChange={(e) => atualizarCampo("observacoes", e.target.value)} /></Campo>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <p className="mb-2 text-sm font-semibold text-ink">Status da publicação <span className="text-red-600">*</span></p>
