@@ -26,7 +26,8 @@ import { garantirTagAmazon } from "@/lib/amazon-affiliate";
 
 const STATUS_OPCOES_BASE: StatusOferta[] = ["rascunho", "agendada", "publicada", "expirada", "arquivada"];
 const CATEGORIAS_DISPONIVEIS = CATEGORIAS_ADMIN;
-// Ordena só a lista visual do cadastro, sem mudar a loja padrão de registros novos.
+const LOJA_PADRAO = "Mercado Livre";
+// Mantém as lojas em ordem alfabética e "Outros" no final; Mercado Livre segue como padrão.
 const LOJAS_PARA_SELECAO = [
   ...LOJAS.filter((loja) => loja !== LOJA_OUTROS).sort((a, b) =>
     a.localeCompare(b, "pt-BR", { sensitivity: "base" })
@@ -66,7 +67,7 @@ function agoraMais24h() {
 
 const VALORES_INICIAIS: OfertaFormValues = {
   titulo: "",
-  loja: LOJAS[0],
+  loja: LOJA_PADRAO,
   categoria: "",
   marca: "",
   modelo: "",
@@ -157,10 +158,10 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
     ? STATUS_OPCOES_BASE
     : [valores.status, ...STATUS_OPCOES_BASE];
 
-  const lojaExistente = ofertaExistente?.loja ?? LOJAS[0];
+  const lojaExistente = ofertaExistente?.loja ?? LOJA_PADRAO;
   const lojaExistenteEhAfiliada = LOJAS_AFILIADAS.includes(lojaExistente);
   const [lojaSelecionada, setLojaSelecionada] = useState(
-    lojaExistenteEhAfiliada ? lojaExistente : ofertaExistente ? LOJA_OUTROS : LOJAS[0]
+    lojaExistenteEhAfiliada ? lojaExistente : ofertaExistente ? LOJA_OUTROS : LOJA_PADRAO
   );
   const [lojaPersonalizada, setLojaPersonalizada] = useState(
     ofertaExistente && !lojaExistenteEhAfiliada && lojaExistente !== LOJA_OUTROS
@@ -1108,7 +1109,17 @@ export default function OfferForm({ ofertaExistente }: { ofertaExistente?: Ofert
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <Campo rotulo="Estoque"><input className={`${classeInput} uppercase`} value={valores.estoque} onChange={(e) => atualizarCampo("estoque", e.target.value)} /></Campo>
-              <Campo rotulo="Validade da promoção"><input type="date" className={classeInput} value={valores.validadePromocao} onChange={(e) => atualizarCampo("validadePromocao", e.target.value)} /><p className="mt-1 text-xs text-ink/50">Depois dessa data, a oferta fica visualmente esgotada automaticamente.</p></Campo>
+              <Campo rotulo="Validade da promoção">
+                <input type="date" className={classeInput} value={valores.validadePromocao} onChange={(e) => atualizarCampo("validadePromocao", e.target.value)} />
+                <button
+                  type="button"
+                  onClick={() => atualizarCampo("validadePromocao", datetimeLocalBrasilia(new Date()).slice(0, 10))}
+                  className="mt-2 w-full rounded-xl border border-amber-300 bg-amber-100 px-4 py-2.5 text-sm font-bold text-amber-900 transition hover:bg-amber-200 sm:w-fit"
+                >
+                  VENCE HOJE
+                </button>
+                <p className="mt-1 text-xs text-ink/50">Ao clicar, a validade fica definida para hoje, até 23h59 (horário de Brasília). Depois dessa data, a oferta fica visualmente esgotada automaticamente.</p>
+              </Campo>
             </div>
 
             <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-zinc-600 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-800 px-4 py-3 text-white shadow-sm transition hover:border-zinc-400">
