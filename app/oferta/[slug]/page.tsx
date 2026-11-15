@@ -215,7 +215,7 @@ export default async function PaginaOferta({
                 alt={oferta.titulo}
                 className={`h-full w-full ${
                   oferta.imagemPrincipal
-                    ? "object-cover"
+                    ? "object-contain"
                     : "object-contain p-16 opacity-70"
                 } ${expirada ? "grayscale opacity-60" : ""}`}
               />
