@@ -208,7 +208,7 @@ export default async function PaginaOferta({
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
           {/* Imagem */}
           <div className="order-1 mx-auto w-full max-w-[500px] shrink-0 md:order-2">
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-card ring-1 ring-white/5 md:h-[500px] md:w-[500px]">
+            <div className="relative aspect-square w-full overflow-hidden rounded-xl2 bg-white ring-1 ring-black/5 md:h-[500px] md:w-[500px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={oferta.imagemPrincipal || "/icon.png"}
