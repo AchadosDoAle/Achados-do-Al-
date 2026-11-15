@@ -238,6 +238,23 @@ export default async function PaginaOferta({
                 </span>
               ) : null}
             </div>
+            {bebidaAlcoolica ? (
+              <div
+                role="alert"
+                aria-label="Aviso legal: venda e consumo de bebidas alcoólicas proibidos para menores de 18 anos"
+                className="mt-3 flex items-center gap-3 rounded-xl2 border border-red-500 bg-[#35151b] p-3.5 text-white shadow-sm"
+              >
+                <span className="shrink-0 text-3xl leading-none text-red-400" aria-hidden="true">⚠</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-extrabold uppercase leading-snug tracking-wide">
+                    Proibida a venda e o consumo para menores de 18 anos
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/90">
+                    A comercialização e a ingestão de bebidas alcoólicas por menores de 18 anos são vedadas.
+                  </p>
+                </div>
+              </div>
+            ) : null}
             {detalhesProduto ? <div className="mt-4 hidden md:block">{detalhesProduto}</div> : null}
             <div className="mt-4 hidden md:block">
             {!expirada && <ReportarOferta ofertaId={oferta.id} />}
