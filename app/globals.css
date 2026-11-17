@@ -1126,3 +1126,90 @@ textarea {
   --coupon-paper: #273443;
   --coupon-ticket: #3b4652;
 }
+
+
+/* Ajustes finais do ticket: logo sem disco branco e desconto em formato de cupom */
+.coupon-voucher-ticket .coupon-brand-logo,
+.coupon-voucher-ticket .coupon-brand-fallback {
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.coupon-voucher-ticket .coupon-brand-logo img {
+  display: block;
+  width: 54px;
+  height: 54px;
+  max-width: 54px;
+  object-fit: contain;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.coupon-voucher-ticket .coupon-brand-fallback {
+  align-items: center;
+  justify-content: center;
+  color: #f5c75e;
+  font-size: 17px;
+}
+
+.coupon-voucher-ticket .coupon-ticket-discount {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  min-height: 58px;
+  padding: 8px 15px;
+  border: 1px solid rgba(245, 199, 94, .5);
+  border-radius: 7px;
+  background: #f8e8ad;
+  color: #17263a;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .16);
+}
+
+/* Recortes laterais dão ao destaque o contorno de um bilhete de desconto. */
+.coupon-voucher-ticket .coupon-ticket-discount::before,
+.coupon-voucher-ticket .coupon-ticket-discount::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #10243a;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.coupon-voucher-ticket .coupon-ticket-discount::before { left: -7px; }
+.coupon-voucher-ticket .coupon-ticket-discount::after { right: -7px; }
+
+.coupon-voucher-ticket .coupon-ticket-discount strong,
+.coupon-voucher-ticket .coupon-ticket-discount > span,
+.coupon-voucher-ticket .coupon-ticket-discount .coupon-ticket-benefit {
+  position: relative;
+  z-index: 2;
+  color: #17263a;
+}
+
+@media (max-width: 420px) {
+  .coupon-voucher-ticket .coupon-brand-logo,
+  .coupon-voucher-ticket .coupon-brand-fallback,
+  .coupon-voucher-ticket .coupon-brand-logo img {
+    flex-basis: 46px;
+    width: 46px;
+    height: 46px;
+    max-width: 46px;
+  }
+  .coupon-voucher-ticket .coupon-ticket-discount {
+    min-height: 50px;
+    padding: 7px 12px;
+  }
+}
