@@ -17,6 +17,7 @@ alter table public.coupons add column if not exists valor_cupom text;
 alter table public.coupons add column if not exists descricao text;
 alter table public.coupons add column if not exists observacoes text;
 alter table public.coupons add column if not exists link_produtos text;
+alter table public.coupons add column if not exists link_resgate text;
 alter table public.coupons add column if not exists cor_loja text default '#FFC93C';
 alter table public.coupons add column if not exists validade timestamptz;
 alter table public.coupons add column if not exists ativo boolean default true;
@@ -51,6 +52,7 @@ begin
         'descricao',
         'observacoes',
         'link_produtos',
+        'link_resgate',
         'cor_loja',
         'validade',
         'ativo',
