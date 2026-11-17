@@ -5,6 +5,7 @@ import BotaoCompartilharCupom from "./BotaoCompartilharCupom";
 import TermosCupom from "./TermosCupom";
 import AvisoCupomVencendo from "./AvisoCupomVencendo";
 import ContagemCupomRelampago from "./ContagemCupomRelampago";
+import LogoLojaCupom from "./LogoLojaCupom";
 import { formatarDataPublicacao } from "@/lib/datas";
 
 function formatarValidade(valor: string) {
@@ -29,29 +30,42 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
     (cupom.descontoPercentual != null ? `${cupom.descontoPercentual}% OFF` : "Consulte as condições");
 
   return (
-    // A entrada pertence somente ao wrapper; o hover pertence somente ao article.
-    // Assim o tremor nunca reinicia o fade/entrada da página.
     <div className="animar-entrada coupon-voucher-entrance">
       <article
-        className={`coupon-voucher ${relampago ? "coupon-voucher-flash" : "coupon-voucher-regular"} ${
+        className={`coupon-voucher coupon-voucher-ticket ${relampago ? "coupon-voucher-flash" : "coupon-voucher-regular"} ${
           expirado ? "coupon-voucher-expired" : ""
         }`}
       >
         <header className="coupon-voucher-head">
-          <div className="coupon-voucher-topline">
-            <span className="coupon-voucher-store" title={cupom.loja}>{cupom.loja}</span>
+          <p className="coupon-ticket-title">CUPOM LIBERADO!</p>
+          <div className="coupon-ticket">
+            <div className="coupon-ticket-brand">
+              <LogoLojaCupom loja={cupom.loja} />
+              <span className="coupon-ticket-store" title={cupom.loja}>{cupom.loja}</span>
+            </div>
+            <div className="coupon-ticket-discount">
+              {cupom.descontoPercentual != null ? (
+                <>
+                  <strong>{cupom.descontoPercentual}%</strong>
+                  <span>OFF</span>
+                </>
+              ) : (
+                <strong className="coupon-ticket-benefit">{beneficio}</strong>
+              )}
+            </div>
             {relampago && <span className="coupon-voucher-flash-label">⚡ RELÂMPAGO</span>}
           </div>
-
-          {expirado ? (
-            <p className="coupon-voucher-code font-display">
-              <span className="coupon-voucher-prefix">CUPOM </span>
-              <span className="coupon-voucher-name" style={{ color: cupom.corLoja }}>{cupom.nomeCupom}</span>
-            </p>
-          ) : (
-            <BotaoNomeCupom nomeCupom={cupom.nomeCupom} cor={cupom.corLoja} link={cupom.linkProdutos} />
-          )}
-          {expirado && <span className="coupon-voucher-expired-label">ESGOTADO</span>}
+          <div className="coupon-ticket-code">
+            {expirado ? (
+              <p className="coupon-voucher-code font-display">
+                <span className="coupon-voucher-prefix">CUPOM </span>
+                <span className="coupon-voucher-name">{cupom.nomeCupom}</span>
+              </p>
+            ) : (
+              <BotaoNomeCupom nomeCupom={cupom.nomeCupom} cor={cupom.corLoja} link={cupom.linkProdutos} />
+            )}
+            {expirado && <span className="coupon-voucher-expired-label">ESGOTADO</span>}
+          </div>
         </header>
 
         <div className="coupon-voucher-perforation" aria-hidden="true" />
