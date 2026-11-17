@@ -112,6 +112,7 @@ export type Cupom = {
   descricao?: string;
   observacoes?: string;
   linkProdutos?: string;
+  linkResgate?: string;
   corLoja: string;
   validade?: string;
   ativo: boolean;
