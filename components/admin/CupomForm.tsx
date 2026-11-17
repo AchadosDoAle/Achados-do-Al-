@@ -18,6 +18,7 @@ const VALORES_INICIAIS: CupomFormValues = {
   descricao: "",
   observacoes: "",
   linkProdutos: "",
+  linkResgate: "",
   corLoja: PALETA_CORES_LOJA[0].cor,
   validade: "",
   ativo: true,
@@ -379,6 +380,19 @@ export default function CupomForm({
                   {resultadoLeitura}
                 </p>
               )}
+            </Campo>
+
+            <Campo rotulo="Link para resgatar o cupom (opcional)">
+              <input
+                type="url"
+                className={classeInput}
+                value={valores.linkResgate ?? ""}
+                onChange={(e) => atualizarCampo("linkResgate", e.target.value)}
+                placeholder="https://..."
+              />
+              <p className="mt-1 text-xs text-ink/50">
+                Quando preenchido, o botão principal do cupom abre este endereço. Sem link, o botão copia o código.
+              </p>
             </Campo>
 
             <Campo rotulo="Link (ou lista) dos produtos exclusivos deste cupom">
