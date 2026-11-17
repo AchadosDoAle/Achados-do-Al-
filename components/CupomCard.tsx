@@ -62,7 +62,7 @@ export default function CupomCard({ cupom }: { cupom: Cupom }) {
                 <span className="coupon-voucher-name">{cupom.nomeCupom}</span>
               </p>
             ) : (
-              <BotaoNomeCupom nomeCupom={cupom.nomeCupom} cor={cupom.corLoja} link={cupom.linkProdutos} />
+              <BotaoNomeCupom nomeCupom={cupom.nomeCupom} cor={cupom.corLoja} linkResgate={cupom.linkResgate} />
             )}
             {expirado && <span className="coupon-voucher-expired-label">ESGOTADO</span>}
           </div>
