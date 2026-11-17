@@ -700,3 +700,264 @@ textarea {
     font-size: 20px;
   }
 }
+
+
+/* =========================================================
+   CUPOM LIBERADO — miniatura amarela inspirada no ticket enviado
+   ========================================================= */
+.coupon-voucher-ticket {
+  --coupon-paper: #fffca0;
+  --coupon-ticket: #fff000;
+  --coupon-ink: #080808;
+  --coupon-muted: #55512c;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: var(--coupon-paper);
+  color: var(--coupon-ink);
+  box-shadow: 0 9px 22px rgba(0, 0, 0, .13);
+}
+
+.coupon-voucher-ticket .coupon-voucher-head {
+  padding: 17px 16px 13px;
+  background: var(--coupon-paper);
+  border: 0;
+}
+
+.coupon-ticket-title {
+  margin: 0 0 13px;
+  color: #050505;
+  font-size: clamp(19px, 2.2vw, 25px);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: .015em;
+  text-align: center;
+}
+
+.coupon-ticket {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 112px;
+  padding: 17px 16px;
+  border: 1px solid rgba(0, 0, 0, .08);
+  background: linear-gradient(135deg, #fff500, #ffeb00);
+  color: #050505;
+  box-shadow: 0 12px 15px rgba(0, 0, 0, .24);
+  isolation: isolate;
+}
+
+.coupon-ticket::before,
+.coupon-ticket::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 24px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--coupon-paper);
+  transform: translateY(-50%);
+}
+.coupon-ticket::before { left: -14px; }
+.coupon-ticket::after { right: -14px; }
+
+.coupon-ticket-brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.coupon-brand-logo,
+.coupon-brand-fallback {
+  display: flex;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #24245f;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 0 #24245f;
+}
+
+.coupon-brand-logo img {
+  display: block;
+  width: 42px;
+  height: 42px;
+  max-width: 42px;
+  object-fit: contain;
+}
+
+.coupon-brand-fallback {
+  color: #24245f;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.coupon-ticket-store {
+  min-width: 0;
+  color: #050505;
+  font-size: clamp(15px, 2vw, 21px);
+  font-weight: 900;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.coupon-ticket-discount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  color: #050505;
+  text-align: center;
+  white-space: nowrap;
+}
+.coupon-ticket-discount strong {
+  font-size: clamp(31px, 4.4vw, 49px);
+  font-weight: 950;
+  line-height: .95;
+  letter-spacing: -.055em;
+}
+.coupon-ticket-discount > span {
+  font-size: 13px;
+  font-weight: 950;
+}
+.coupon-ticket-discount .coupon-ticket-benefit {
+  max-width: 125px;
+  font-size: clamp(15px, 2vw, 21px);
+  line-height: 1.05;
+  white-space: normal;
+}
+
+.coupon-voucher-ticket .coupon-voucher-flash-label {
+  grid-column: 1 / -1;
+  justify-self: end;
+  border-color: rgba(0, 0, 0, .2);
+  background: rgba(0, 0, 0, .08);
+  color: #111;
+}
+
+.coupon-ticket-code {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 13px;
+}
+.coupon-voucher-ticket .coupon-voucher-code {
+  width: auto;
+  color: #080808;
+  font-size: 14px;
+  text-align: center;
+}
+.coupon-voucher-ticket .coupon-voucher-prefix,
+.coupon-voucher-ticket .coupon-voucher-name {
+  color: #080808 !important;
+}
+.coupon-voucher-ticket .coupon-voucher-code button,
+.coupon-voucher-ticket .coupon-voucher-code {
+  text-align: center;
+}
+
+.coupon-voucher-ticket .coupon-voucher-perforation {
+  margin: 0 16px;
+  border-top-color: rgba(0, 0, 0, .23);
+}
+.coupon-voucher-ticket .coupon-voucher-perforation::before,
+.coupon-voucher-ticket .coupon-voucher-perforation::after {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: var(--coupon-paper);
+}
+.coupon-voucher-ticket .coupon-voucher-perforation::before { left: -25px; }
+.coupon-voucher-ticket .coupon-voucher-perforation::after { right: -25px; }
+
+.coupon-voucher-ticket .coupon-voucher-content {
+  gap: 12px;
+  padding: 14px 18px 16px;
+  background: var(--coupon-paper);
+  color: #111;
+}
+.coupon-voucher-ticket .coupon-voucher-benefit-label {
+  color: #625d22;
+}
+.coupon-voucher-ticket .coupon-voucher-benefit {
+  margin-top: 3px;
+  color: #111;
+  font-size: clamp(17px, 2vw, 22px);
+}
+.coupon-voucher-ticket .coupon-voucher-details {
+  color: #57532e;
+}
+.coupon-voucher-ticket .coupon-voucher-details strong {
+  color: #171717;
+}
+.coupon-voucher-ticket .coupon-voucher-posted {
+  color: #77713b;
+}
+.coupon-voucher-ticket .coupon-voucher-actions {
+  gap: 8px;
+  padding: 12px 16px 15px;
+  border-top: 1px solid rgba(0, 0, 0, .1);
+  background: #fffca0;
+}
+.coupon-voucher-ticket .coupon-voucher-actions > button {
+  border-color: rgba(0, 0, 0, .18);
+  background: rgba(255, 255, 255, .42);
+  color: #171717;
+}
+.coupon-voucher-ticket .coupon-voucher-actions > button:hover {
+  border-color: rgba(0, 0, 0, .35);
+  background: rgba(255, 255, 255, .7);
+}
+.coupon-voucher-ticket .coupon-voucher-products {
+  background: #111;
+  color: #fff7a1;
+}
+.coupon-voucher-ticket .coupon-voucher-products:hover {
+  background: #292929;
+}
+
+.coupon-voucher-ticket.coupon-voucher-expired {
+  --coupon-paper: #e0e1e3;
+  --coupon-ticket: #bfc2c6;
+  --coupon-ink: #4c5158;
+  filter: grayscale(1);
+  opacity: .82;
+}
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-voucher-head,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-voucher-content,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-voucher-actions {
+  background: #e0e1e3;
+}
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-ticket {
+  background: #c6c9cd;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, .16);
+}
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-ticket-title,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-ticket-store,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-ticket-discount,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-voucher-benefit,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-voucher-details,
+.coupon-voucher-ticket.coupon-voucher-expired .coupon-voucher-details strong {
+  color: #454a50;
+}
+
+@media (max-width: 420px) {
+  .coupon-voucher-ticket .coupon-voucher-head { padding: 15px 12px 11px; }
+  .coupon-ticket { grid-template-columns: minmax(0, 1fr) auto; gap: 7px; padding: 14px 11px; }
+  .coupon-brand-logo, .coupon-brand-fallback { flex-basis: 46px; width: 46px; height: 46px; }
+  .coupon-brand-logo img { width: 34px; height: 34px; }
+  .coupon-ticket-store { font-size: 14px; }
+  .coupon-ticket-discount strong { font-size: 31px; }
+  .coupon-voucher-ticket .coupon-voucher-content { padding-left: 14px; padding-right: 14px; }
+}
