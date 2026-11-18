@@ -1298,3 +1298,11 @@ textarea {
     font-size: clamp(28px, 8vw, 36px);
   }
 }
+
+
+/* Remove os recortes laterais do ticket principal: não deixar o fundo da página aparecer */
+.coupon-voucher-ticket .coupon-ticket::before,
+.coupon-voucher-ticket .coupon-ticket::after {
+  content: none !important;
+  display: none !important;
+}
