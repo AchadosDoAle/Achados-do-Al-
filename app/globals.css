@@ -1213,3 +1213,88 @@ textarea {
     padding: 7px 12px;
   }
 }
+
+
+/* Organização do cabeçalho do cupom: marca empilhada e instrução abaixo do código */
+.coupon-voucher-ticket .coupon-ticket {
+  grid-template-columns: minmax(82px, .72fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 126px;
+  padding: 13px 12px;
+}
+
+.coupon-voucher-ticket .coupon-ticket-brand {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+}
+
+.coupon-voucher-ticket .coupon-brand-logo,
+.coupon-voucher-ticket .coupon-brand-fallback {
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+}
+
+.coupon-voucher-ticket .coupon-ticket-store {
+  max-width: 100%;
+  font-size: clamp(13px, 1.5vw, 16px);
+  line-height: 1.12;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.coupon-voucher-ticket .coupon-ticket-discount {
+  min-width: 0;
+  min-height: 58px;
+  padding: 8px 13px;
+}
+
+.coupon-voucher-ticket .coupon-voucher-code {
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.coupon-voucher-ticket .coupon-voucher-code-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.2;
+}
+
+.coupon-voucher-ticket .coupon-voucher-copy-hint {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .035em;
+  line-height: 1.2;
+}
+
+@media (max-width: 420px) {
+  .coupon-voucher-ticket .coupon-ticket {
+    grid-template-columns: minmax(72px, .68fr) minmax(0, 1fr);
+    gap: 8px;
+    min-height: 116px;
+    padding: 11px 9px;
+  }
+  .coupon-voucher-ticket .coupon-brand-logo,
+  .coupon-voucher-ticket .coupon-brand-fallback {
+    flex-basis: 46px;
+    width: 46px;
+    height: 46px;
+  }
+  .coupon-voucher-ticket .coupon-ticket-store {
+    font-size: 12px;
+  }
+  .coupon-voucher-ticket .coupon-ticket-discount strong {
+    font-size: clamp(28px, 8vw, 36px);
+  }
+}
