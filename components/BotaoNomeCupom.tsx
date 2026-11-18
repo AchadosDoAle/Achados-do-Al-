@@ -13,7 +13,7 @@ export default function BotaoNomeCupom({
 }) {
   const [copiado, setCopiado] = useState(false);
   const destino = linkResgate?.trim();
-  const linkValido = Boolean(destino && /^https?:\\/\\//i.test(destino));
+  const linkValido = Boolean(destino && /^https?:\/\//i.test(destino));
 
   async function copiarCodigo() {
     try {
