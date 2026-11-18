@@ -64,14 +64,14 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                 )}
               </Link>
 
-              <div className="grid h-full min-h-0 min-w-0 grid-rows-[22px_36px_18px_minmax(0,1fr)_auto_auto_40px] gap-y-2 overflow-hidden py-1">
+              <div className="grid h-full min-h-0 min-w-0 grid-rows-[22px_44px_18px_minmax(0,1fr)_auto_auto_40px] gap-y-2 overflow-hidden py-1">
                 <p className="min-w-0 truncate text-sm font-black uppercase tracking-[0.1em] text-gold sm:text-base">
                   🔥 OFERTA IMPERDÍVEL
                 </p>
                 {temCronometro ? (
-                  <div className="flex h-full min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden">
+                  <div className="flex min-h-[44px] min-w-0 flex-wrap items-center gap-x-2 gap-y-1 overflow-visible py-0.5">
                     <span className="shrink-0 text-xs font-medium text-text-muted sm:text-sm">Corra, dura apenas</span>
-                    <span className="shrink-0 rounded-lg border border-gold/30 bg-gold/10 px-2 py-1 font-mono text-base font-bold tabular-nums tracking-wide text-gold-light sm:text-lg" role="timer" aria-label="Tempo restante da oferta">
+                    <span className="shrink-0 rounded-lg border border-gold/30 bg-gold/10 px-2 py-1.5 font-mono text-base font-bold leading-normal tabular-nums tracking-wide text-gold-light sm:text-lg" role="timer" aria-label="Tempo restante da oferta">
                       {agora ? textoCronometro(vencimento - agora) : "--:--:--"}
                     </span>
                   </div>
