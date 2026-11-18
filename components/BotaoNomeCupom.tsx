@@ -13,7 +13,7 @@ export default function BotaoNomeCupom({
 }) {
   const [copiado, setCopiado] = useState(false);
   const destino = linkResgate?.trim();
-  const linkValido = Boolean(destino && /^https?:\/\//i.test(destino));
+  const linkValido = Boolean(destino && /^https?:\\/\\//i.test(destino));
 
   async function copiarCodigo() {
     try {
@@ -25,6 +25,18 @@ export default function BotaoNomeCupom({
     }
   }
 
+  const conteudo = (
+    <>
+      <span className="coupon-voucher-code-main">
+        <span className="coupon-voucher-prefix">CUPOM </span>
+        <span className="coupon-voucher-name" style={{ color: cor }}>{nomeCupom}</span>
+      </span>
+      <span className="coupon-voucher-copy-hint">
+        {linkValido ? "ABRIR LINK DE RESGATE ↗" : copiado ? "COPIADO!" : "TOQUE PARA COPIAR"}
+      </span>
+    </>
+  );
+
   if (linkValido && destino) {
     return (
       <a
@@ -35,11 +47,7 @@ export default function BotaoNomeCupom({
         aria-label={`Abrir página para resgatar o cupom ${nomeCupom}`}
         title="Abrir o link para resgatar o cupom"
       >
-        <span className="coupon-voucher-prefix">RESGATAR </span>
-        <span className="coupon-voucher-name" style={{ color: cor }}>
-          {nomeCupom}
-        </span>
-        <span className="coupon-voucher-copy-hint">Abrir link de resgate ↗</span>
+        {conteudo}
       </a>
     );
   }
@@ -52,13 +60,7 @@ export default function BotaoNomeCupom({
       aria-label={`Copiar código do cupom ${nomeCupom}`}
       title="Toque para copiar o código"
     >
-      <span className="coupon-voucher-prefix">CUPOM </span>
-      <span className="coupon-voucher-name" style={{ color: cor }}>
-        {nomeCupom}
-      </span>
-      <span className="coupon-voucher-copy-hint">
-        {copiado ? "Copiado!" : "Toque para copiar"}
-      </span>
+      {conteudo}
     </button>
   );
 }
