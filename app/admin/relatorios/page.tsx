@@ -465,7 +465,7 @@ export default function RelatoriosPage() {
           <p className="mt-1 text-sm text-ink/55">Cliques e visualizações são exibidos separadamente por plataforma. Visualização de página não é considerada impressão de oferta.</p>
         </div>
         <div className="grid min-w-0 gap-3 md:grid-cols-3">
-          <ResumoPlataforma titulo="Visão geral" cliques={cliques.length} visualizacoes={pageviews.length} impressoes={null}
+          <ResumoPlataforma titulo="Visão geral" cliques={cliques.length} visualizacoes={pageviews.length} impressoes={impressoesSite + impressoesAndroid > 0 && impressoesPlataformaDesconhecida === 0 ? impressoesSite + impressoesAndroid : null}
             ctr={textoCtr(ctrGeral, cliquesSite.length + cliquesAndroid.length, impressoesSite + impressoesAndroid)}
             observacao={cliquesPlataformaDesconhecida.length ? `${cliquesPlataformaDesconhecida.length} clique(s) sem plataforma identificada.` : "Total de cliques registrados em todas as origens."} />
           <ResumoPlataforma titulo="Site" cliques={cliquesSite.length} visualizacoes={visualizacoesSite.length} impressoes={impressoesSite > 0 ? impressoesSite : null}
@@ -476,7 +476,11 @@ export default function RelatoriosPage() {
             observacao={visualizacoesAndroid.length ? "Visualizações de ofertas registradas no Android." : "Sem registros de visualização do Android neste período."} />
         </div>
         <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          CTR indisponível quando não há eventos explícitos de impressão de oferta. O banco atual não registra impressões válidas para o período; por isso, o painel não divide cliques por simples visualizações de página.
+          {impressoesSite + impressoesAndroid + impressoesPlataformaDesconhecida === 0
+            ? "CTR indisponível: não há eventos explícitos de impressão de oferta neste período. O painel não usa simples visualizações de página como denominador."
+            : cliquesSite.length > impressoesSite || cliquesAndroid.length > impressoesAndroid
+              ? "CTR indisponível: há plataforma com mais cliques do que impressões registradas. Os dados foram preservados e a taxa não será exibida como válida."
+              : "CTR calculado apenas quando cliques e impressões de ofertas possuem a mesma plataforma e período."}
         </p>
       </section>
 
