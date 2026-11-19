@@ -16,6 +16,9 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // Impede widgets em iframe de terceiros e plugins legados de serem carregados
+          // dentro das páginas do site. Não bloqueia extensões executadas no navegador.
+          { key: "Content-Security-Policy", value: "frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'" },
         ],
       },
     ];
