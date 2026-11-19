@@ -331,7 +331,11 @@ export default function RelatoriosPage() {
   const impressoesPlataformaDesconhecida = pageviews.filter((item) => ehImpressaoOferta(item) && classificarPlataformaVisualizacao(item) === "desconhecida").length;
   const ctrSite = calcularCtr(cliquesSite.length, impressoesSite);
   const ctrAndroid = calcularCtr(cliquesAndroid.length, impressoesAndroid);
-  const todasPlataformasTemImpressao = (cliquesSite.length === 0 || impressoesSite > 0) && (cliquesAndroid.length === 0 || impressoesAndroid > 0) && cliquesPlataformaDesconhecida.length === 0 && impressoesPlataformaDesconhecida === 0;
+  const todasPlataformasTemImpressao =
+    (cliquesSite.length === 0 || (impressoesSite > 0 && cliquesSite.length <= impressoesSite)) &&
+    (cliquesAndroid.length === 0 || (impressoesAndroid > 0 && cliquesAndroid.length <= impressoesAndroid)) &&
+    cliquesPlataformaDesconhecida.length === 0 &&
+    impressoesPlataformaDesconhecida === 0;
   const ctrGeral = todasPlataformasTemImpressao
     ? calcularCtr(cliquesSite.length + cliquesAndroid.length, impressoesSite + impressoesAndroid)
     : null;
