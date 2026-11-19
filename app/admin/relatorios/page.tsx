@@ -52,13 +52,19 @@ type OfertaResumo = {
 };
 
 type LinhaClique = {
-  offer_id: string;
+  offer_id: string | null;
+  coupon_id: string | null;
   origem: string | null;
+  source: string | null;
+  platform: string | null;
+  event_type: string | null;
+  entity_type: string | null;
   criado_em: string;
   offers: { titulo: string; loja: string; categoria: string } | null;
 };
 
 type Pageview = {
+  id: string;
   visitor_id: string;
   path: string;
   referrer: string | null;
@@ -67,6 +73,10 @@ type Pageview = {
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  platform: string | null;
+  event_type: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
   criado_em: string;
 };
 
@@ -141,6 +151,35 @@ function tituloPagina(path: string, ofertas: OfertaResumo[]) {
   return path;
 }
 
+type PlataformaMetrica = "site" | "android" | "desconhecida";
+
+function classificarPlataformaClique(item: LinhaClique): PlataformaMetrica {
+  const plataforma = item.platform?.trim().toLowerCase();
+  if (plataforma === "android" || item.source?.trim().toLowerCase() === "app" || item.origem?.trim().toLowerCase() === "app") return "android";
+  if (plataforma === "site" || plataforma === "web" || item.origem?.trim().toLowerCase() === "site") return "site";
+  return "desconhecida";
+}
+
+function classificarPlataformaVisualizacao(item: Pageview): PlataformaMetrica {
+  const plataforma = item.platform?.trim().toLowerCase();
+  if (plataforma === "android") return "android";
+  if (plataforma === "site" || plataforma === "web" || item.visitor_id === "basic-pageview" || item.source?.trim().toLowerCase() === "contagem básica") return "site";
+  return "desconhecida";
+}
+
+function ehImpressaoOferta(item: Pageview) {
+  return item.event_type?.trim().toLowerCase() === "impression" && item.entity_type?.trim().toLowerCase() === "offer";
+}
+
+function ehCliqueValidoDeOferta(item: LinhaClique) {
+  return Boolean(item.offer_id && !item.coupon_id && (!item.entity_type || item.entity_type.toLowerCase() === "offer") && (!item.event_type || item.event_type.toLowerCase() === "click"));
+}
+
+function calcularCtr(cliquesValidos: number, impressoesValidas: number): number | null {
+  if (impressoesValidas <= 0 || cliquesValidos > impressoesValidas) return null;
+  return (cliquesValidos / impressoesValidas) * 100;
+}
+
 function csvEscape(valor: string | number) {
   const texto = String(valor ?? "");
   return `"${texto.replace(/"/g, '""')}"`;
@@ -199,7 +238,7 @@ export default function RelatoriosPage() {
       ),
       consultarTodosRegistros<Pageview>(
         supabase, "analytics_pageviews",
-        "visitor_id,path,referrer,source,device_type,utm_source,utm_medium,utm_campaign,criado_em",
+        "id,visitor_id,path,referrer,source,device_type,utm_source,utm_medium,utm_campaign,platform,event_type,entity_type,entity_id,criado_em",
         "criado_em", "id", desde
       ),
       consultarTodosRegistros<Sessao>(
@@ -208,7 +247,7 @@ export default function RelatoriosPage() {
         "last_seen", "visitor_id", desde
       ),
       consultarTodosRegistros<LinhaClique>(
-        supabase, "clicks", "offer_id,origem,criado_em,offers(titulo,loja,categoria)",
+        supabase, "clicks", "offer_id,coupon_id,origem,source,platform,event_type,entity_type,criado_em,offers(titulo,loja,categoria)",
         "criado_em", "id", desde
       ),
       consultarTodosRegistros<{ status: string; enviado_em: string | null }>(
@@ -277,7 +316,35 @@ export default function RelatoriosPage() {
   const expiradas = ofertas.filter((o) => o.status === "expirada" || validadePassou(o.validade_promocao)).length;
   const enviados = publicacoes.filter((p) => p.status === "enviado").length;
   const falhas = publicacoes.filter((p) => p.status === "erro").length;
-  const ctr = pageviews.length > 0 ? (cliques.length / pageviews.length) * 100 : 0;
+  const cliquesDeOferta = cliques.filter(ehCliqueValidoDeOferta);
+  const cliquesSite = cliquesDeOferta.filter((item) => classificarPlataformaClique(item) === "site");
+  const cliquesAndroid = cliquesDeOferta.filter((item) => classificarPlataformaClique(item) === "android");
+  const cliquesPlataformaDesconhecida = cliquesDeOferta.filter((item) => classificarPlataformaClique(item) === "desconhecida");
+
+  const visualizacoesSite = pageviews.filter((item) => classificarPlataformaVisualizacao(item) === "site");
+  const visualizacoesAndroid = pageviews.filter((item) => classificarPlataformaVisualizacao(item) === "android");
+  const visualizacoesPlataformaDesconhecida = pageviews.filter((item) => classificarPlataformaVisualizacao(item) === "desconhecida");
+
+  const impressoesSite = pageviews.filter((item) => ehImpressaoOferta(item) && classificarPlataformaVisualizacao(item) === "site").length;
+  const impressoesAndroid = pageviews.filter((item) => ehImpressaoOferta(item) && classificarPlataformaVisualizacao(item) === "android").length;
+  const impressoesPlataformaDesconhecida = pageviews.filter((item) => ehImpressaoOferta(item) && classificarPlataformaVisualizacao(item) === "desconhecida").length;
+  const ctrSite = calcularCtr(cliquesSite.length, impressoesSite);
+  const ctrAndroid = calcularCtr(cliquesAndroid.length, impressoesAndroid);
+  const todasPlataformasTemImpressao = (cliquesSite.length === 0 || impressoesSite > 0) && (cliquesAndroid.length === 0 || impressoesAndroid > 0) && cliquesPlataformaDesconhecida.length === 0 && impressoesPlataformaDesconhecida === 0;
+  const ctrGeral = todasPlataformasTemImpressao
+    ? calcularCtr(cliquesSite.length + cliquesAndroid.length, impressoesSite + impressoesAndroid)
+    : null;
+  const totalCliquesConhecidos = cliquesSite.length + cliquesAndroid.length;
+  const participacaoSite = totalCliquesConhecidos > 0 ? (cliquesSite.length / totalCliquesConhecidos) * 100 : null;
+  const participacaoAndroid = totalCliquesConhecidos > 0 ? (cliquesAndroid.length / totalCliquesConhecidos) * 100 : null;
+  const cliquesPorDiaSite = contarPor(cliquesSite, (item) => new Date(item.criado_em).toLocaleDateString("pt-BR"));
+  const cliquesPorDiaAndroid = contarPor(cliquesAndroid, (item) => new Date(item.criado_em).toLocaleDateString("pt-BR"));
+
+  const textoCtr = (valor: number | null, cliquesValidos: number, impressoesValidas: number) => {
+    if (impressoesValidas <= 0) return "Dados insuficientes para calcular o CTR";
+    if (cliquesValidos > impressoesValidas) return "CTR indisponível: cliques superam as impressões registradas";
+    return valor === null ? "CTR indisponível" : `${valor.toFixed(1)}%`;
+  };
 
   const recentes: LinhaRecente[] = pageviews.slice(0, 12).map((item) => ({
     quando: item.criado_em,
@@ -294,8 +361,19 @@ export default function RelatoriosPage() {
       ["Resumo", "Visualizações", pageviews.length],
       ["Resumo", "Visitantes com métricas", visitantesUnicos],
       ["Resumo", "Online com métricas", onlineAgora],
-      ["Resumo", "Cliques de saída", cliques.length],
-      ["Resumo", "CTR aproximada", `${ctr.toFixed(1)}%`],
+      ["Resumo", "Cliques totais", cliques.length],
+      ["Site", "Cliques de ofertas", cliquesSite.length],
+      ["Site", "Visualizações registradas", visualizacoesSite.length],
+      ["Site", "Impressões válidas", impressoesSite > 0 ? impressoesSite : "Indisponível"],
+      ["Site", "CTR", textoCtr(ctrSite, cliquesSite.length, impressoesSite)],
+      ["Android", "Cliques de ofertas", cliquesAndroid.length],
+      ["Android", "Visualizações registradas", visualizacoesAndroid.length],
+      ["Android", "Impressões válidas", impressoesAndroid > 0 ? impressoesAndroid : "Indisponível"],
+      ["Android", "CTR", textoCtr(ctrAndroid, cliquesAndroid.length, impressoesAndroid)],
+      ["Comparativo", "Participação do site nos cliques identificados", participacaoSite === null ? "Indisponível" : `${participacaoSite.toFixed(1)}%`],
+      ["Comparativo", "Participação do Android nos cliques identificados", participacaoAndroid === null ? "Indisponível" : `${participacaoAndroid.toFixed(1)}%`],
+      ["Comparativo", "Cliques sem plataforma identificada", cliquesPlataformaDesconhecida.length],
+      ["Resumo", "CTR geral", textoCtr(ctrGeral, cliquesSite.length + cliquesAndroid.length, impressoesSite + impressoesAndroid)],
       ["Resumo", "Ofertas publicadas", publicadas],
       ["Resumo", "Ofertas expiradas", expiradas],
       ...Object.entries(fontes).map(([item, valor]) => ["Origem dos acessos", item, valor]),
@@ -380,12 +458,34 @@ export default function RelatoriosPage() {
         </p>
       </section>
 
+      <section aria-labelledby="titulo-metricas-plataforma" className="rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm">
+        <div className="mb-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand/60">Desempenho por origem</p>
+          <h2 id="titulo-metricas-plataforma" className="mt-1 font-display text-lg font-bold text-ink">Visão geral, site e aplicativo Android</h2>
+          <p className="mt-1 text-sm text-ink/55">Cliques e visualizações são exibidos separadamente por plataforma. Visualização de página não é considerada impressão de oferta.</p>
+        </div>
+        <div className="grid min-w-0 gap-3 md:grid-cols-3">
+          <ResumoPlataforma titulo="Visão geral" cliques={cliques.length} visualizacoes={pageviews.length} impressoes={null}
+            ctr={textoCtr(ctrGeral, cliquesSite.length + cliquesAndroid.length, impressoesSite + impressoesAndroid)}
+            observacao={cliquesPlataformaDesconhecida.length ? `${cliquesPlataformaDesconhecida.length} clique(s) sem plataforma identificada.` : "Total de cliques registrados em todas as origens."} />
+          <ResumoPlataforma titulo="Site" cliques={cliquesSite.length} visualizacoes={visualizacoesSite.length} impressoes={impressoesSite > 0 ? impressoesSite : null}
+            ctr={textoCtr(ctrSite, cliquesSite.length, impressoesSite)}
+            observacao={visualizacoesSite.length ? "Visualizações de página registradas no site." : "Sem registros de visualização do site neste período."} />
+          <ResumoPlataforma titulo="Aplicativo Android" cliques={cliquesAndroid.length} visualizacoes={visualizacoesAndroid.length} impressoes={impressoesAndroid > 0 ? impressoesAndroid : null}
+            ctr={textoCtr(ctrAndroid, cliquesAndroid.length, impressoesAndroid)}
+            observacao={visualizacoesAndroid.length ? "Visualizações de ofertas registradas no Android." : "Sem registros de visualização do Android neste período."} />
+        </div>
+        <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          CTR indisponível quando não há eventos explícitos de impressão de oferta. O banco atual não registra impressões válidas para o período; por isso, o painel não divide cliques por simples visualizações de página.
+        </p>
+      </section>
+
       <section className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
         <Cartao rotulo="Online c/ métricas" valor={onlineAgora} destaque />
-        <Cartao rotulo="Visualizações" valor={pageviews.length} />
+        <Cartao rotulo="Visualizações registradas" valor={pageviews.length} />
         <Cartao rotulo="Visitantes c/ métricas" valor={visitantesUnicos} />
-        <Cartao rotulo="Cliques de saída" valor={cliques.length} />
-        <Cartao rotulo="CTR aprox." valor={`${ctr.toFixed(1)}%`} />
+        <Cartao rotulo="Cliques totais" valor={cliques.length} />
+        <Cartao rotulo="CTR" valor="Indisponível" />
         <Cartao rotulo="Ofertas ativas" valor={publicadas} />
         <Cartao rotulo="Expiradas" valor={expiradas} />
         <Cartao rotulo="Envios / falhas" valor={`${enviados} / ${falhas}`} />
@@ -401,6 +501,29 @@ export default function RelatoriosPage() {
         <ListaContagem titulo="Cliques por loja" dados={cliquesPorLoja} total={cliques.length} limite={8} />
         <ListaContagem titulo="Cliques por categoria" dados={cliquesPorCategoria} total={cliques.length} limite={8} />
       </div>
+
+      <section className="rounded-[22px] border border-brand/10 bg-white p-5 shadow-sm">
+        <h2 className="font-display text-lg font-bold text-ink">Comparativo entre plataformas</h2>
+        <p className="mt-1 text-sm text-ink/55">Participação calculada somente sobre os cliques de oferta com plataforma identificada.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl bg-[#F7F4FA] p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink/45">Site · participação nos cliques</p>
+            <p className="mt-1 text-2xl font-extrabold text-ink">{participacaoSite === null ? "Sem dados" : `${participacaoSite.toFixed(1)}%`}</p>
+            <p className="mt-1 text-sm text-ink/55">{cliquesSite.length} clique(s)</p>
+          </div>
+          <div className="rounded-xl bg-[#F7F4FA] p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink/45">Android · participação nos cliques</p>
+            <p className="mt-1 text-2xl font-extrabold text-ink">{participacaoAndroid === null ? "Sem dados" : `${participacaoAndroid.toFixed(1)}%`}</p>
+            <p className="mt-1 text-sm text-ink/55">{cliquesAndroid.length} clique(s)</p>
+          </div>
+        </div>
+        {cliquesPlataformaDesconhecida.length > 0 && <p className="mt-3 text-xs text-amber-800">{cliquesPlataformaDesconhecida.length} clique(s) históricos sem origem de plataforma confiável foram mantidos no total geral, mas excluídos da comparação.</p>}
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <ListaContagem titulo="Cliques do site por dia" dados={cliquesPorDiaSite} total={cliquesSite.length} limite={14} />
+          <ListaContagem titulo="Cliques do Android por dia" dados={cliquesPorDiaAndroid} total={cliquesAndroid.length} limite={14} />
+        </div>
+        {visualizacoesPlataformaDesconhecida.length > 0 && <p className="mt-3 text-xs text-ink/50">{visualizacoesPlataformaDesconhecida.length} visualização(ões) sem plataforma identificada foram preservadas e não atribuídas ao site nem ao Android.</p>}
+      </section>
 
       {Object.keys(campanhas).length > 0 && (
         <ListaContagem titulo="Campanhas UTM" subtitulo="Campanhas identificadas nas sessões que autorizaram métricas adicionais." dados={campanhas} total={sessoes.length} limite={10} />
@@ -493,6 +616,35 @@ export default function RelatoriosPage() {
         “Visualizações” usa a contagem operacional básica das páginas públicas e funciona independentemente do aceite das métricas avançadas. Essa trilha não cria identificador persistente. “Online c/ métricas”, origem, dispositivo e campanhas usam apenas sessões de visitantes que autorizaram métricas adicionais.
       </p>
     </div>
+  );
+}
+
+function ResumoPlataforma({
+  titulo,
+  cliques,
+  visualizacoes,
+  impressoes,
+  ctr,
+  observacao,
+}: {
+  titulo: string;
+  cliques: number;
+  visualizacoes: number;
+  impressoes: number | null;
+  ctr: string;
+  observacao: string;
+}) {
+  return (
+    <article className="min-w-0 rounded-2xl bg-[#F7F4FA] p-4">
+      <h3 className="font-display text-base font-bold text-ink">{titulo}</h3>
+      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+        <div><dt className="text-xs text-ink/50">Cliques</dt><dd className="mt-0.5 text-xl font-extrabold text-ink">{cliques}</dd></div>
+        <div><dt className="text-xs text-ink/50">Visualizações</dt><dd className="mt-0.5 text-xl font-extrabold text-ink">{visualizacoes > 0 ? visualizacoes : "Sem registros"}</dd></div>
+        <div><dt className="text-xs text-ink/50">Impressões válidas</dt><dd className="mt-0.5 font-bold text-ink">{impressoes === null ? "Não registradas" : impressoes}</dd></div>
+        <div><dt className="text-xs text-ink/50">CTR</dt><dd className="mt-0.5 font-bold text-ink">{ctr}</dd></div>
+      </dl>
+      <p className="mt-3 text-xs leading-relaxed text-ink/55">{observacao}</p>
+    </article>
   );
 }
 
