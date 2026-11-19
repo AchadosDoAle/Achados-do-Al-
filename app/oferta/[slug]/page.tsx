@@ -240,18 +240,28 @@ export default async function PaginaOferta({
             </div>
             {bebidaAlcoolica ? (
               <div
-                role="alert"
-                aria-label="Aviso legal: venda e consumo de bebidas alcoólicas proibidos para menores de 18 anos"
-                className="mt-3 flex items-center gap-3 rounded-xl2 border border-red-500 bg-[#35151b] p-3.5 text-white shadow-sm"
+                role="note"
+                aria-label="Aviso para maiores de 18 anos: bebida alcoólica"
+                className="mt-3 overflow-hidden rounded-xl2 border border-amber-400/35 bg-gradient-to-br from-[#302719] to-[#211d19] p-4 text-white shadow-sm"
               >
-                <span className="shrink-0 text-3xl leading-none text-red-400" aria-hidden="true">⚠</span>
-                <div className="min-w-0">
-                  <p className="text-sm font-extrabold uppercase leading-snug tracking-wide">
-                    Proibida a venda e o consumo para menores de 18 anos
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-white/90">
-                    A comercialização e a ingestão de bebidas alcoólicas por menores de 18 anos são vedadas.
-                  </p>
+                <div className="flex items-start gap-3">
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-300/30 bg-amber-300/10 text-lg font-black text-amber-200"
+                    aria-hidden="true"
+                  >
+                    18+
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-200/90">
+                      Conteúdo exclusivo para adultos
+                    </p>
+                    <p className="mt-1 text-sm font-extrabold uppercase leading-snug tracking-wide text-white">
+                      Venda e fornecimento proibidos para menores de 18 anos
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-white/75">
+                      A comercialização ou entrega de bebidas alcoólicas a menores de idade é proibida por lei.
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : null}
