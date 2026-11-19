@@ -156,7 +156,8 @@ type PlataformaMetrica = "site" | "android" | "desconhecida";
 function classificarPlataformaClique(item: LinhaClique): PlataformaMetrica {
   const plataforma = item.platform?.trim().toLowerCase();
   if (plataforma === "android" || item.source?.trim().toLowerCase() === "app" || item.origem?.trim().toLowerCase() === "app") return "android";
-  if (plataforma === "site" || plataforma === "web" || item.origem?.trim().toLowerCase() === "site") return "site";
+  const origem = item.origem?.trim().toLowerCase() ?? "";
+  if (plataforma === "site" || plataforma === "web" || origem === "site" || /^https?:\/\/(?:www\.)?achadosdoale\.com(?:\/|$)/i.test(origem)) return "site";
   return "desconhecida";
 }
 
