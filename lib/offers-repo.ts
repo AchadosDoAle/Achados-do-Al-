@@ -233,7 +233,7 @@ export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Ofe
   const { data, error } = await supabase
     .from("offers")
     .select(CAMPOS_CARD)
-    .in("status", ["publicada", "expirada"])
+    .eq("status", "publicada")
     // A vitrine deve refletir a ordem real de publicação, não apenas a data
     // em que um rascunho foi originalmente criado.
     .order("publicado_em", { ascending: false, nullsFirst: false })
