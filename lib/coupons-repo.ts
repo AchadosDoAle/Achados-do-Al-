@@ -242,7 +242,20 @@ export async function listarCuponsPublicosFiltrados(
 }
 
 /** Lista somente nomes de lojas (não busca todo o conteúdo dos cupons). */
+// Cache curto em memória: a lista de lojas muda muito menos que os cupons.
+ // Em instâncias serverless, cada instância mantém seu próprio cache; o TTL
+ // limita a defasagem e a Promise compartilhada evita varreduras concorrentes.
+let lojasPublicasCache: { valor: string[]; expiraEm: number } | null = null;
+let lojasPublicasEmAndamento: Promise<string[]> | null = null;
+
 export async function listarLojasCuponsPublicas(supabase: SupabaseClient): Promise<string[]> {
+  const agoraCache = Date.now();
+  if (lojasPublicasCache && lojasPublicasCache.expiraEm > agoraCache) {
+    return lojasPublicasCache.valor;
+  }
+  if (lojasPublicasEmAndamento) return lojasPublicasEmAndamento;
+
+  lojasPublicasEmAndamento = (async () => {
   const lojas = new Set<string>();
   const lote = 500;
   let inicio = 0;
@@ -261,7 +274,16 @@ export async function listarLojasCuponsPublicas(supabase: SupabaseClient): Promi
     if ((data?.length ?? 0) < lote) break;
     inicio += lote;
   }
-  return [...lojas].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+  const resultado = [...lojas].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+  lojasPublicasCache = { valor: resultado, expiraEm: Date.now() + 180_000 };
+  return resultado;
+  })();
+
+  try {
+    return await lojasPublicasEmAndamento;
+  } finally {
+    lojasPublicasEmAndamento = null;
+  }
 }
 
 /** Atualizações pontuais sem alterar outras propriedades do cupom. */
