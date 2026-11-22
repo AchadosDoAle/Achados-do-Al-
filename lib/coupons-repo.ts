@@ -2,6 +2,14 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Cupom, CupomFormValues } from "./types";
 import { normalizarNomeLoja } from "./mock-data";
 
+// Campos usados pelo modelo Cupom; evita transferir colunas não consumidas.
+const CAMPOS_CUPOM = [
+  "id", "loja", "nome_cupom", "desconto_percentual", "valor_cupom",
+  "descricao", "observacoes", "link_produtos", "link_resgate", "cor_loja",
+  "validade", "ativo", "criado_em", "atualizado_em", "publicado_em", "relampago",
+].join(",");
+
+
 function linhaParaCupom(linha: any): Cupom {
   return {
     id: linha.id,
@@ -57,7 +65,7 @@ export async function listarCuponsPaginados(
 
   const { data, error, count } = await supabase
     .from("coupons")
-    .select("*", { count: "exact" })
+    .select(CAMPOS_CUPOM, { count: "exact" })
     .order("criado_em", { ascending: false })
     .range(inicio, fim);
 
@@ -78,7 +86,7 @@ export async function listarCuponsParaBuscaAdmin(
   while (true) {
     const { data, error } = await supabase
       .from("coupons")
-      .select("*")
+      .select(CAMPOS_CUPOM)
       .order("criado_em", { ascending: false })
       .range(inicio, inicio + TAMANHO_LOTE - 1);
 
@@ -107,7 +115,7 @@ export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Pr
   while (true) {
     const { data, error } = await supabase
       .from("coupons")
-      .select("*")
+      .select(CAMPOS_CUPOM)
       .eq("ativo", true)
       .order("criado_em", { ascending: false })
       .order("id", { ascending: false })
@@ -125,7 +133,7 @@ export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Pr
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {
   const { data, error } = await supabase
     .from("coupons")
-    .select("*")
+    .select(CAMPOS_CUPOM)
     .order("criado_em", { ascending: false });
   if (error) throw error;
   return (data ?? []).map(linhaParaCupom);
@@ -137,7 +145,7 @@ export async function buscarCupomPorId(
 ): Promise<Cupom | null> {
   const { data, error } = await supabase
     .from("coupons")
-    .select("*")
+    .select(CAMPOS_CUPOM)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -151,7 +159,7 @@ export async function salvarNovoCupom(
   const { data, error } = await supabase
     .from("coupons")
     .insert(cupomParaLinha(valores))
-    .select()
+    .select(CAMPOS_CUPOM)
     .single();
   if (error) throw error;
   return linhaParaCupom(data);
@@ -166,7 +174,7 @@ export async function atualizarCupom(
     .from("coupons")
     .update({ ...cupomParaLinha(valores), atualizado_em: new Date().toISOString() })
     .eq("id", id)
-    .select()
+    .select(CAMPOS_CUPOM)
     .single();
   if (error) throw error;
   return linhaParaCupom(data);
@@ -197,7 +205,7 @@ export async function listarCuponsPublicosFiltrados(
   const agora = opcoes.agora.toISOString();
   let query = supabase
     .from("coupons")
-    .select("*", { count: "exact" })
+    .select(CAMPOS_CUPOM, { count: "exact" })
     .eq("ativo", true);
 
   if (opcoes.loja) query = query.eq("loja", opcoes.loja);
