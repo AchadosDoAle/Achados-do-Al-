@@ -213,7 +213,7 @@ export async function listarCuponsPublicosFiltrados(
   const agora = opcoes.agora.toISOString();
   let query = supabase
     .from("coupons")
-    .select(CAMPOS_CUPOM, { count: "exact" })
+    .select(CAMPOS_CUPOM_PUBLICO, { count: "exact" })
     .eq("ativo", true);
 
   if (opcoes.loja) query = query.eq("loja", opcoes.loja);
