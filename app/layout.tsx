@@ -1,23 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Baloo_2, Inter } from "next/font/google";
 import AnalyticsConsentGate from "@/components/AnalyticsConsentGate";
 import AppInstallPrompt from "@/components/AppInstallPrompt";
 import LivePublicUpdates from "@/components/LivePublicUpdates";
 import { NOME_MARCA, URL_SITE } from "@/lib/seo-brand";
 import "./globals.css";
-
-const baloo = Baloo_2({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-display",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-body",
-});
 
 const GA_ID = (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-NEQW6KW18Q").trim();
 const GOOGLE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
@@ -81,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={`${baloo.variable} ${inter.variable}`}>
+    <html lang="pt-BR">
       {GA_ID ? (
         <>
           <Script id="ga4-consent-default" strategy="beforeInteractive">
