@@ -9,6 +9,14 @@ const CAMPOS_CUPOM = [
   "validade", "ativo", "criado_em", "atualizado_em", "publicado_em", "relampago",
 ].join(",");
 
+// A vitrine pública não usa atualizado_em; mantém observacoes e criado_em
+// porque os cartões exibem os termos e usam a data como fallback de publicação.
+const CAMPOS_CUPOM_PUBLICO = [
+  "id", "loja", "nome_cupom", "desconto_percentual", "valor_cupom",
+  "descricao", "observacoes", "link_produtos", "link_resgate", "cor_loja",
+  "validade", "ativo", "criado_em", "publicado_em", "relampago",
+].join(",");
+
 
 function linhaParaCupom(linha: any): Cupom {
   return {
@@ -115,7 +123,7 @@ export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Pr
   while (true) {
     const { data, error } = await supabase
       .from("coupons")
-      .select(CAMPOS_CUPOM)
+      .select(CAMPOS_CUPOM_PUBLICO)
       .eq("ativo", true)
       .order("criado_em", { ascending: false })
       .order("id", { ascending: false })
