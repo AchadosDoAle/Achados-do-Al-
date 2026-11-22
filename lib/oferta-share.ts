@@ -5,6 +5,13 @@ import { URL_SITE } from "./seo-brand";
 
 const CODIGO_CURTO_REGEX = /^[a-z0-9]{4,12}$/i;
 
+const CAMPOS_OFERTA_LINK_CURTO = [
+  "id", "slug", "titulo", "loja", "categoria", "marca",
+  "preco_atual", "preco_pix", "preco_observacao", "parcelas", "valor_parcela",
+  "cupom", "cupom_descricao", "validade_promocao", "link_produto",
+  "imagem_principal", "bebida_alcoolica", "status", "atualizado_em", "publicado_em",
+].join(",");
+
 export function codigoCurtoDaOferta(slug: string) {
   const match = slug.match(/-([a-z0-9]{4,12})$/i);
   return (match?.[1] || slug.slice(-8)).toLowerCase();
@@ -95,7 +102,7 @@ export async function buscarOfertaPorCodigoCurto(
 
   const { data, error } = await supabase
     .from("offers")
-    .select("*")
+    .select(CAMPOS_OFERTA_LINK_CURTO)
     .like("slug", `%-${codigoLimpo}`)
     .in("status", ["publicada", "expirada"])
     .order("criado_em", { ascending: false })

@@ -2,6 +2,22 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Cupom, CupomFormValues } from "./types";
 import { normalizarNomeLoja } from "./mock-data";
 
+// Campos usados pelo modelo Cupom; evita transferir colunas não consumidas.
+const CAMPOS_CUPOM = [
+  "id", "loja", "nome_cupom", "desconto_percentual", "valor_cupom",
+  "descricao", "observacoes", "link_produtos", "link_resgate", "cor_loja",
+  "validade", "ativo", "criado_em", "atualizado_em", "publicado_em", "relampago",
+].join(",");
+
+// A vitrine pública não usa atualizado_em; mantém observacoes e criado_em
+// porque os cartões exibem os termos e usam a data como fallback de publicação.
+const CAMPOS_CUPOM_PUBLICO = [
+  "id", "loja", "nome_cupom", "desconto_percentual", "valor_cupom",
+  "descricao", "observacoes", "link_produtos", "link_resgate", "cor_loja",
+  "validade", "ativo", "criado_em", "publicado_em", "relampago",
+].join(",");
+
+
 function linhaParaCupom(linha: any): Cupom {
   return {
     id: linha.id,
@@ -57,7 +73,7 @@ export async function listarCuponsPaginados(
 
   const { data, error, count } = await supabase
     .from("coupons")
-    .select("*", { count: "exact" })
+    .select(CAMPOS_CUPOM, { count: "exact" })
     .order("criado_em", { ascending: false })
     .range(inicio, fim);
 
@@ -78,7 +94,7 @@ export async function listarCuponsParaBuscaAdmin(
   while (true) {
     const { data, error } = await supabase
       .from("coupons")
-      .select("*")
+      .select(CAMPOS_CUPOM)
       .order("criado_em", { ascending: false })
       .range(inicio, inicio + TAMANHO_LOTE - 1);
 
@@ -99,7 +115,16 @@ export async function listarCuponsParaBuscaAdmin(
  * evitando a limitação padrão de 1.000 registros do PostgREST.
  * A RLS do Supabase continua sendo aplicada normalmente.
  */
+let cuponsBuscaPublicaCache: { valor: Cupom[]; expiraEm: number } | null = null;
+let cuponsBuscaPublicaEmAndamento: Promise<Cupom[]> | null = null;
+
 export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Promise<Cupom[]> {
+  if (cuponsBuscaPublicaCache && cuponsBuscaPublicaCache.expiraEm > Date.now()) {
+    return cuponsBuscaPublicaCache.valor;
+  }
+  if (cuponsBuscaPublicaEmAndamento) return cuponsBuscaPublicaEmAndamento;
+
+  cuponsBuscaPublicaEmAndamento = (async () => {
   const TAMANHO_LOTE = 500;
   const acumulado: Cupom[] = [];
   let inicio = 0;
@@ -107,7 +132,7 @@ export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Pr
   while (true) {
     const { data, error } = await supabase
       .from("coupons")
-      .select("*")
+      .select(CAMPOS_CUPOM_PUBLICO)
       .eq("ativo", true)
       .order("criado_em", { ascending: false })
       .order("id", { ascending: false })
@@ -119,13 +144,21 @@ export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Pr
     if (lote.length < TAMANHO_LOTE) break;
     inicio += TAMANHO_LOTE;
   }
+  cuponsBuscaPublicaCache = { valor: acumulado, expiraEm: Date.now() + 20_000 };
   return acumulado;
+  })();
+
+  try {
+    return await cuponsBuscaPublicaEmAndamento;
+  } finally {
+    cuponsBuscaPublicaEmAndamento = null;
+  }
 }
 
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {
   const { data, error } = await supabase
     .from("coupons")
-    .select("*")
+    .select(CAMPOS_CUPOM)
     .order("criado_em", { ascending: false });
   if (error) throw error;
   return (data ?? []).map(linhaParaCupom);
@@ -137,7 +170,7 @@ export async function buscarCupomPorId(
 ): Promise<Cupom | null> {
   const { data, error } = await supabase
     .from("coupons")
-    .select("*")
+    .select(CAMPOS_CUPOM)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -151,7 +184,7 @@ export async function salvarNovoCupom(
   const { data, error } = await supabase
     .from("coupons")
     .insert(cupomParaLinha(valores))
-    .select()
+    .select(CAMPOS_CUPOM)
     .single();
   if (error) throw error;
   return linhaParaCupom(data);
@@ -166,7 +199,7 @@ export async function atualizarCupom(
     .from("coupons")
     .update({ ...cupomParaLinha(valores), atualizado_em: new Date().toISOString() })
     .eq("id", id)
-    .select()
+    .select(CAMPOS_CUPOM)
     .single();
   if (error) throw error;
   return linhaParaCupom(data);
@@ -180,6 +213,9 @@ export async function excluirCupom(supabase: SupabaseClient, id: string) {
 // Filtros públicos aplicados diretamente no Supabase, evitando carregar todos
 // os cupons a cada visita. Registros desativados no admin continuam privados.
 export type FiltroPublicoCupom = "todos" | "ativos" | "vencidos" | "vence-hoje" | "relampago";
+
+const cuponsPublicosCache = new Map<string, { valor: { itens: Cupom[]; total: number }; expiraEm: number }>();
+const cuponsPublicosEmAndamento = new Map<string, Promise<{ itens: Cupom[]; total: number }>>();
 
 export async function listarCuponsPublicosFiltrados(
   supabase: SupabaseClient,
@@ -195,38 +231,68 @@ export async function listarCuponsPublicosFiltrados(
   const pagina = Math.max(1, Math.trunc(opcoes.pagina));
   const limite = Math.max(1, Math.min(60, Math.trunc(opcoes.porPagina)));
   const agora = opcoes.agora.toISOString();
-  let query = supabase
-    .from("coupons")
-    .select("*", { count: "exact" })
-    .eq("ativo", true);
+  const chave = JSON.stringify([pagina, limite, opcoes.filtro, opcoes.loja ?? "", agora.slice(0, 16), opcoes.fimDoDiaBrasilia.toISOString().slice(0, 10)]);
+  const cache = cuponsPublicosCache.get(chave);
+  if (cache && cache.expiraEm > Date.now()) return cache.valor;
+  const emAndamento = cuponsPublicosEmAndamento.get(chave);
+  if (emAndamento) return emAndamento;
 
-  if (opcoes.loja) query = query.eq("loja", opcoes.loja);
-  switch (opcoes.filtro) {
-    case "ativos":
-      query = query.or(`validade.is.null,validade.gte.${agora}`);
-      break;
-    case "vencidos":
-      query = query.lt("validade", agora);
-      break;
-    case "vence-hoje":
-      query = query.gte("validade", agora).lte("validade", opcoes.fimDoDiaBrasilia.toISOString());
-      break;
-    case "relampago":
-      query = query.eq("relampago", true).or(`validade.is.null,validade.gte.${agora}`);
-      break;
+  const consulta = (async () => {
+    let query = supabase
+      .from("coupons")
+      .select(CAMPOS_CUPOM_PUBLICO, { count: "exact" })
+      .eq("ativo", true);
+
+    if (opcoes.loja) query = query.eq("loja", opcoes.loja);
+    switch (opcoes.filtro) {
+      case "ativos":
+        query = query.or(`validade.is.null,validade.gte.${agora}`);
+        break;
+      case "vencidos":
+        query = query.lt("validade", agora);
+        break;
+      case "vence-hoje":
+        query = query.gte("validade", agora).lte("validade", opcoes.fimDoDiaBrasilia.toISOString());
+        break;
+      case "relampago":
+        query = query.eq("relampago", true).or(`validade.is.null,validade.gte.${agora}`);
+        break;
+    }
+
+    const inicio = (pagina - 1) * limite;
+    const { data, error, count } = await query
+      .order("criado_em", { ascending: false })
+      .order("id", { ascending: false })
+      .range(inicio, inicio + limite - 1);
+    if (error) throw error;
+    const valor = { itens: (data ?? []).map(linhaParaCupom), total: count ?? 0 };
+    cuponsPublicosCache.set(chave, { valor, expiraEm: Date.now() + 15_000 });
+    return valor;
+  })();
+
+  cuponsPublicosEmAndamento.set(chave, consulta);
+  try {
+    return await consulta;
+  } finally {
+    cuponsPublicosEmAndamento.delete(chave);
   }
-
-  const inicio = (pagina - 1) * limite;
-  const { data, error, count } = await query
-    .order("criado_em", { ascending: false })
-    .order("id", { ascending: false })
-    .range(inicio, inicio + limite - 1);
-  if (error) throw error;
-  return { itens: (data ?? []).map(linhaParaCupom), total: count ?? 0 };
 }
 
 /** Lista somente nomes de lojas (não busca todo o conteúdo dos cupons). */
+// Cache curto em memória: a lista de lojas muda muito menos que os cupons.
+ // Em instâncias serverless, cada instância mantém seu próprio cache; o TTL
+ // limita a defasagem e a Promise compartilhada evita varreduras concorrentes.
+let lojasPublicasCache: { valor: string[]; expiraEm: number } | null = null;
+let lojasPublicasEmAndamento: Promise<string[]> | null = null;
+
 export async function listarLojasCuponsPublicas(supabase: SupabaseClient): Promise<string[]> {
+  const agoraCache = Date.now();
+  if (lojasPublicasCache && lojasPublicasCache.expiraEm > agoraCache) {
+    return lojasPublicasCache.valor;
+  }
+  if (lojasPublicasEmAndamento) return lojasPublicasEmAndamento;
+
+  lojasPublicasEmAndamento = (async () => {
   const lojas = new Set<string>();
   const lote = 500;
   let inicio = 0;
@@ -245,7 +311,16 @@ export async function listarLojasCuponsPublicas(supabase: SupabaseClient): Promi
     if ((data?.length ?? 0) < lote) break;
     inicio += lote;
   }
-  return [...lojas].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+  const resultado = [...lojas].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+  lojasPublicasCache = { valor: resultado, expiraEm: Date.now() + 180_000 };
+  return resultado;
+  })();
+
+  try {
+    return await lojasPublicasEmAndamento;
+  } finally {
+    lojasPublicasEmAndamento = null;
+  }
 }
 
 /** Atualizações pontuais sem alterar outras propriedades do cupom. */

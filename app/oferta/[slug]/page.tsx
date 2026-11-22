@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cache } from "react";
 import { criarClientePublico } from "@/lib/supabase/public";
 import { buscarOfertaPorSlug } from "@/lib/offers-repo";
 import { BotaoCopiarCupom, BotaoCompartilhar } from "@/components/OfertaAcoes";
@@ -26,10 +27,10 @@ const URL_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://achadosdoale.com";
 
 export const revalidate = 0;
 
-async function buscar(slug: string) {
+const buscar = cache(async (slug: string) => {
   const supabase = criarClientePublico();
   return buscarOfertaPorSlug(supabase, slug);
-}
+});
 
 export async function generateMetadata({
   params,

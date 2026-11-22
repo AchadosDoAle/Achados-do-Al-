@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { criarClientePublico } from "@/lib/supabase/public";
@@ -15,10 +16,10 @@ import { formatarDataPublicacao } from "@/lib/datas";
 
 export const revalidate = 0;
 
-async function buscar(code: string) {
+const buscar = cache(async (code: string) => {
   const cupom = await buscarCupomPorCodigoCurto(criarClientePublico(), code);
   return cupom?.ativo ? cupom : null;
-}
+});
 
 export async function generateMetadata({
   params,

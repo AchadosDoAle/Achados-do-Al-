@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { criarClientePublico } from "@/lib/supabase/public";
@@ -16,9 +17,9 @@ import RedirecionarOferta from "@/components/RedirecionarOferta";
 
 export const revalidate = 0;
 
-async function buscar(code: string) {
+const buscar = cache(async (code: string) => {
   return buscarOfertaPorCodigoCurto(criarClientePublico(), code);
-}
+});
 
 export async function generateMetadata({
   params,

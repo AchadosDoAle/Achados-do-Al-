@@ -3,6 +3,20 @@ import { Oferta, OfertaFormValues } from "./types";
 import { normalizarNomeLoja } from "./mock-data";
 import { dataPromocaoJaPassou } from "./oferta-status";
 
+// Conjunto completo de campos mapeados para Oferta, em seleção explícita.
+const CAMPOS_OFERTA_COMPLETA = [
+  "id", "slug", "titulo", "loja", "categoria", "marca", "modelo",
+  "preco_antigo", "preco_atual", "preco_pix", "preco_observacao",
+  "oferece_parcelamento", "parcelas", "valor_parcela", "parcelamento_sem_juros",
+  "cupom", "cupom_descricao", "link_cupom", "frete_gratis", "frete_condicao",
+  "estoque", "validade_promocao", "voltagem", "cor", "tamanho", "capacidade",
+  "link_produto", "usar_link_redirecionamento", "texto_original",
+  "texto_publicacao", "observacoes", "imagem_principal", "bebida_alcoolica",
+  "oferta_black", "destaque_imperdivel", "destaque_ate", "status",
+  "agendado_para", "criado_em", "atualizado_em", "publicado_em",
+].join(",");
+
+
 // O banco usa snake_case (como no modelo que você pediu); o app usa
 // camelCase. Estas duas funções fazem a conversão nos dois sentidos.
 
@@ -195,7 +209,7 @@ export async function listarOfertas(
 ): Promise<Oferta[]> {
   let consulta = supabase
     .from("offers")
-    .select("*")
+    .select(CAMPOS_OFERTA_COMPLETA)
     .order("criado_em", { ascending: false });
 
   if (filtros?.status) consulta = consulta.eq("status", filtros.status);
@@ -215,18 +229,36 @@ const CAMPOS_CARD = [
   "bebida_alcoolica", "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em", "publicado_em"
 ].join(",");
 
+let ofertasResumoCache: { valor: Oferta[]; expiraEm: number } | null = null;
+let ofertasResumoEmAndamento: Promise<Oferta[]> | null = null;
+
 export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {
+  if (ofertasResumoCache && ofertasResumoCache.expiraEm > Date.now()) {
+    return ofertasResumoCache.valor;
+  }
+  if (ofertasResumoEmAndamento) return ofertasResumoEmAndamento;
+
+  ofertasResumoEmAndamento = (async () => {
   const { data, error } = await supabase
     .from("offers")
     .select(CAMPOS_CARD)
-    .in("status", ["publicada", "expirada"])
+    .eq("status", "publicada")
     // A vitrine deve refletir a ordem real de publicação, não apenas a data
     // em que um rascunho foi originalmente criado.
     .order("publicado_em", { ascending: false, nullsFirst: false })
     .order("criado_em", { ascending: false })
     .limit(500);
   if (error) throw error;
-  return (data ?? []).map(linhaParaOferta);
+  const resultado = (data ?? []).map(linhaParaOferta);
+  ofertasResumoCache = { valor: resultado, expiraEm: Date.now() + 10_000 };
+  return resultado;
+  })();
+
+  try {
+    return await ofertasResumoEmAndamento;
+  } finally {
+    ofertasResumoEmAndamento = null;
+  }
 }
 
 export async function listarOfertasPorIds(supabase: SupabaseClient, ids: string[]): Promise<Oferta[]> {
@@ -242,7 +274,7 @@ export async function buscarOfertaPorId(
 ): Promise<Oferta | null> {
   const { data, error } = await supabase
     .from("offers")
-    .select("*")
+    .select(CAMPOS_OFERTA_COMPLETA)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -255,7 +287,7 @@ export async function buscarOfertaPorSlug(
 ): Promise<Oferta | null> {
   const { data, error } = await supabase
     .from("offers")
-    .select("*")
+    .select(CAMPOS_OFERTA_COMPLETA)
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
@@ -273,7 +305,7 @@ export async function salvarNovaOferta(
   const { data, error } = await supabase
     .from("offers")
     .insert(linha)
-    .select()
+    .select(CAMPOS_OFERTA_COMPLETA)
     .single();
   if (error) throw error;
   return linhaParaOferta(data);
@@ -288,7 +320,7 @@ export async function atualizarOferta(
     .from("offers")
     .update({ ...ofertaParaLinha(valores), atualizado_em: new Date().toISOString() })
     .eq("id", id)
-    .select()
+    .select(CAMPOS_OFERTA_COMPLETA)
     .single();
   if (error) throw error;
   return linhaParaOferta(data);
@@ -369,7 +401,7 @@ export async function publicarOfertaAgora(
     .from("offers")
     .update(atualizacoes)
     .eq("id", oferta.id)
-    .select()
+    .select(CAMPOS_OFERTA_COMPLETA)
     .single();
 
   if (error) throw error;
