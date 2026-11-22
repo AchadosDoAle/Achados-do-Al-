@@ -229,7 +229,16 @@ const CAMPOS_CARD = [
   "bebida_alcoolica", "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em", "publicado_em"
 ].join(",");
 
+let ofertasResumoCache: { valor: Oferta[]; expiraEm: number } | null = null;
+let ofertasResumoEmAndamento: Promise<Oferta[]> | null = null;
+
 export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {
+  if (ofertasResumoCache && ofertasResumoCache.expiraEm > Date.now()) {
+    return ofertasResumoCache.valor;
+  }
+  if (ofertasResumoEmAndamento) return ofertasResumoEmAndamento;
+
+  ofertasResumoEmAndamento = (async () => {
   const { data, error } = await supabase
     .from("offers")
     .select(CAMPOS_CARD)
@@ -240,7 +249,16 @@ export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Ofe
     .order("criado_em", { ascending: false })
     .limit(500);
   if (error) throw error;
-  return (data ?? []).map(linhaParaOferta);
+  const resultado = (data ?? []).map(linhaParaOferta);
+  ofertasResumoCache = { valor: resultado, expiraEm: Date.now() + 10_000 };
+  return resultado;
+  })();
+
+  try {
+    return await ofertasResumoEmAndamento;
+  } finally {
+    ofertasResumoEmAndamento = null;
+  }
 }
 
 export async function listarOfertasPorIds(supabase: SupabaseClient, ids: string[]): Promise<Oferta[]> {
