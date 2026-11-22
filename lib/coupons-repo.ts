@@ -197,6 +197,9 @@ export async function excluirCupom(supabase: SupabaseClient, id: string) {
 // os cupons a cada visita. Registros desativados no admin continuam privados.
 export type FiltroPublicoCupom = "todos" | "ativos" | "vencidos" | "vence-hoje" | "relampago";
 
+const cuponsPublicosCache = new Map<string, { valor: { itens: Cupom[]; total: number }; expiraEm: number }>();
+const cuponsPublicosEmAndamento = new Map<string, Promise<{ itens: Cupom[]; total: number }>>();
+
 export async function listarCuponsPublicosFiltrados(
   supabase: SupabaseClient,
   opcoes: {
@@ -211,34 +214,51 @@ export async function listarCuponsPublicosFiltrados(
   const pagina = Math.max(1, Math.trunc(opcoes.pagina));
   const limite = Math.max(1, Math.min(60, Math.trunc(opcoes.porPagina)));
   const agora = opcoes.agora.toISOString();
-  let query = supabase
-    .from("coupons")
-    .select(CAMPOS_CUPOM_PUBLICO, { count: "exact" })
-    .eq("ativo", true);
+  const chave = JSON.stringify([pagina, limite, opcoes.filtro, opcoes.loja ?? "", agora.slice(0, 16), opcoes.fimDoDiaBrasilia.toISOString().slice(0, 10)]);
+  const cache = cuponsPublicosCache.get(chave);
+  if (cache && cache.expiraEm > Date.now()) return cache.valor;
+  const emAndamento = cuponsPublicosEmAndamento.get(chave);
+  if (emAndamento) return emAndamento;
 
-  if (opcoes.loja) query = query.eq("loja", opcoes.loja);
-  switch (opcoes.filtro) {
-    case "ativos":
-      query = query.or(`validade.is.null,validade.gte.${agora}`);
-      break;
-    case "vencidos":
-      query = query.lt("validade", agora);
-      break;
-    case "vence-hoje":
-      query = query.gte("validade", agora).lte("validade", opcoes.fimDoDiaBrasilia.toISOString());
-      break;
-    case "relampago":
-      query = query.eq("relampago", true).or(`validade.is.null,validade.gte.${agora}`);
-      break;
+  const consulta = (async () => {
+    let query = supabase
+      .from("coupons")
+      .select(CAMPOS_CUPOM_PUBLICO, { count: "exact" })
+      .eq("ativo", true);
+
+    if (opcoes.loja) query = query.eq("loja", opcoes.loja);
+    switch (opcoes.filtro) {
+      case "ativos":
+        query = query.or(`validade.is.null,validade.gte.${agora}`);
+        break;
+      case "vencidos":
+        query = query.lt("validade", agora);
+        break;
+      case "vence-hoje":
+        query = query.gte("validade", agora).lte("validade", opcoes.fimDoDiaBrasilia.toISOString());
+        break;
+      case "relampago":
+        query = query.eq("relampago", true).or(`validade.is.null,validade.gte.${agora}`);
+        break;
+    }
+
+    const inicio = (pagina - 1) * limite;
+    const { data, error, count } = await query
+      .order("criado_em", { ascending: false })
+      .order("id", { ascending: false })
+      .range(inicio, inicio + limite - 1);
+    if (error) throw error;
+    const valor = { itens: (data ?? []).map(linhaParaCupom), total: count ?? 0 };
+    cuponsPublicosCache.set(chave, { valor, expiraEm: Date.now() + 15_000 });
+    return valor;
+  })();
+
+  cuponsPublicosEmAndamento.set(chave, consulta);
+  try {
+    return await consulta;
+  } finally {
+    cuponsPublicosEmAndamento.delete(chave);
   }
-
-  const inicio = (pagina - 1) * limite;
-  const { data, error, count } = await query
-    .order("criado_em", { ascending: false })
-    .order("id", { ascending: false })
-    .range(inicio, inicio + limite - 1);
-  if (error) throw error;
-  return { itens: (data ?? []).map(linhaParaCupom), total: count ?? 0 };
 }
 
 /** Lista somente nomes de lojas (não busca todo o conteúdo dos cupons). */
