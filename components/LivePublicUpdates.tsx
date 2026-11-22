@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
 const ATRASO_ATUALIZACAO_MS = 500;
@@ -16,7 +16,6 @@ const INTERVALO_MINIMO_REFRESH_MS = 1500;
  * posição da tela etc.) sempre que possível.
  */
 export default function LivePublicUpdates() {
-  const pathname = usePathname();
   const router = useRouter();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ultimoRefreshRef = useRef(0);
@@ -24,13 +23,13 @@ export default function LivePublicUpdates() {
   useEffect(() => {
     // O painel administrativo já controla o próprio estado. Evitamos uma
     // atualização remota no meio de formulários de edição/cadastro.
-    if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
-      return;
-    }
-
     const supabase = criarClienteNavegador();
 
     function programarAtualizacao(tabela?: "offers" | "coupons", evento?: string) {
+      // O listener é global e permanece único durante a navegação. Não atualiza
+      // rotas administrativas ou de autenticação.
+      const rotaAtual = window.location.pathname;
+      if (rotaAtual.startsWith("/admin") || rotaAtual.startsWith("/login")) return;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
       const desdeUltimoRefresh = Date.now() - ultimoRefreshRef.current;
@@ -92,7 +91,7 @@ export default function LivePublicUpdates() {
       window.removeEventListener("focus", atualizarAoFocar);
       void supabase.removeChannel(canal);
     };
-  }, [pathname, router]);
+  }, [router]);
 
   return null;
 }
