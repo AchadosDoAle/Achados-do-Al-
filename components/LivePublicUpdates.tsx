@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
-const ATRASO_ATUALIZACAO_MS = 350;
+const ATRASO_ATUALIZACAO_MS = 500;
+const INTERVALO_MINIMO_REFRESH_MS = 1500;
 
 /**
  * Mantém as vitrines públicas sincronizadas com o Supabase em tempo real.
@@ -18,6 +19,7 @@ export default function LivePublicUpdates() {
   const pathname = usePathname();
   const router = useRouter();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ultimoRefreshRef = useRef(0);
 
   useEffect(() => {
     // O painel administrativo já controla o próprio estado. Evitamos uma
@@ -28,19 +30,30 @@ export default function LivePublicUpdates() {
 
     const supabase = criarClienteNavegador();
 
-    function atualizarConteudo(tabela: "offers" | "coupons", evento?: string) {
+    function programarAtualizacao(tabela?: "offers" | "coupons", evento?: string) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
+      const desdeUltimoRefresh = Date.now() - ultimoRefreshRef.current;
+      const esperaMinima = Math.max(0, INTERVALO_MINIMO_REFRESH_MS - desdeUltimoRefresh);
+      const atraso = Math.max(ATRASO_ATUALIZACAO_MS, esperaMinima);
+
       timeoutRef.current = setTimeout(() => {
-        // Também avisamos componentes 100% client-side (como Favoritos), que
-        // não são recarregados apenas pela nova árvore de Server Components.
-        window.dispatchEvent(
-          new CustomEvent("achado:conteudo-atualizado", {
-            detail: { tabela, evento: evento ?? "change" },
-          })
-        );
+        timeoutRef.current = null;
+        ultimoRefreshRef.current = Date.now();
+
+        if (tabela) {
+          window.dispatchEvent(
+            new CustomEvent("achado:conteudo-atualizado", {
+              detail: { tabela, evento: evento ?? "change" },
+            })
+          );
+        }
         router.refresh();
-      }, ATRASO_ATUALIZACAO_MS);
+      }, atraso);
+    }
+
+    function atualizarConteudo(tabela: "offers" | "coupons", evento?: string) {
+      programarAtualizacao(tabela, evento);
     }
 
     const canal = supabase
@@ -60,11 +73,11 @@ export default function LivePublicUpdates() {
     // Se o celular/notebook ficou em segundo plano e a conexão realtime caiu,
     // atualizar ao voltar para a aba garante que a vitrine não fique antiga.
     function atualizarAoVoltar() {
-      if (document.visibilityState === "visible") router.refresh();
+      if (document.visibilityState === "visible") programarAtualizacao();
     }
 
     function atualizarAoFocar() {
-      router.refresh();
+      programarAtualizacao();
     }
 
     document.addEventListener("visibilitychange", atualizarAoVoltar);
