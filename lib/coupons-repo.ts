@@ -115,7 +115,16 @@ export async function listarCuponsParaBuscaAdmin(
  * evitando a limitação padrão de 1.000 registros do PostgREST.
  * A RLS do Supabase continua sendo aplicada normalmente.
  */
+let cuponsBuscaPublicaCache: { valor: Cupom[]; expiraEm: number } | null = null;
+let cuponsBuscaPublicaEmAndamento: Promise<Cupom[]> | null = null;
+
 export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Promise<Cupom[]> {
+  if (cuponsBuscaPublicaCache && cuponsBuscaPublicaCache.expiraEm > Date.now()) {
+    return cuponsBuscaPublicaCache.valor;
+  }
+  if (cuponsBuscaPublicaEmAndamento) return cuponsBuscaPublicaEmAndamento;
+
+  cuponsBuscaPublicaEmAndamento = (async () => {
   const TAMANHO_LOTE = 500;
   const acumulado: Cupom[] = [];
   let inicio = 0;
@@ -135,7 +144,15 @@ export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Pr
     if (lote.length < TAMANHO_LOTE) break;
     inicio += TAMANHO_LOTE;
   }
+  cuponsBuscaPublicaCache = { valor: acumulado, expiraEm: Date.now() + 20_000 };
   return acumulado;
+  })();
+
+  try {
+    return await cuponsBuscaPublicaEmAndamento;
+  } finally {
+    cuponsBuscaPublicaEmAndamento = null;
+  }
 }
 
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {
