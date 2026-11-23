@@ -99,27 +99,55 @@ export async function listarCuponsParaBuscaAdmin(
  * evitando a limitação padrão de 1.000 registros do PostgREST.
  * A RLS do Supabase continua sendo aplicada normalmente.
  */
+const CAMPOS_BUSCA_PUBLICA = [
+  "id", "loja", "nome_cupom", "desconto_percentual", "valor_cupom",
+  "descricao", "observacoes", "link_produtos", "link_resgate", "cor_loja",
+  "validade", "ativo", "criado_em", "atualizado_em", "publicado_em", "relampago",
+].join(",");
+
+let cuponsBuscaPublicaCache: { valor: Cupom[]; expiraEm: number } | null = null;
+let cuponsBuscaPublicaEmAndamento: Promise<Cupom[]> | null = null;
+
+function invalidarCacheBuscaCuponsPublica() {
+  cuponsBuscaPublicaCache = null;
+}
+
 export async function listarCuponsParaBuscaPublica(supabase: SupabaseClient): Promise<Cupom[]> {
-  const TAMANHO_LOTE = 500;
-  const acumulado: Cupom[] = [];
-  let inicio = 0;
-
-  while (true) {
-    const { data, error } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("ativo", true)
-      .order("criado_em", { ascending: false })
-      .order("id", { ascending: false })
-      .range(inicio, inicio + TAMANHO_LOTE - 1);
-    if (error) throw error;
-
-    const lote = data ?? [];
-    acumulado.push(...lote.map(linhaParaCupom));
-    if (lote.length < TAMANHO_LOTE) break;
-    inicio += TAMANHO_LOTE;
+  if (cuponsBuscaPublicaCache && cuponsBuscaPublicaCache.expiraEm > Date.now()) {
+    return cuponsBuscaPublicaCache.valor;
   }
-  return acumulado;
+  if (cuponsBuscaPublicaEmAndamento) return cuponsBuscaPublicaEmAndamento;
+
+  cuponsBuscaPublicaEmAndamento = (async () => {
+    const TAMANHO_LOTE = 500;
+    const acumulado: Cupom[] = [];
+    let inicio = 0;
+
+    while (true) {
+      const { data, error } = await supabase
+        .from("coupons")
+        .select(CAMPOS_BUSCA_PUBLICA)
+        .eq("ativo", true)
+        .order("criado_em", { ascending: false })
+        .order("id", { ascending: false })
+        .range(inicio, inicio + TAMANHO_LOTE - 1);
+      if (error) throw error;
+
+      const lote = data ?? [];
+      acumulado.push(...lote.map(linhaParaCupom));
+      if (lote.length < TAMANHO_LOTE) break;
+      inicio += TAMANHO_LOTE;
+    }
+
+    cuponsBuscaPublicaCache = { valor: acumulado, expiraEm: Date.now() + 10_000 };
+    return acumulado;
+  })();
+
+  try {
+    return await cuponsBuscaPublicaEmAndamento;
+  } finally {
+    cuponsBuscaPublicaEmAndamento = null;
+  }
 }
 
 export async function listarCupons(supabase: SupabaseClient): Promise<Cupom[]> {
@@ -154,6 +182,7 @@ export async function salvarNovoCupom(
     .select()
     .single();
   if (error) throw error;
+  invalidarCacheBuscaCuponsPublica();
   return linhaParaCupom(data);
 }
 
@@ -169,12 +198,14 @@ export async function atualizarCupom(
     .select()
     .single();
   if (error) throw error;
+  invalidarCacheBuscaCuponsPublica();
   return linhaParaCupom(data);
 }
 
 export async function excluirCupom(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("coupons").delete().eq("id", id);
   if (error) throw error;
+  invalidarCacheBuscaCuponsPublica();
 }
 
 // Filtros públicos aplicados diretamente no Supabase, evitando carregar todos
@@ -266,4 +297,5 @@ export async function alterarSituacaoCupom(
   }
   const { error } = await supabase.from("coupons").update(alteracoes).eq("id", id);
   if (error) throw error;
+  invalidarCacheBuscaCuponsPublica();
 }
