@@ -215,18 +215,40 @@ const CAMPOS_CARD = [
   "bebida_alcoolica", "oferta_black", "destaque_imperdivel", "destaque_ate", "status", "criado_em", "atualizado_em", "publicado_em"
 ].join(",");
 
+// Cache curto e deduplicação de consultas públicas. Os dados continuam
+// sincronizados pelo Realtime, com defasagem máxima local de 5 segundos.
+let ofertasResumoCache: { valor: Oferta[]; expiraEm: number } | null = null;
+let ofertasResumoEmAndamento: Promise<Oferta[]> | null = null;
+
+function invalidarCacheOfertasResumo() {
+  ofertasResumoCache = null;
+}
+
 export async function listarOfertasResumo(supabase: SupabaseClient): Promise<Oferta[]> {
-  const { data, error } = await supabase
-    .from("offers")
-    .select(CAMPOS_CARD)
-    .in("status", ["publicada", "expirada"])
-    // A vitrine deve refletir a ordem real de publicação, não apenas a data
-    // em que um rascunho foi originalmente criado.
-    .order("publicado_em", { ascending: false, nullsFirst: false })
-    .order("criado_em", { ascending: false })
-    .limit(500);
-  if (error) throw error;
-  return (data ?? []).map(linhaParaOferta);
+  if (ofertasResumoCache && ofertasResumoCache.expiraEm > Date.now()) {
+    return ofertasResumoCache.valor;
+  }
+  if (ofertasResumoEmAndamento) return ofertasResumoEmAndamento;
+
+  ofertasResumoEmAndamento = (async () => {
+    const { data, error } = await supabase
+      .from("offers")
+      .select(CAMPOS_CARD)
+      .in("status", ["publicada", "expirada"])
+      .order("publicado_em", { ascending: false, nullsFirst: false })
+      .order("criado_em", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    const valor = (data ?? []).map(linhaParaOferta);
+    ofertasResumoCache = { valor, expiraEm: Date.now() + 5_000 };
+    return valor;
+  })();
+
+  try {
+    return await ofertasResumoEmAndamento;
+  } finally {
+    ofertasResumoEmAndamento = null;
+  }
 }
 
 export async function listarOfertasPorIds(supabase: SupabaseClient, ids: string[]): Promise<Oferta[]> {
@@ -276,6 +298,7 @@ export async function salvarNovaOferta(
     .select()
     .single();
   if (error) throw error;
+  invalidarCacheOfertasResumo();
   return linhaParaOferta(data);
 }
 
@@ -291,6 +314,7 @@ export async function atualizarOferta(
     .select()
     .single();
   if (error) throw error;
+  invalidarCacheOfertasResumo();
   return linhaParaOferta(data);
 }
 
@@ -323,11 +347,13 @@ export async function arquivarOferta(supabase: SupabaseClient, id: string): Prom
     })
     .eq("id", id);
   if (error) throw error;
+  invalidarCacheOfertasResumo();
 }
 
 export async function excluirOferta(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("offers").delete().eq("id", id);
   if (error) throw error;
+  invalidarCacheOfertasResumo();
 }
 
 
@@ -373,6 +399,7 @@ export async function publicarOfertaAgora(
     .single();
 
   if (error) throw error;
+  invalidarCacheOfertasResumo();
   return linhaParaOferta(data);
 }
 
