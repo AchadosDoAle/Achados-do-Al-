@@ -75,7 +75,7 @@ function detectarLoja(texto: string) {
   // Mensagens de WhatsApp frequentemente informam a loja em uma linha isolada,
   // normalmente precedida por emoji (ex.: "🏪 Nike"). Reconhece apenas nomes
   // exatos da lista de lojas, nunca uma marca mencionada dentro do título.
-  const linhas = texto.split(/\\r?\\n/).map((linha) => limparMarkdown(linha));
+  const linhas = texto.split(/\r?\n/).map((linha) => limparMarkdown(linha));
   for (let i = 0; i < linhas.length; i += 1) {
     const linha = linhas[i];
     if (!linha || linha.includes(":")) continue;
