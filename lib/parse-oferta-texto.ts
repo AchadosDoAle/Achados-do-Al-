@@ -72,6 +72,23 @@ function detectarLoja(texto: string) {
     if (afiliada) return afiliada;
   }
 
+  // Mensagens de WhatsApp frequentemente informam a loja em uma linha isolada,
+  // normalmente precedida por emoji (ex.: "🏪 Nike"). Reconhece apenas nomes
+  // exatos da lista de lojas, nunca uma marca mencionada dentro do título.
+  const linhas = texto.split(/\\r?\\n/).map((linha) => limparMarkdown(linha));
+  for (let i = 0; i < linhas.length; i += 1) {
+    const linha = linhas[i];
+    if (!linha || linha.includes(":")) continue;
+    const nomeExato = LOJAS_AFILIADAS.find(
+      (loja) => normalizarBusca(linha) === normalizarBusca(loja)
+    );
+    if (!nomeExato) continue;
+    const proximaLinha = linhas.slice(i + 1).find(Boolean);
+    // Exige uma linha seguinte de conteúdo para evitar classificar uma menção
+    // solta no rodapé ou no aviso como identificação de loja.
+    if (proximaLinha && proximaLinha.length >= 6) return nomeExato;
+  }
+
   const textoNormalizado = texto.toLocaleUpperCase("pt-BR");
 
   const aliases: Array<[string, string]> = [
