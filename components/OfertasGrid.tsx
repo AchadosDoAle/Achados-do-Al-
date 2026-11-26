@@ -16,7 +16,7 @@ import { normalizarBusca } from "@/lib/texto";
 
 const ITENS_POR_PAGINA = 25; // 5 colunas x 5 linhas no desktop
 
-function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
+function GradeComFiltro({ ofertas, modoBlackFriday }: { ofertas: Oferta[]; modoBlackFriday: boolean }) {
   const params = useSearchParams();
   const categoriaInicial = params.get("categoria") ?? "Todos";
   const [selecionada, setSelecionada] = useState(categoriaInicial);
@@ -222,7 +222,7 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
           <>
             <div className="grid min-w-0 grid-cols-2 gap-2.5 min-[420px]:gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {ofertasDaPagina.map((oferta, indice) => (
-                <OfferCard key={oferta.id} oferta={oferta} atraso={indice} />
+                <OfferCard key={oferta.id} oferta={oferta} atraso={indice} modoBlackFriday={modoBlackFriday} />
               ))}
             </div>
 
@@ -254,10 +254,10 @@ function GradeComFiltro({ ofertas }: { ofertas: Oferta[] }) {
   );
 }
 
-export default function OfertasGrid({ ofertas }: { ofertas: Oferta[] }) {
+export default function OfertasGrid({ ofertas, modoBlackFriday = false }: { ofertas: Oferta[]; modoBlackFriday?: boolean }) {
   return (
     <Suspense fallback={null}>
-      <GradeComFiltro ofertas={ofertas} />
+      <GradeComFiltro ofertas={ofertas} modoBlackFriday={modoBlackFriday} />
     </Suspense>
   );
 }
