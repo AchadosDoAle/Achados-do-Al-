@@ -7,7 +7,6 @@ import { listarCuponsParaBuscaAdmin, cupomExpirado } from "@/lib/coupons-repo";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import type { Oferta, Cupom } from "@/lib/types";
 import { ofertaEstaExpirada } from "@/lib/oferta-status";
-import BlackFridayToggle from "@/components/admin/BlackFridayToggle";
 
 const atalhos = [
   { href: "/admin/ofertas/nova", icone: "＋", titulo: "Publicar oferta", detalhe: "Cadastrar uma promoção", destaque: true },
@@ -51,7 +50,6 @@ export default function AdminHomePage() {
           <Link href="/admin/cupons/novo" className="rounded-xl border border-white/30 bg-white/15 px-5 py-3 text-sm font-bold text-white hover:bg-white/25">＋ Novo cupom</Link>
         </div>
       </div>
-      <BlackFridayToggle />
       <section>
         <h2 className="text-lg font-bold text-[#35215D]">Visão geral</h2>
         <p className="mt-1 text-xs text-ink/55">Dados reais cadastrados no site · Atualizados ao abrir a página</p>
