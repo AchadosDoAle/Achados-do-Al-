@@ -129,7 +129,7 @@ export default async function HomePage({
           </section>
         </Container>
       ) : (
-        <Hero destaques={destaques} recentes={recentes} />
+        <Hero destaques={destaques} recentes={recentes} modoBlackFriday={modoBlackFriday} />
       )}
       <section id="ofertas" className="scroll-mt-24">
         <OfertasGrid ofertas={ofertasAtivas} modoBlackFriday={modoBlackFriday} />
