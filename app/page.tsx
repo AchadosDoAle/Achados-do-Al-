@@ -31,7 +31,11 @@ export default async function HomePage({
   const valorBusca = searchParams?.busca;
   const busca = (Array.isArray(valorBusca) ? valorBusca[0] : valorBusca ?? "").trim().slice(0, 120);
   const supabase = criarClientePublico();
-  const ofertas = await listarOfertasResumo(supabase);
+  const [ofertas, configuracaoBlackFriday] = await Promise.all([
+    listarOfertasResumo(supabase),
+    supabase.from("integrations").select("ativo").eq("tipo", "site_setting").eq("nome", "blackfriday_mode").maybeSingle(),
+  ]);
+  const modoBlackFriday = configuracaoBlackFriday.data?.ativo === true;
   // Não consultar cupons sem uma pesquisa: preserva a velocidade normal da Home.
   const cuponsEncontrados = busca
     ? (await listarCuponsParaBuscaPublica(supabase)).filter((cupom) =>
@@ -128,7 +132,7 @@ export default async function HomePage({
         <Hero destaques={destaques} recentes={recentes} />
       )}
       <section id="ofertas" className="scroll-mt-24">
-        <OfertasGrid ofertas={ofertasAtivas} />
+        <OfertasGrid ofertas={ofertasAtivas} modoBlackFriday={modoBlackFriday} />
       </section>
       <Footer destacarInstagramProjeto />
       <BottomNav />
