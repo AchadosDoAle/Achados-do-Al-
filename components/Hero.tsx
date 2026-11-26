@@ -3,7 +3,7 @@ import Container from "./Container";
 import DestaquesCarousel from "./DestaquesCarousel";
 import type { Oferta } from "@/lib/types";
 
-export default function Hero({ destaques, recentes }: { destaques: Oferta[]; recentes: Oferta[] }) {
+export default function Hero({ destaques, recentes, modoBlackFriday = false }: { destaques: Oferta[]; recentes: Oferta[]; modoBlackFriday?: boolean }) {
   return (
     <section className="relative overflow-hidden border-b border-white/5 bg-bg-secondary">
       <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-gold/10 blur-3xl" />
@@ -55,7 +55,7 @@ export default function Hero({ destaques, recentes }: { destaques: Oferta[]; rec
           </div>
         </div>
 
-        <DestaquesCarousel destaques={destaques} recentes={recentes} />
+        <DestaquesCarousel destaques={destaques} recentes={recentes} modoBlackFriday={modoBlackFriday} />
       </Container>
     </section>
   );
