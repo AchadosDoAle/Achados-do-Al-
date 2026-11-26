@@ -236,10 +236,10 @@ export default function DestaquesCarousel({
                   ) : (
                     <>
                       <div className="h-full w-1/2 min-w-0 shrink-0">
-                        <SlideCard {...transicao.destino} agora={agora} />
+                        <SlideCard {...transicao.destino} agora={agora} modoBlackFriday={modoBlackFriday} />
                       </div>
                       <div className="h-full w-1/2 min-w-0 shrink-0" aria-hidden="true">
-                        <SlideCard {...transicao.origem} agora={agora} saindo />
+                        <SlideCard {...transicao.origem} agora={agora} modoBlackFriday={modoBlackFriday} saindo />
                       </div>
                     </>
                   )}
