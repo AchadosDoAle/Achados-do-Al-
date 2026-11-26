@@ -37,7 +37,7 @@ function textoCronometro(restanteMs: number) {
   return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(seg).padStart(2, "0")}`;
 }
 
-function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {oferta: Oferta; posicao: number; eraDestaque: boolean; agora: number; saindo?: boolean}) {
+function SlideCard({oferta, posicao, eraDestaque, agora, modoBlackFriday, saindo = false}: {oferta: Oferta; posicao: number; eraDestaque: boolean; agora: number; modoBlackFriday: boolean; saindo?: boolean}) {
   const vencimentoDestaque = eraDestaque ? timestampBrasilia(oferta.destaqueAte) : NaN;
   const vencimentoRecente = !eraDestaque ? fimDaValidade(oferta.validadePromocao) : NaN;
   const vencimento = eraDestaque ? vencimentoDestaque : vencimentoRecente;
@@ -50,6 +50,7 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
                 className="group relative flex h-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-3 sm:p-4"
                 aria-label={`Ver oferta: ${oferta.titulo}`} tabIndex={saindo ? -1 : undefined}
               >
+                {modoBlackFriday && <span className="absolute left-3 top-3 z-10 rounded-md bg-black px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-[#f6c843] shadow-lg">BLACKFRIDAY</span>}
                 {oferta.imagemPrincipal ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -112,9 +113,11 @@ function SlideCard({oferta, posicao, eraDestaque, agora, saindo = false}: {ofert
 export default function DestaquesCarousel({
   destaques,
   recentes,
+  modoBlackFriday = false,
 }: {
   destaques: Oferta[];
   recentes: Oferta[];
+  modoBlackFriday?: boolean;
 }) {
   const [agora, setAgora] = useState(0);
   const [indice, setIndice] = useState(0);
@@ -224,10 +227,10 @@ export default function DestaquesCarousel({
                   {transicao.direcao === 1 ? (
                     <>
                       <div className="h-full w-1/2 min-w-0 shrink-0" aria-hidden="true">
-                        <SlideCard {...transicao.origem} agora={agora} saindo />
+                        <SlideCard {...transicao.origem} agora={agora} modoBlackFriday={modoBlackFriday} saindo />
                       </div>
                       <div className="h-full w-1/2 min-w-0 shrink-0">
-                        <SlideCard {...transicao.destino} agora={agora} />
+                        <SlideCard {...transicao.destino} agora={agora} modoBlackFriday={modoBlackFriday} />
                       </div>
                     </>
                   ) : (
@@ -243,7 +246,7 @@ export default function DestaquesCarousel({
                 </div>
               ) : (
                 <div className="h-full w-full">
-                  <SlideCard oferta={oferta} posicao={posicao} eraDestaque={mostrandoDestaques} agora={agora} />
+                  <SlideCard oferta={oferta} posicao={posicao} eraDestaque={mostrandoDestaques} agora={agora} modoBlackFriday={modoBlackFriday} />
                 </div>
               )}
             </div>
