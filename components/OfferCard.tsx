@@ -11,7 +11,7 @@ function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atraso?: number }) {
+export default function OfferCard({ oferta, atraso = 0, modoBlackFriday = false }: { oferta: Oferta; atraso?: number; modoBlackFriday?: boolean }) {
   const [favorito, setFavorito] = useState(false);
   const expirada = ofertaEstaExpirada(oferta);
   const bebidaAlcoolica = ofertaEhBebidaAlcoolica(oferta);
@@ -66,12 +66,12 @@ export default function OfferCard({ oferta, atraso = 0 }: { oferta: Oferta; atra
               -{desconto}%
             </span>
           ) : null}
-          {!expirada && oferta.ofertaBlack ? (
+          {!expirada && (modoBlackFriday || oferta.ofertaBlack) ? (
             <span
               className={`absolute left-0 z-10 bg-black py-1 pl-3 pr-4 text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#f6c843] shadow-md ${desconto ? "top-12" : "top-2"}`}
               style={{ clipPath: "polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%)" }}
             >
-              OFERTA BLACK
+              {modoBlackFriday ? "BLACKFRIDAY" : "OFERTA BLACK"}
             </span>
           ) : null}
         </div>
