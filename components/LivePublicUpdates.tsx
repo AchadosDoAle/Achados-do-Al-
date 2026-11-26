@@ -9,11 +9,7 @@ const INTERVALO_MINIMO_REFRESH_MS = 1500;
 
 /**
  * Mantém as vitrines públicas sincronizadas com o Supabase em tempo real.
- *
- * Quando ofertas ou cupons são inseridos, alterados ou removidos, fazemos um
- * router.refresh(). Isso pede novamente os Server Components sem recarregar a
- * página inteira e preserva o estado local dos componentes Client (filtros,
- * posição da tela etc.) sempre que possível.
+ * Agrupa eventos e evita refreshes duplicados ao recuperar o foco da janela.
  */
 export default function LivePublicUpdates() {
   const router = useRouter();
@@ -21,13 +17,9 @@ export default function LivePublicUpdates() {
   const ultimoRefreshRef = useRef(0);
 
   useEffect(() => {
-    // O painel administrativo já controla o próprio estado. Evitamos uma
-    // atualização remota no meio de formulários de edição/cadastro.
     const supabase = criarClienteNavegador();
 
     function programarAtualizacao(tabela?: "offers" | "coupons", evento?: string) {
-      // O listener é global e permanece único durante a navegação. Não atualiza
-      // rotas administrativas ou de autenticação.
       const rotaAtual = window.location.pathname;
       if (rotaAtual.startsWith("/admin") || rotaAtual.startsWith("/login")) return;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -51,36 +43,27 @@ export default function LivePublicUpdates() {
       }, atraso);
     }
 
-    function atualizarConteudo(tabela: "offers" | "coupons", evento?: string) {
-      programarAtualizacao(tabela, evento);
-    }
-
     const canal = supabase
       .channel("achado-site-publico-v1")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "offers" },
-        (payload) => atualizarConteudo("offers", payload.eventType)
+        (payload) => programarAtualizacao("offers", payload.eventType)
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "coupons" },
-        (payload) => atualizarConteudo("coupons", payload.eventType)
+        (payload) => programarAtualizacao("coupons", payload.eventType)
       )
       .subscribe();
 
-    // Se o celular/notebook ficou em segundo plano e a conexão realtime caiu,
-    // atualizar ao voltar para a aba garante que a vitrine não fique antiga.
+    // A visibilidade cobre o retorno à aba. Não registramos também "focus",
+    // pois navegadores móveis podem disparar os dois eventos em sequência.
     function atualizarAoVoltar() {
       if (document.visibilityState === "visible") programarAtualizacao();
     }
 
-    function atualizarAoFocar() {
-      programarAtualizacao();
-    }
-
     document.addEventListener("visibilitychange", atualizarAoVoltar);
-    window.addEventListener("focus", atualizarAoFocar);
 
     return () => {
       if (timeoutRef.current) {
@@ -88,7 +71,6 @@ export default function LivePublicUpdates() {
         timeoutRef.current = null;
       }
       document.removeEventListener("visibilitychange", atualizarAoVoltar);
-      window.removeEventListener("focus", atualizarAoFocar);
       void supabase.removeChannel(canal);
     };
   }, [router]);
