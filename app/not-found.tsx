@@ -41,7 +41,7 @@ export default function NotFound() {
               <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m8 4-6 6 6 6M2 10h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
               Voltar para o início
             </Link>
-            <Link href="/ofertas" className="not-found-secondary">Explorar ofertas <span>↗</span></Link>
+            <Link href="/#ofertas" className="not-found-secondary">Explorar ofertas <span>↗</span></Link>
           </div>
           <div className="not-found-footnote"><span>✦</span> Boas ofertas não ficam perdidas por muito tempo.</div>
         </div>
