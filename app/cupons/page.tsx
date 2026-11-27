@@ -6,12 +6,8 @@ import Footer from "@/components/Footer";
 import Container from "@/components/Container";
 import CupomCard from "@/components/CupomCard";
 import { criarClientePublico } from "@/lib/supabase/public";
-import {
-  listarCuponsParaBuscaPublica,
-  listarCuponsPublicosFiltrados,
-  listarLojasCuponsPublicas,
-  type FiltroPublicoCupom,
-} from "@/lib/coupons-repo";
+import { listarCuponsPublicosFiltrados, type FiltroPublicoCupom } from "@/lib/coupons-repo";
+import { obterCuponsPublicosParaBuscaCacheados, obterLojasCuponsPublicasCacheadas } from "@/lib/public-data-cache";
 import { normalizarNomeLoja } from "@/lib/mock-data";
 import { cupomCorrespondeBuscaPublica } from "@/lib/busca-cupons";
 
@@ -68,7 +64,7 @@ export default async function CuponsPage({
   const fimDia = fimDeHojeBrasilia(agora);
 
   const supabase = criarClientePublico();
-  const lojasDisponiveisPromise = listarLojasCuponsPublicas(supabase);
+  const lojasDisponiveisPromise = obterLojasCuponsPublicasCacheadas();
   let encontrados = [] as Awaited<ReturnType<typeof listarCuponsParaBuscaPublica>>;
   let total = 0;
   let pagina = paginaSolicitada;
@@ -76,7 +72,7 @@ export default async function CuponsPage({
   if (busca) {
     // A busca sem acentos precisa percorrer o histórico. Ela só faz isso
     // quando o usuário pesquisa; os filtros normais têm paginação no servidor.
-    const todos = await listarCuponsParaBuscaPublica(supabase);
+    const todos = await obterCuponsPublicosParaBuscaCacheados();
     encontrados = todos.filter((cupom) => {
       if (!cupom.ativo || !cupomCorrespondeBuscaPublica(cupom, busca)) return false;
       if (loja && normalizarNomeLoja(cupom.loja) !== normalizarNomeLoja(loja)) return false;
