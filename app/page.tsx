@@ -7,9 +7,7 @@ import Hero from "@/components/Hero";
 import OfertasGrid from "@/components/OfertasGrid";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
-import { criarClientePublico } from "@/lib/supabase/public";
-import { listarOfertasResumo } from "@/lib/offers-repo";
-import { listarCuponsParaBuscaPublica } from "@/lib/coupons-repo";
+import { obterOfertasPublicasCacheadas, obterCuponsPublicosParaBuscaCacheados } from "@/lib/public-data-cache";
 import { cupomCorrespondeBuscaPublica } from "@/lib/busca-cupons";
 import CupomCard from "@/components/CupomCard";
 import Container from "@/components/Container";
@@ -30,11 +28,10 @@ export default async function HomePage({
 }) {
   const valorBusca = searchParams?.busca;
   const busca = (Array.isArray(valorBusca) ? valorBusca[0] : valorBusca ?? "").trim().slice(0, 120);
-  const supabase = criarClientePublico();
-  const ofertas = await listarOfertasResumo(supabase);
+  const ofertas = await obterOfertasPublicasCacheadas();
   // Não consultar cupons sem uma pesquisa: preserva a velocidade normal da Home.
   const cuponsEncontrados = busca
-    ? (await listarCuponsParaBuscaPublica(supabase)).filter((cupom) =>
+    ? (await obterCuponsPublicosParaBuscaCacheados()).filter((cupom) =>
         cupomCorrespondeBuscaPublica(cupom, busca)
       )
     : [];
