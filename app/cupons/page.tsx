@@ -65,7 +65,7 @@ export default async function CuponsPage({
 
   const supabase = criarClientePublico();
   const lojasDisponiveisPromise = obterLojasCuponsPublicasCacheadas();
-  let encontrados = [] as Awaited<ReturnType<typeof listarCuponsParaBuscaPublica>>;
+  let encontrados = [] as Awaited<ReturnType<typeof obterCuponsPublicosParaBuscaCacheadas>>;
   let total = 0;
   let pagina = paginaSolicitada;
 
